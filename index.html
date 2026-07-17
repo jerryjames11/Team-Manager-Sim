@@ -857,7 +857,7 @@ function newCareer(teamIdx){
   // every club owns its own picks for this draft + the next 2 future draft classes
   G.draftPicks = [];
   for(let y = G.year; y <= G.year + 2; y++){
-    G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx }); });
+    G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx, orig:t.idx }); });
   }
   // street free agents
   for(let i=0;i<40;i++) G.fa.push(makePlayer(pick(POS_ORDER), R(55,74), RI(23,32), 0));
@@ -1763,7 +1763,7 @@ function advanceToTag(){
   G.season++; G.year++;
   if(!G.draftPicks) G.draftPicks = [];
   // roll the tradeable-picks window forward so every club always has a picture 3 draft classes out
-  G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year: G.year+2, round: r, team: t.idx }); });
+  G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year: G.year+2, round: r, team: t.idx, orig: t.idx }); });
   G.results = []; G.playoffs = null; G.preResults = [];
   G.trainPts += 3;
   G.tagUsed = false; G.otaWeek = 0; G.preReport = null;
@@ -1771,119 +1771,149 @@ function advanceToTag(){
   G.phase = 'tag';
   save(); render();
 }
-function userPicksInRound(round){
-  return G.draftPicks.filter(pk => pk.year === G.year && pk.round === round && pk.team === G.userTeam);
-}
-/* resolve any round(s) at the front of the draft where the user owns no picks (traded away),
-   stopping once we reach a round the user has picks in, or the draft ends */
-function enterDraftRound(){
-  while(G.draftRound <= DRAFT_ROUNDS && userPicksInRound(G.draftRound).length === 0){
-    aiDraftRound(G.draftRound);
-    G.draftRound++;
+/* ---------- draft order + shared prospect pool ---------- */
+function computeDraftOrder(){
+  // worst record picks first; year 1 (no prior season) falls back to weakest team strength first
+  const teams = G.teams.slice();
+  const hasRecords = teams.every(t => t.lastRecord);
+  let ordered;
+  if(hasRecords){
+    ordered = teams.slice().sort((a,b) => {
+      const pctA = a.lastRecord.w / Math.max(1, a.lastRecord.w + a.lastRecord.l);
+      const pctB = b.lastRecord.w / Math.max(1, b.lastRecord.w + b.lastRecord.l);
+      return (pctA - pctB) || ((a.pf-a.pa) - (b.pf-b.pa)) || (Math.random()-.5);
+    });
+  } else {
+    ordered = teams.slice().sort((a,b) => a.tier - b.tier || (Math.random()-.5));
   }
-  if(G.draftRound <= DRAFT_ROUNDS) G.prospects = makeProspects(G.draftRound);
+  return ordered.map(t => t.idx);
+}
+function makeProspectBio(pos){
+  const home = Math.random() < .3 ? (() => { const tm = pick(TEAM_DEFS); return {city:tm.city, state:tm.state}; })() : pick(EXTRA_TOWNS);
+  const college = pick(COLLEGES);
+  const r = HGT_RANGE[pos] || [70,76];
+  return { home, college, hgt: RI(r[0], r[1]) };
+}
+function makeProspect(tier){
+  const positions = POS_ORDER.filter(p => p !== 'K');
+  const pos = pick(positions);
+  const trueRating = clamp(RI(tier.min, tier.max), 50, 99);
+  const riskRoll = Math.random();
+  const spread = riskRoll < .3 ? RI(2,4) : riskRoll < .7 ? RI(5,8) : RI(9,14); // safe / average / boom-bust scouting
+  const scoutMid = clamp(trueRating + RI(-3,3), 50, 99); // scouts aren't perfectly calibrated
+  const bio = makeProspectBio(pos);
+  return {
+    id: G.nextId++, name: pick(FN)+' '+pick(LN), pos, spot: pick(SPOTS[pos]), age: RI(21,23),
+    scheme: (pos==='DL'||pos==='LB') ? pick(['43','43','34','34','any']) : 'any',
+    trueRating, scoutLo: clamp(scoutMid-spread,50,99), scoutHi: clamp(scoutMid+spread,50,99), spread,
+    home: bio.home, college: bio.college, hgt: bio.hgt
+  };
+}
+function generateDraftPool(){
+  const counts = [ [DRAFT_TIERS[0], 22], [DRAFT_TIERS[1], 26], [DRAFT_TIERS[2], 26], [DRAFT_TIERS[3], 20] ];
+  const pool = [];
+  counts.forEach(([tier, n]) => { for(let i=0;i<n;i++) pool.push(makeProspect(tier)); });
+  return pool;
+}
+function currentDraftRound(){ return Math.floor(G.draftPickIdx / 16) + 1; }
+function currentDraftPickInfo(){
+  const round = currentDraftRound();
+  const slotInRound = G.draftPickIdx % 16;
+  const origTeam = G.draftOrderList[slotInRound];
+  const pickObj = G.draftPicks.find(pk => pk.year===G.year && pk.round===round && pk.orig===origTeam);
+  return { round, slotInRound, origTeam, pickObj };
+}
+function aiSelectProspect(t){
+  const need = teamNeed(t);
+  let pool = need ? G.draftPool.filter(pr => pr.pos === need) : G.draftPool;
+  if(!pool.length) pool = G.draftPool;
+  pool = pool.slice().sort((a,b) => (b.scoutLo+b.scoutHi) - (a.scoutLo+a.scoutHi));
+  return pool[0] || null;
+}
+function draftProspect(prospectId, teamIdx, pickObj){
+  const idx = G.draftPool.findIndex(pr => pr.id === prospectId);
+  if(idx < 0) return null;
+  const pr = G.draftPool.splice(idx,1)[0];
+  const t = G.teams[teamIdx];
+  const round = pickObj.round;
+  const rook = makePlayer(pr.pos, pr.trueRating, pr.age, 3, pr.spot);
+  rook.name = pr.name;
+  if(pr.scheme) rook.scheme = pr.scheme;
+  rook.salary = rookieSalaryFor(round);
+  rook.home = pr.home; rook.college = pr.college; rook.hgt = pr.hgt;
+  rook.history = [{y:G.year, k:'move', t:'Drafted Rd '+round+' (pick '+(G.draftPickIdx+1)+') by '+t.city, d:0}];
+  t.roster.push(rook);
+  G.draftLog.push({ pickNum: G.draftPickIdx+1, round, team: teamIdx, name: pr.name, pos: pr.spot, ovr: pr.trueRating });
+  if(teamIdx === G.userTeam){
+    G.draftClass.push({ round, id: rook.id, scoutLo: pr.scoutLo, scoutHi: pr.scoutHi, trueRating: pr.trueRating });
+  }
+  G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
+  return rook;
+}
+function advanceDraftPointer(){
+  while(G.draftPickIdx < DRAFT_ROUNDS*16){
+    const { round, origTeam, pickObj } = currentDraftPickInfo();
+    if(!pickObj){ G.draftPickIdx++; continue; } // pick was already resolved/removed — skip forward defensively
+    const owner = pickObj.team;
+    if(owner === G.userTeam) return; // stop here — user's turn
+    const t = G.teams[owner];
+    if(t.roster.length < LIMIT_OFF && G.draftPool.length){
+      const pr = aiSelectProspect(t);
+      if(pr) draftProspect(pr.id, owner, pickObj);
+    } else {
+      G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
+    }
+    G.draftPickIdx++;
+  }
 }
 function advanceToDraft(){
   aiFAWave(20);
-  G.draftRound = 1;
-  G.draftClass = []; // [{round, tier, id}] — every pick made this draft, manual or simulated
-  enterDraftRound();
+  G.draftOrderList = computeDraftOrder();
+  G.draftPool = generateDraftPool();
+  G.draftPickIdx = 0;
+  G.draftClass = [];
+  G.draftLog = [];
+  G.draftBoardFilter = '';
+  G.draftBoardSort = {key:'scout', dir:-1};
+  advanceDraftPointer();
   G.phase = 'draft';
   save(); render();
 }
-function makeProspects(round){
-  const tier = DRAFT_TIERS[round-1] || DRAFT_TIERS[DRAFT_TIERS.length-1];
-  const positions = POS_ORDER.filter(p => p !== 'K');
-  const picks = [];
-  for(let i=0;i<6;i++){
-    const pos = pick(positions);
-    picks.push({
-      name: pick(FN)+' '+pick(LN), pos, rating: RI(tier.min, tier.max),
-      spot: pick(SPOTS[pos]),
-      scheme: (pos==='DL' || pos==='LB') ? pick(['43','43','34','34','any']) : 'any'
-    });
-  }
-  return picks.sort((a,b) => b.rating - a.rating);
-}
-function draftBestFit(t, tier){
-  const positions = POS_ORDER.filter(p => p !== 'K');
-  const pos = teamNeed(t) || pick(positions);
-  return { pos, rating: RI(tier.min, tier.max) };
-}
-/* resolves every pick an AI club owns in this round (0, 1, or several thanks to trades), then removes those picks */
-function aiDraftRound(round){
-  const tier = DRAFT_TIERS[round-1];
-  const slots = G.draftPicks.filter(pk => pk.year === G.year && pk.round === round && pk.team !== G.userTeam);
-  slots.forEach(pk => {
-    const t = G.teams[pk.team];
-    if(t.roster.length < LIMIT_OFF){
-      const fit = draftBestFit(t, tier);
-      const rook = makePlayer(fit.pos, fit.rating, 22, 3);
-      rook.salary = rookieSalaryFor(round);
-      rook.history = [{y:G.year, k:'move', t:'Drafted Rd '+round+' by '+t.city, d:0}];
-      t.roster.push(rook);
-    }
-  });
-  G.draftPicks = G.draftPicks.filter(pk => !(pk.year === G.year && pk.round === round && pk.team !== G.userTeam));
-}
-function draftPick(i){
+function userDraftPick(prospectId){
+  const { pickObj } = currentDraftPickInfo();
+  if(!pickObj || pickObj.team !== G.userTeam) return;
   const me = meT();
-  const round = G.draftRound;
   if(me.roster.length >= LIMIT_OFF){ alert('Roster full — cut someone first.'); return; }
-  const myPicks = userPicksInRound(round);
-  if(!myPicks.length) return;
-  const pr = G.prospects[i];
-  const rook = makePlayer(pr.pos, pr.rating, 22, 3, pr.spot);
-  if(pr.scheme) rook.scheme = pr.scheme;
-  rook.name = pr.name;
-  rook.salary = rookieSalaryFor(round);
-  rook.history = [{y:G.year, k:'move', t:'Drafted Rd '+round+' by '+me.city, d:0}];
-  me.roster.push(rook);
-  G.draftClass.push({ round, tier: DRAFT_TIERS[round-1].label, id: rook.id });
-  G.draftPicks.splice(G.draftPicks.indexOf(myPicks[0]), 1); // spend one of this round's picks
-  advanceDraftRound();
+  if(!draftProspect(prospectId, G.userTeam, pickObj)) return;
+  G.draftPickIdx++;
+  advanceDraftPointer();
+  save(); render();
 }
-/* pass on the CURRENT pick (not necessarily the whole round — you may have more picks left in it) */
-function passDraftRound(){
-  const round = G.draftRound;
-  const myPicks = userPicksInRound(round);
-  if(myPicks.length) G.draftPicks.splice(G.draftPicks.indexOf(myPicks[0]), 1);
-  advanceDraftRound();
-}
-function advanceDraftRound(){
-  const round = G.draftRound;
-  if(userPicksInRound(round).length > 0){
-    // more of your own picks left in this round (traded for extras) — fresh board, same round
-    G.prospects = makeProspects(round);
-    save(); render();
-    return;
-  }
-  aiDraftRound(round); // resolve every AI club's picks for the round now that yours are done
-  G.draftRound++;
-  if(G.draftRound > DRAFT_ROUNDS){ save(); render(); return; } // falls through to the review screen
-  enterDraftRound();
+function passDraftPick(){
+  const { pickObj } = currentDraftPickInfo();
+  if(pickObj) G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
+  G.draftPickIdx++;
+  advanceDraftPointer();
   save(); render();
 }
 function simulateRestOfDraft(){
-  const me = meT();
-  for(let round = G.draftRound; round <= DRAFT_ROUNDS; round++){
-    const tier = DRAFT_TIERS[round-1];
-    userPicksInRound(round).slice().forEach(pk => {
-      if(me.roster.length < LIMIT_OFF){
-        const fit = draftBestFit(me, tier);
-        const rook = makePlayer(fit.pos, fit.rating, 22, 3);
-        rook.salary = rookieSalaryFor(round);
-        rook.history = [{y:G.year, k:'move', t:'Drafted Rd '+round+' by '+me.city, d:0}];
-        me.roster.push(rook);
-        G.draftClass.push({ round, tier: tier.label, id: rook.id });
+  while(G.draftPickIdx < DRAFT_ROUNDS*16){
+    const { round, pickObj } = currentDraftPickInfo();
+    if(pickObj){
+      const owner = pickObj.team;
+      const t = G.teams[owner];
+      if(t.roster.length < LIMIT_OFF && G.draftPool.length){
+        const pr = aiSelectProspect(t);
+        if(pr) draftProspect(pr.id, owner, pickObj);
+      } else {
+        G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
       }
-      G.draftPicks.splice(G.draftPicks.indexOf(pk), 1);
-    });
-    aiDraftRound(round);
+    }
+    G.draftPickIdx++;
   }
-  G.draftRound = DRAFT_ROUNDS + 1;
   save(); render();
 }
+
 function finishDraft(){
   aiFillRosters();
   G.otaWeek = 1;
@@ -2881,7 +2911,7 @@ function render(){
   if(!G.draftPicks){
     G.draftPicks = [];
     for(let y = G.year; y <= G.year + 2; y++){
-      G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx }); });
+      G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx, orig:t.idx }); });
     }
   }
   if(G.activePage === undefined) G.activePage = null;
@@ -3167,57 +3197,95 @@ function setFASort(k){
 
 /* ---------- draft ---------- */
 function draftHTML(){
-  const me = meT();
-  if(G.draftRound <= DRAFT_ROUNDS) return draftBoardHTML();
+  if(G.draftPickIdx < DRAFT_ROUNDS*16) return draftBoardHTML();
   return draftReviewHTML();
+}
+function setDraftBoardFilter(pos){ G.draftBoardFilter = pos; save(); render(); }
+function setDraftBoardSort(key){
+  const s = G.draftBoardSort;
+  if(s.key === key) s.dir = -s.dir; else { s.key = key; s.dir = key==='name'||key==='college' ? 1 : -1; }
+  save(); render();
 }
 function draftBoardHTML(){
   const me = meT();
-  const round = G.draftRound;
-  const tier = DRAFT_TIERS[round-1];
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">UFA Draft — '+fmtDate(draftDate(G.year))+'</div>';
-  s += '<div class="filterbar" style="margin-top:8px">';
-  for(let r=1; r<=DRAFT_ROUNDS; r++){
-    const rt = DRAFT_TIERS[r-1];
-    const done = r < round;
-    s += '<span class="fbtn'+(r===round?' on':'')+'" style="cursor:default'+(done?';opacity:.5':'')+'">Round '+r+(r===round?' — '+rt.label:(done?' ✓':''))+'</span>';
+  const { round, pickObj } = currentDraftPickInfo();
+  const pickNum = G.draftPickIdx + 1;
+  const onClock = pickObj ? G.teams[pickObj.team] : null;
+  const isMe = pickObj && pickObj.team === G.userTeam;
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">UFA Draft — '+fmtDate(draftDate(G.year))+'</div>' +
+    '<p class="sub" style="margin-top:6px">Overall pick <b style="color:var(--gold)">'+pickNum+'</b> of '+(DRAFT_ROUNDS*16)+' · Round '+round+' · '+
+    (onClock ? (isMe ? '<b style="color:var(--gold)">You\'re on the clock.</b>' : esc(onClock.city+' '+onClock.name)+' is on the clock.') : 'Draft complete.') +
+    '</p></div>';
+  if(G.draftLog && G.draftLog.length){
+    const recent = G.draftLog.slice(-8).reverse();
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Recent Picks</div>';
+    recent.forEach(d => {
+      const t = G.teams[d.team];
+      s += '<p class="sub" style="margin:2px 0">Pick '+d.pickNum+' — <b style="color:'+(d.team===G.userTeam?'var(--gold)':'var(--chalk)')+'">'+esc(t.abbr)+'</b> select '+esc(d.name)+' ('+d.pos+')'+(d.team===G.userTeam?' <b style="color:var(--gold)">'+d.ovr+' OVR</b>':'')+'</p>';
+    });
+    s += '</div>';
   }
-  const mine = userPicksInRound(round).length;
-  s += '</div><p class="sub" style="margin-top:8px">Round '+round+' of '+DRAFT_ROUNDS+' — <b style="color:var(--gold)">'+tier.label+'</b> tier ('+tier.min+'–'+tier.max+' OVR, ~'+money(ROOKIE_SALARY[round-1].min)+'–'+money(ROOKIE_SALARY[round-1].max)+'/yr rookie deal). You own <b style="color:var(--gold)">'+mine+'</b> pick'+(mine!==1?'s':'')+' in this round'+(mine>1?' (traded for extras)':'')+'. Pick your guy, pass, or let the front office simulate the rest of the draft for you. Other clubs are drafting their own classes each round too.</p></div>';
+  if(!isMe){
+    s += '<div class="panel" style="text-align:center"><button class="btn primary" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button></div>';
+    return s;
+  }
   s += posNeedsHTML(me);
-  const doneThisRound = (G.draftClass||[]).filter(d=>d.round===round).length;
-  s += '<div class="panel"><div class="hd disp">Round '+round+' Board'+(mine>1?' — Pick '+(doneThisRound+1)+' of your '+(doneThisRound+mine):'')+'</div>';
-  s += '<div class="prospects">';
-  G.prospects.forEach((p,i) => {
-    const spotLabel = p.spot || p.pos;
-    const schemeLabel = ((p.pos==='DL'||p.pos==='LB') && p.scheme) ? ' · '+SCHEME_TAG[p.scheme] : '';
-    s += '<div class="prospect"><div class="r">'+p.rating+'</div><div class="p">'+spotLabel+' · '+esc(POS_LABEL[p.pos])+schemeLabel+'</div>' +
-      '<div style="margin:6px 0;font-weight:700">'+esc(p.name)+'</div>' +
-      '<div class="sub">age 22 · 3yr · ~'+money(rookieSalaryFor(round))+'/yr</div>' +
-      '<button class="btn primary" style="margin-top:10px" onclick="draftPick('+i+')">Draft Him</button></div>';
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Big Board</div>' +
+    '<div class="rosterctl" style="margin:8px 0"><select class="fselect" onchange="setDraftBoardFilter(this.value)">' + posFilterOptionsHTML() + '</select></div>';
+  let pool = G.draftPool.slice();
+  if(G.draftBoardFilter) pool = pool.filter(pr => pr.spot === G.draftBoardFilter);
+  const sortKey = G.draftBoardSort.key, sortDir = G.draftBoardSort.dir;
+  pool.sort((a,b) => {
+    let va, vb;
+    if(sortKey === 'scout') { va = a.scoutLo+a.scoutHi; vb = b.scoutLo+b.scoutHi; }
+    else if(sortKey === 'name') { va = a.name; vb = b.name; }
+    else if(sortKey === 'college') { va = a.college.name; vb = b.college.name; }
+    else if(sortKey === 'spot') { va = spotSortVal({pos:a.pos, spot:a.spot}); vb = spotSortVal({pos:b.pos, spot:b.spot}); }
+    else { va = a[sortKey]; vb = b[sortKey]; }
+    if(typeof va === 'string') return va.localeCompare(vb) * sortDir;
+    return (va-vb) * sortDir;
   });
-  s += '</div><div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-    '<button class="btn" onclick="passDraftRound()">Pass This Pick →</button>' +
-    '<button class="btn" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button></div></div>';
+  const cols = [['name','Player'],['spot','Pos'],['college','College'],['age','Age'],['scout','Scouted']];
+  s += '<table class="tbl"><tr>';
+  cols.forEach(c => { const on = sortKey===c[0]; s += '<th class="sorth'+(on?' on':'')+'" onclick="setDraftBoardSort(\''+c[0]+'\')">'+c[1]+(on?(sortDir>0?' ▲':' ▼'):'')+'</th>'; });
+  s += '<th></th></tr>';
+  if(!pool.length) s += '<tr><td colspan="6" class="sub">Nobody left at this position — the board has been picked over.</td></tr>';
+  pool.slice(0,60).forEach(pr => {
+    const ft = Math.floor(pr.hgt/12), inch = pr.hgt%12;
+    s += '<tr><td>'+esc(pr.name)+'<div class="sub" style="font-size:10px">'+esc(pr.home.city)+', '+esc(pr.home.state)+' · '+ft+'\''+inch+'"</div></td>' +
+      '<td><b>'+pr.spot+'</b></td><td>'+esc(pr.college.name)+'</td><td>'+pr.age+'</td>' +
+      '<td style="color:var(--gold);font-weight:700">'+pr.scoutLo+'–'+pr.scoutHi+'</td>' +
+      '<td><button class="btn tiny primary" onclick="userDraftPick('+pr.id+')">Draft</button></td></tr>';
+  });
+  s += '</table></div>';
+  s += '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+    '<button class="btn" onclick="passDraftPick()">Pass This Pick →</button>' +
+    '<button class="btn" onclick="openPage(\'gm\');setGMTab(\'trades\')">🔁 Trade Picks</button>' +
+    '<button class="btn" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button></div>';
   return s;
 }
 function draftReviewHTML(){
   const me = meT();
   const classTotal = (G.draftClass || []).reduce((s,d) => { const p = me.roster.find(x=>x.id===d.id); return s + (p ? p.salary : 0); }, 0);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Draft Class — '+fmtDate(draftDate(G.year))+'</div>' +
-    '<p class="sub" style="margin-top:6px">All 4 rounds are in. Review your class below — sign (keep) or release anyone who doesn\'t fit. Total class cost: <b style="color:var(--gold)">'+money(classTotal)+'</b>.</p></div>';
+    '<p class="sub" style="margin-top:6px">All '+(DRAFT_ROUNDS*16)+' picks are in. Here\'s how your guys actually turned out versus what the scouts had them pegged for. Sign (keep) or release anyone who doesn\'t fit. Total class cost: <b style="color:var(--gold)">'+money(classTotal)+'</b>.</p></div>';
   s += posNeedsHTML(me);
   s += '<div class="panel"><div class="hd disp">Your Draft Class</div>';
   if(!G.draftClass || !G.draftClass.length){
     s += '<p class="sub">No picks were made this draft.</p>';
   } else {
-    s += '<table class="tbl"><tr><th>Rd</th><th>Tier</th><th>Player</th><th>Pos</th><th>OVR</th><th>Salary</th><th>Deal</th><th></th></tr>';
+    s += '<table class="tbl"><tr><th>Rd</th><th>Player</th><th>Pos</th><th>Scouted</th><th>Actual</th><th>Verdict</th><th>Salary</th><th></th></tr>';
     G.draftClass.forEach(d => {
       const p = me.roster.find(x => x.id === d.id);
-      if(!p) { s += '<tr><td>'+d.round+'</td><td class="sub">'+d.tier+'</td><td colspan="5" class="sub">Released.</td><td></td></tr>'; return; }
-      s += '<tr><td>'+d.round+'</td><td class="sub">'+d.tier+'</td><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td>' +
-        '<td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(p.salary)+'</td><td>'+p.years+'yr</td>' +
-        '<td><button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Release</button></td></tr>';
+      if(!p) { s += '<tr><td>'+d.round+'</td><td colspan="6" class="sub">Released.</td></tr>'; return; }
+      const mid = (d.scoutLo+d.scoutHi)/2;
+      const verdict = d.trueRating > d.scoutHi ? '<span style="color:var(--green);font-weight:700">Steal!</span>' :
+        d.trueRating < d.scoutLo ? '<span style="color:var(--red);font-weight:700">Bust</span>' :
+        d.trueRating > mid ? '<span style="color:var(--green)">Above grade</span>' :
+        d.trueRating < mid ? '<span style="color:var(--gold)">Below grade</span>' : '<span class="sub">As advertised</span>';
+      s += '<tr><td>'+d.round+'</td><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td>' +
+        '<td class="sub">'+d.scoutLo+'–'+d.scoutHi+'</td><td style="color:var(--gold);font-weight:700">'+d.trueRating+'</td><td>'+verdict+'</td>' +
+        '<td>'+money(p.salary)+'</td><td><button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Release</button></td></tr>';
     });
     s += '</table>';
   }
@@ -3701,11 +3769,12 @@ function posPopupHTML(){
   let s = '<div class="popup-wrap" onclick="if(event.target===this)closePosPopup()">' +
     '<div class="popup-panel"><div class="popup-hd"><span class="disp">'+esc(posPopup)+' Room</span>' +
     '<button class="btn tiny" onclick="closePosPopup()">✕ Close</button></div>' +
-    '<div class="popup-body"><table class="tbl"><tr><th>Player</th><th>Age</th><th>OVR</th><th>Salary</th></tr>';
-  if(!list.length) s += '<tr><td colspan="4" class="sub" style="text-align:center;padding:14px">Nobody on the roster at this position.</td></tr>';
+    '<div class="popup-body"><table class="tbl"><tr><th>Player</th><th>Pos</th><th>Age</th><th>OVR</th><th>Scheme</th><th>Salary</th></tr>';
+  if(!list.length) s += '<tr><td colspan="6" class="sub" style="text-align:center;padding:14px">Nobody on the roster at this position.</td></tr>';
   list.forEach(p => {
     s += '<tr><td>'+pn(p)+(p.dressed===false?' <span class="tag l">SIT</span>':'')+(p.ir?' <span class="tag l">IR</span>':'')+'</td>' +
-      '<td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(p.salary)+'</td></tr>';
+      '<td><b>'+p.spot+'</b></td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td>' +
+      '<td>'+schemeCell(p)+'</td><td>'+money(p.salary)+'</td></tr>';
   });
   s += '</table></div></div></div>';
   return s;
