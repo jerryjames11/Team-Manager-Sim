@@ -121,6 +121,7 @@ table.tbl tr:last-child td{border-bottom:none}
 .trade-toggle i{position:absolute;top:1px;left:1px;width:15px;height:15px;border-radius:50%;background:var(--chalk);transition:.15s}
 .trade-toggle.on i{left:17px;background:#14100A}
 .blockrow{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #202A3C;font-size:12px}
+.blockstate{display:inline-block;padding:3px 8px;border-radius:12px;font-size:10.5px;font-weight:700;cursor:pointer;white-space:nowrap;user-select:none}
 .blockrow:last-child{border-bottom:none}
 .valuetrack{height:10px;border-radius:6px;background:var(--panel2);overflow:hidden;display:flex;border:1px solid var(--line)}
 .valuetrack .give{background:var(--gold);transition:.3s}
@@ -502,14 +503,14 @@ function generateWeeklyRecs(){
   let rid = 1;
   const opp = userGame ? (() => { const g = userGame(); if(!g) return null; return G.teams[g.a===G.userTeam?g.b:g.a]; })() : null;
 
-  if(G.staff.OC){
+  if(G.staff.OC && Math.random() < .7){
     const leanRun = offRush(me) >= offPass(me);
     G.weeklyRecs.push({ id: rid++, coachRole:'OC', coachPos:null, coachName:G.staff.OC.name, kind:'tendency',
       statKey: leanRun ? 'offRush' : 'offPass',
       label: leanRun ? 'Lean on the run game this week — it\'s our strength.' : 'Air it out this week — our passing attack gives us the edge.',
       status:'pending' });
   }
-  if(G.staff.DC){
+  if(G.staff.DC && Math.random() < .7){
     const oppPass = opp ? offPass(opp) : 75;
     const blitzMore = (defPass(me) + 6) < oppPass ? false : true; // blitz unless their pass offense clearly outmatches our coverage
     G.weeklyRecs.push({ id: rid++, coachRole:'DC', coachPos:null, coachName:G.staff.DC.name, kind:'tendency',
@@ -607,9 +608,23 @@ function recMeterHTML(){
   const {followed, total} = GM.recSummary;
   const pct = clamp(followed/total*100, 0, 100);
   const c = pct>=75 ? 'var(--green)' : pct>=40 ? 'var(--gold)' : 'var(--red)';
-  return '<div class="panel" style="margin-bottom:8px;padding:8px 10px"><div class="sub" style="display:flex;justify-content:space-between">' +
+  let s = '<div class="panel" style="margin-bottom:8px;padding:8px 10px"><div class="sub" style="display:flex;justify-content:space-between">' +
     '<span>Staff trust this week</span><span style="color:'+c+';font-weight:700">'+followed+'/'+total+' followed</span></div>' +
-    '<div class="capbar" style="margin-top:4px"><i style="width:'+pct+'%;background:'+c+'"></i></div></div>';
+    '<div class="capbar" style="margin-top:4px"><i style="width:'+pct+'%;background:'+c+'"></i></div>';
+  const recs = G.weeklyRecs || [];
+  if(recs.length){
+    s += '<div style="margin-top:6px;display:flex;flex-direction:column;gap:2px">';
+    recs.forEach(r => {
+      const label = r.coachRole==='POS' ? POS_LABEL[r.coachPos]+' Coach' : COACH_ROLE_LABEL[r.coachRole];
+      const tag = r.status==='accepted' ? '<span style="color:var(--green)">✓ followed</span>' :
+        r.status==='compromised' ? '<span style="color:var(--gold)">↔ compromised</span>' :
+        '<span style="color:var(--red)">✗ ignored</span>';
+      s += '<div class="sub" style="font-size:10.5px">'+esc(label)+' — '+tag+'</div>';
+    });
+    s += '</div>';
+  }
+  s += '</div>';
+  return s;
 }
 
 /* ---------- ask the owner for more staff budget ---------- */
@@ -911,6 +926,7 @@ function newCareer(teamIdx){
   }
   // street free agents
   for(let i=0;i<40;i++) G.fa.push(makePlayer(pick(POS_ORDER), R(55,74), RI(23,32), 0));
+  ensureFADepth();
   // career opens in the franchise-tag window: expiring deals are still on rosters
   hubTab = 'schedule'; faFilter = 'ALL';
   save(); render();
@@ -979,6 +995,17 @@ function openFreeAgency(){
   G.phase = 'fa'; faFilter = 'ALL'; faTeamFilter = 'FA';
   save(); render();
 }
+const FA_MIN_PER_POS = {QB:3, RB:4, WR:5, TE:3, OL:5, DL:5, LB:4, CB:4, S:3, K:2}; // guaranteed floor per position
+function ensureFADepth(){
+  POS_ORDER.forEach(pos => {
+    const have = G.fa.filter(p => p.pos === pos).length;
+    const floor = FA_MIN_PER_POS[pos] || 3;
+    for(let i = have; i < floor; i++){
+      // depth-tier only — a real prospect for a real need, but nobody's building a contender off the always-on shelf
+      G.fa.push(makePlayer(pos, R(52,70), RI(24,31), 0));
+    }
+  });
+}
 function runExpiry(){
   G.teams.forEach(t => {
     const isAI = t.idx !== G.userTeam;
@@ -1004,6 +1031,7 @@ function runExpiry(){
   });
   G.fa.sort((a,b) => b.rating - a.rating);
   if(G.fa.length > 150) G.fa.length = 150;
+  ensureFADepth();
 }
 function payroll(t){ return t.roster.reduce((s,p) => s + p.salary, 0); }
 function capRoom(t){ return CAP - payroll(t); }
@@ -1280,6 +1308,7 @@ function aiCutdowns(){
   });
   G.fa.sort((a,b) => b.rating - a.rating);
   if(G.fa.length > 150) G.fa.length = 150;
+  ensureFADepth();
 }
 function meetsMinimums(t){
   return POS_ORDER.every(pos => posCount(t,pos) >= MIN53[pos]);
@@ -1692,6 +1721,7 @@ function changePosition(pid, newPos){
   const penalty = RI(lo, hi);
   const before = p.rating;
   const oldPos = p.pos, oldSpot = p.spot;
+  if(!p.natPos) p.natPos = oldPos;
   p.pos = newPos;
   p.spot = SPOTS[newPos][0];
   p.rating = clamp(p.rating - penalty, 45, 99);
@@ -3046,6 +3076,56 @@ function sparkHTML(p){
     '<circle cx="'+xy[xy.length-1].split(',')[0]+'" cy="'+xy[xy.length-1].split(',')[1]+'" r="3.5" fill="var(--gold)"/></svg>' +
     '<p class="sub">'+start+' OVR at debut → <b style="color:var(--gold)">'+p.rating+'</b> today</p>';
 }
+function trainBtnHTML(p){
+  if(!meT().roster.includes(p)) return '';
+  const coach = posCoachOf(p.pos);
+  const cost = (coach && coach.rating >= 78) ? 1 : 2;
+  const canTrain = G.trainPts >= cost && p.trained < 5 && p.rating < 99;
+  return '<button class="btn tiny" '+(canTrain?'':'disabled')+' onclick="trainPlayer('+p.id+')" title="Costs '+cost+' train pt'+(cost>1?'s':'')+(coach&&coach.rating>=88?' · elite coach doubles the gain':'')+'">🏋️ Train</button> ';
+}
+function extendBtnHTML(p){
+  if(!meT().roster.includes(p)) return '';
+  return '<button class="btn tiny" onclick="openModal(\'extend\','+p.id+')">📝 Extend</button> ';
+}
+function positionBtnHTML(p){
+  if(!meT().roster.includes(p)) return '';
+  return '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">🔄 Position</button> ';
+}
+function cutBtnHTML(p){
+  if(!meT().roster.includes(p)) return '';
+  return '<button class="btn tiny danger" onclick="if(confirm(\'Release '+esc(p.name)+'? This cannot be undone.\'))cutPlayer('+p.id+')">✂ Cut</button> ';
+}
+function tradeBtnHTML(p, t){
+  if(!t || !tradesOpen()) return '';
+  return '<button class="btn tiny" onclick="openPlayerInTrade('+p.id+')">🔁 Trade</button> ';
+}
+function dressBtnHTML(p){
+  if(!meT().roster.includes(p) || G.phase!=='hub' || p.injWeeks>0) return '';
+  return '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'🪑 Sit':'👕 Dress')+'</button> ';
+}
+function irBtnHTML(p){
+  if(!meT().roster.includes(p) || G.phase!=='hub' || p.injWeeks<=0 || p.ir) return '';
+  return '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR — frees his roster spot">🏥 IR</button> ';
+}
+function openPlayerInTrade(pid){
+  const hit = findPlayer(pid);
+  if(!hit || !hit.t) return;
+  const p = hit.p, t = hit.t;
+  if(t.idx === G.userTeam){
+    const other = G.teams.find(x => x.idx !== G.userTeam);
+    tradeTeam = other.idx;
+    const cart = tradeCart(tradeTeam);
+    if(!cart.give.includes(p.id)) cart.give.push(p.id);
+  } else {
+    tradeTeam = t.idx;
+    const cart = tradeCart(tradeTeam);
+    if(!cart.get.includes(p.id)) cart.get.push(p.id);
+  }
+  openPage('gm');
+  setGMTab('trades');
+}
+let profileActionsOpen = false;
+function toggleProfileActions(){ profileActionsOpen = !profileActionsOpen; render(); }
 function profileHTML(pid){
   const hit = findPlayer(pid);
   if(!hit) return '<div class="panel"><p class="sub">Player not found — he may have retired.</p></div>';
@@ -3060,7 +3140,13 @@ function profileHTML(pid){
   [['bio','Bio'],['stats','Stats'],['contract','Contract & History'],['prog','Progression'],['rel','Relationships']].forEach(tb => {
     s += '<button class="fbtn'+(profileTab===tb[0]?' on':'')+'" onclick="setProfileTab(\''+tb[0]+'\')">'+tb[1]+'</button>';
   });
+  s += '<button class="fbtn'+(profileActionsOpen?' on':'')+'" onclick="toggleProfileActions()">⚡ Actions'+(profileActionsOpen?' ▲':' ▼')+'</button>';
   s += '</div>';
+  if(profileActionsOpen){
+    const allActions = trainBtnHTML(p) + extendBtnHTML(p) + positionBtnHTML(p) + tradeBtnHTML(p, t) + dressBtnHTML(p) + irBtnHTML(p) + cutBtnHTML(p);
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Actions</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' + (allActions.trim() ? allActions : '<p class="sub">Nothing you can do with him from here — he\'s not on your roster.</p>') + '</div></div>';
+  }
   if(profileTab === 'bio'){
     const homeClub = TEAM_DEFS.find(d => d.city === p.home.city);
     const isMyTown = p.home.city === meT().city;
@@ -3073,8 +3159,10 @@ function profileHTML(pid){
       '<tr><td class="sub">Discount</td><td>'+(discPct>0 ? '<span style="color:var(--green)">Willing to take <b>'+discPct+'% less</b> to stay home — applies to signings, re-signs, extensions, and the tag</span>' : (p.hometownDiscPct>0 ? '<span class="sub">Would give '+p.hometownDiscPct+'% off, but only for his hometown club — not this one</span>' : '<span class="sub">Not the sentimental type — signs at full market everywhere</span>'))+'</td></tr>' +
       '<tr><td class="sub">Height</td><td>'+hgtNote(p)+'</td></tr>' +
       '<tr><td class="sub">Age</td><td>'+p.age+(p.age<=25?' <span class="sub">— still developing</span>':(p.age>=30?' <span class="sub">— decline risk each offseason</span>':''))+'</td></tr>' +
-      ((p.pos==='DL'||p.pos==='LB') ? '<tr><td class="sub">Scheme</td><td>'+SCHEME_TAG[p.scheme]+(p.scheme==='any'?' — fits any front':' — takes −'+SCHEME_PENALTY+' in the other scheme')+'</td></tr>' : '') +
+      '<tr><td class="sub">Natural Position</td><td><b>'+(p.natPos||p.pos)+'</b>'+(p.natPos && p.natPos!==p.pos ? ' <span class="sub">— currently playing '+p.pos+' by request of the coaching staff</span>' : ' <span class="sub">— never been moved off it</span>')+'</td></tr>' +
+      '<tr><td class="sub">Scheme</td><td>'+schemeCell(p)+(p.pos==='DL'||p.pos==='LB' ? (p.scheme==='any'?' — fits any front':' — takes −'+SCHEME_PENALTY+' in the other scheme') : ' — not scheme-specific')+'</td></tr>' +
       '</table></div>';
+    if(meT().roster.includes(p)) s += '<div class="panel" style="margin-top:12px">' + positionBtnHTML(p) + '</div>';
   } else if(profileTab === 'stats'){
     const car = p.cst ? Object.assign(blankStats(), p.cst) : null;
     if(car && p.st) Object.keys(p.st).forEach(k => car[k] += p.st[k]);
@@ -3084,14 +3172,17 @@ function profileHTML(pid){
     const disc = hometownDisc(meT(), p);
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Current Deal</div>' +
       '<p class="sub" style="margin-top:4px"><b style="color:var(--chalk)">'+money(p.salary)+'</b>/yr · '+Math.max(p.years,0)+' yr'+(p.years!==1?'s':'')+' left'+(p.tagged?' · <span class="tag w">TAGGED</span>':'')+
-      '<br>Market value today: <b style="color:var(--gold)">'+money(marketFor(p))+'</b>/yr'+(disc<1?' → <b style="color:var(--green)">'+money(Math.round(marketFor(p)*disc*10)/10)+'</b> with the hometown discount':'')+'</p></div>';
+      '<br>Market value today: <b style="color:var(--gold)">'+money(marketFor(p))+'</b>/yr'+(disc<1?' → <b style="color:var(--green)">'+money(Math.round(marketFor(p)*disc*10)/10)+'</b> with the hometown discount':'')+'</p>' +
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + extendBtnHTML(p) + tradeBtnHTML(p, t) + cutBtnHTML(p) + '</div></div>';
     const evs = (p.history||[]).filter(e => e.k==='ct'||e.k==='move');
     s += '<div class="panel"><div class="hd disp" style="font-size:14px">Transaction History</div><table class="tbl">';
     if(!evs.length) s += '<tr><td class="sub">Nothing on file.</td></tr>';
     evs.slice().reverse().forEach(e => { s += '<tr><td class="sub" style="white-space:nowrap">'+e.y+'</td><td>'+esc(e.t)+'</td></tr>'; });
     s += '</table></div>';
   } else if(profileTab === 'prog'){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Rating Over Time</div>'+sparkHTML(p)+'</div>';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Rating Over Time</div>'+sparkHTML(p)+
+      (meT().roster.includes(p) ? '<div style="margin-top:8px">'+trainBtnHTML(p)+'<span class="sub">2 pts = +1 OVR normally, elite position coach cuts the cost or doubles the gain. Max +5/season.</span></div>' : '') +
+      '</div>';
     const evs = (p.history||[]).filter(e => e.k==='dev'||e.k==='inj');
     s += '<div class="panel"><div class="hd disp" style="font-size:14px">Development & Injury Log</div><table class="tbl">';
     if(!evs.length) s += '<tr><td class="sub">Nothing on file yet — training, camps, big games, and injuries all land here.</td></tr>';
@@ -3774,7 +3865,7 @@ function recsPanelHTML(){
   const recs = G.weeklyRecs || [];
   if(!recs.length) return '';
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Coaching Staff — Recommendations for This Week</div>' +
-    '<p class="sub" style="margin-top:2px">Accept, compromise, or reject. How you handle it moves your relationship with that coach.</p>';
+    '<p class="sub" style="margin-top:2px">This is how you keep promises to your staff: <b style="color:var(--green)">Accept</b> counts fully toward trust, <b style="color:var(--gold)">Compromise</b> counts half, <b style="color:var(--red)">Reject</b> — or just leaving one unanswered by kickoff — counts as ignoring them. Handle these before you start the game.</p>';
   recs.forEach(r => {
     if(r.status !== 'pending'){
       const tag = r.status==='accepted' ? '<span class="tag w">✓ Accepted</span>' : r.status==='compromised' ? '<span class="tag up">↔ Compromised</span>' : '<span class="tag l">✗ Rejected</span>';
@@ -4248,11 +4339,19 @@ function resetTradeCart(){
 }
 function setTradeTeam(i){ tradeTeam = i; tradeRosterOpen = {mine:false, theirs:false}; render(); }
 function toggleArr(arr, id){ const i = arr.indexOf(id); if(i>=0) arr.splice(i,1); else arr.push(id); }
-function toggleGive(pid){ toggleArr(tradeCart(tradeTeam).give, pid); clearTradeCounter(tradeTeam); save(); render(); }
+function toggleGive(pid){
+  const p = meT().roster.find(x => x.id === pid);
+  if(p && p.protectedAsset && !tradeCart(tradeTeam).give.includes(pid)){ alert(esc(p.name)+' is marked Protected — cycle his status off the trade block first if you really want to move him.'); return; }
+  toggleArr(tradeCart(tradeTeam).give, pid); clearTradeCounter(tradeTeam); save(); render();
+}
 function toggleGivePick(id){ toggleArr(tradeCart(tradeTeam).givePicks, id); clearTradeCounter(tradeTeam); save(); render(); }
-function toggleGet(pid){ toggleArr(tradeCart(tradeTeam).get, pid); clearTradeCounter(tradeTeam); save(); render(); }
+function toggleGet(pid){
+  const them = G.teams[tradeTeam];
+  const p = them && them.roster.find(x => x.id === pid);
+  if(p && isProtectedForTeam(p, them) && !tradeCart(tradeTeam).get.includes(pid)){ alert(esc(p.name)+' is a protected asset — '+esc(them.city)+' won\'t part with him at any price.'); return; }
+  toggleArr(tradeCart(tradeTeam).get, pid); clearTradeCounter(tradeTeam); save(); render();
+}
 function toggleGetPick(id){ toggleArr(tradeCart(tradeTeam).getPicks, id); clearTradeCounter(tradeTeam); save(); render(); }
-function toggleTradeRoster(which){ tradeRosterOpen[which] = !tradeRosterOpen[which]; render(); }
 function setTradeFilter(which, pos){ tradeFilterState[which] = pos; render(); }
 function setTradeSort(which, key){
   const s = tradeSortState[which];
@@ -4261,10 +4360,28 @@ function setTradeSort(which, key){
 }
 
 /* trade block — mark your own players available; AI availability is a light surplus-depth heuristic */
-function toggleBlock(pid){
+function cycleBlockStatus(pid){
   const p = meT().roster.find(x => x.id === pid);
-  if(p) p.onBlock = !p.onBlock;
+  if(!p) return;
+  if(p.onBlock){ p.onBlock = false; p.protectedAsset = true; }
+  else if(p.protectedAsset){ p.protectedAsset = false; }
+  else { p.onBlock = true; }
   save(); render();
+}
+function isProtectedForTeam(p, t){
+  if(t.idx === G.userTeam) return !!p.protectedAsset;
+  // AI: a genuine star, or their single best player if he's clearly good, is off the table
+  const best = t.roster.filter(x=>!x.ir).sort((a,b)=>b.rating-a.rating)[0];
+  return p.rating >= 88 || (best && best.id === p.id && p.rating >= 82);
+}
+function blockStatusHTML(p, t, interactive){
+  const prot = isProtectedForTeam(p, t);
+  const state = p.onBlock ? 'avail' : (prot ? 'prot' : 'neutral');
+  const label = state==='avail' ? '🎯 Available' : state==='prot' ? '🔒 Protected' : 'Tradeable';
+  const color = state==='avail' ? 'var(--gold)' : state==='prot' ? 'var(--red)' : 'var(--muted)';
+  const bg = state==='avail' ? 'rgba(255,212,71,.12)' : state==='prot' ? 'rgba(226,85,85,.12)' : 'transparent';
+  const click = interactive===false ? '' : ' onclick="cycleBlockStatus('+p.id+')"';
+  return '<span class="blockstate" style="color:'+color+';background:'+bg+';border:1px solid '+color+(interactive===false?';cursor:default':'')+'"'+click+'>'+label+'</span>';
 }
 function isOnBlock(p, t){
   if(t.idx === G.userTeam) return !!p.onBlock;
@@ -4475,7 +4592,7 @@ function posFilterOptionsHTML(){
     '<optgroup label="Linebacker"><option value="OLB">OLB</option><option value="MLB">MLB</option></optgroup>' +
     '<option value="CB">CB</option><option value="S">S</option><option value="K">K</option>';
 }
-function tradeRosterTableHTML(which, team, selectedIds, toggleFnName){
+function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock){
   const filter = tradeFilterState[which];
   const sort = tradeSortState[which];
   let pool = team.roster.filter(p => !p.ir);
@@ -4488,15 +4605,20 @@ function tradeRosterTableHTML(which, team, selectedIds, toggleFnName){
     return ((va - vb) || (b.rating - a.rating)) * sort.dir;
   });
   let s = '<div class="rosterctl" style="margin-bottom:8px"><select class="fselect" onchange="setTradeFilter(\''+which+'\', this.value)">' + posFilterOptionsHTML() + '</select></div>';
-  const cols = [['name','Player'],['spot','Pos'],['rating','OVR'],['salary','$']];
+  const cols = [['name','Player'],['rating','OVR'],['salary','$'],['status','Status']];
   s += '<table class="tbl"><tr>';
-  cols.forEach(c => { const on = sort.key===c[0]; s += '<th class="sorth'+(on?' on':'')+'" onclick="setTradeSort(\''+which+'\',\''+c[0]+'\')">'+c[1]+(on?(sort.dir>0?' ▲':' ▼'):'')+'</th>'; });
+  cols.forEach(c => {
+    if(c[0]==='status'){ s += '<th>Status</th>'; return; }
+    const on = sort.key===c[0]; s += '<th class="sorth'+(on?' on':'')+'" onclick="setTradeSort(\''+which+'\',\''+c[0]+'\')">'+c[1]+(on?(sort.dir>0?' ▲':' ▼'):'')+'</th>';
+  });
   s += '<th></th></tr>';
   if(!pool.length) s += '<tr><td colspan="5" class="sub">Nobody matches this filter.</td></tr>';
   pool.forEach(p => {
     const added = selectedIds.includes(p.id);
-    s += '<tr'+(added?' class="me"':'')+'><td>'+pn(p)+(isOnBlock(p,team)?' <span class="tag w" title="On the trade block">B</span>':'')+'</td><td><b>'+p.spot+'</b></td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(p.salary)+'</td>' +
-      '<td><button class="btn tiny'+(added?' primary':'')+'" onclick="'+toggleFnName+'('+p.id+')">'+(added?'✓ Added':'+ Add')+'</button></td></tr>';
+    const prot = isProtectedForTeam(p, team);
+    s += '<tr'+(added?' class="me"':'')+'><td>'+pn(p)+' <span class="sub">'+p.spot+'</span></td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(p.salary)+'</td>' +
+      '<td>'+blockStatusHTML(p, team, showBlock)+'</td>' +
+      '<td><button class="btn tiny'+(added?' primary':'')+'" '+(prot?'disabled title="Protected — not tradeable"':'')+' onclick="'+toggleFnName+'('+p.id+')">'+(added?'✓ Added':(prot?'🔒':'+ Add'))+'</button></td></tr>';
   });
   s += '</table>';
   const picks = G.draftPicks.filter(pk => pk.team === team.idx).sort((a,b)=>a.year-b.year||a.round-b.round);
@@ -4539,27 +4661,6 @@ function offersBarHTML(){
   return s;
 }
 function toggleOffersBar(){ G.offersBarOpen = !G.offersBarOpen; save(); render(); }
-function tradeBlockPanelHTML(me){
-  let s = '<div class="panel"><div class="hd disp" style="font-size:14px">🎯 Your Trade Block</div>' +
-    '<p class="sub" style="margin-bottom:8px">Mark players available — other teams see this and are more likely to come to you.</p>';
-  const eligible = me.roster.filter(p => !p.ir).sort((a,b) => (b.onBlock?1:0)-(a.onBlock?1:0) || b.rating-a.rating).slice(0,10);
-  eligible.forEach(p => {
-    s += '<div class="blockrow"><span>'+pn(p)+' <span class="sub">'+p.spot+' · '+p.rating+' OVR</span></span>' +
-      '<div class="trade-toggle'+(p.onBlock?' on':'')+'" onclick="toggleBlock('+p.id+')"><i></i></div></div>';
-  });
-  s += '</div>';
-  return s;
-}
-function theirBlockPanelHTML(them){
-  const block = them.roster.filter(p => isOnBlock(p, them)).sort((a,b)=>b.rating-a.rating).slice(0,8);
-  let s = '<div class="panel"><div class="hd disp" style="font-size:14px">Their Trade Block</div>';
-  if(!block.length) s += '<p class="sub">Nothing publicly available right now.</p>';
-  block.forEach(p => {
-    s += '<div class="blockrow"><span>'+pn(p)+' <span class="sub">'+p.spot+' · '+p.rating+'</span></span><span class="tag w">Available</span></div>';
-  });
-  s += '</div>';
-  return s;
-}
 function tradeHTML(){
   const me = meT();
   if(!tradesOpen()){
@@ -4587,10 +4688,10 @@ function tradeHTML(){
   // LEFT: my team
   s += '<div>';
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">'+esc(me.city+' '+me.name)+' (You)</div>' +
-    '<p class="sub" style="margin-top:2px">'+me.w+'-'+me.l+'</p><p class="sub" style="margin-top:2px">Cap room: <b style="color:var(--chalk)">'+money(capRoom(me))+'</b></p>' +
-    '<button class="btn tiny" style="margin-top:8px;width:100%" onclick="toggleTradeRoster(\'mine\')">📋 View Full Roster</button>' +
-    '<div class="rosterpanel'+(tradeRosterOpen.mine?' open':'')+'">' + tradeRosterTableHTML('mine', me, cart.give, 'toggleGive') + '</div></div>';
-  s += tradeBlockPanelHTML(me);
+    '<p class="sub" style="margin-top:2px">'+me.w+'-'+me.l+'</p><p class="sub" style="margin-top:2px">Cap room: <b style="color:var(--chalk)">'+money(capRoom(me))+'</b></p></div>';
+  s += '<div class="panel"><div class="hd disp" style="font-size:14px">🎯 Your Roster &amp; Trade Block</div>' +
+    '<p class="sub" style="margin-bottom:8px">Tap Status to cycle a player: <b style="color:var(--muted)">Tradeable</b> (default) → <b style="color:var(--gold)">🎯 Available</b> (other teams see this and are more likely to come to you) → <b style="color:var(--red)">🔒 Protected</b> (can never be traded, even by you, until you cycle him off it).</p>' +
+    tradeRosterTableHTML('mine', me, cart.give, 'toggleGive', true) + '</div>';
   s += '</div>';
 
   // CENTER: negotiation
@@ -4636,10 +4737,10 @@ function tradeHTML(){
   s += '<div class="panel" style="margin-bottom:12px"><select class="fselect" style="width:100%;text-align:center;padding:8px;font-size:13px" onchange="setTradeTeam(parseInt(this.value))">';
   G.teams.forEach(t => { if(t.idx===G.userTeam) return; s += '<option value="'+t.idx+'" '+(t.idx===tradeTeam?'selected':'')+'>'+esc(t.city+' '+t.name)+'</option>'; });
   s += '</select>' +
-    '<p class="sub" style="margin-top:6px">'+them.w+'-'+them.l+'</p><p class="sub" style="margin-top:2px">Needs: <b style="color:var(--gold)">'+(need||'nothing')+'</b></p>' +
-    '<button class="btn tiny" style="margin-top:8px;width:100%" onclick="toggleTradeRoster(\'theirs\')">📋 View Full Roster</button>' +
-    '<div class="rosterpanel'+(tradeRosterOpen.theirs?' open':'')+'">' + tradeRosterTableHTML('theirs', them, cart.get, 'toggleGet') + '</div></div>';
-  s += theirBlockPanelHTML(them);
+    '<p class="sub" style="margin-top:6px">'+them.w+'-'+them.l+'</p><p class="sub" style="margin-top:2px">Needs: <b style="color:var(--gold)">'+(need||'nothing')+'</b></p></div>';
+  s += '<div class="panel"><div class="hd disp" style="font-size:14px">🎯 Their Roster &amp; Trade Block</div>' +
+    '<p class="sub" style="margin-bottom:8px">You can offer for anyone here except a <b style="color:var(--red)">🔒 Protected</b> player — teams keep their true cornerstones off the table no matter what you put up.</p>' +
+    tradeRosterTableHTML('theirs', them, cart.get, 'toggleGet', false) + '</div>';
   s += '</div>';
 
   s += '</div>';
