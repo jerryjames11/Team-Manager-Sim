@@ -151,6 +151,9 @@ table.tbl tr:last-child td{border-bottom:none}
 @media(min-width:900px){ .dash-grid{grid-template-columns:280px 1fr 280px} }
 .dash-feed, .dash-side{display:flex;flex-direction:column;gap:12px}
 .dash-center{display:flex;flex-direction:column;gap:12px}
+.player-grid{display:grid;grid-template-columns:1fr;gap:10px}
+@media(min-width:640px){ .player-grid{grid-template-columns:1fr 1fr} }
+.player-grid .full{grid-column:1/-1}
 .feeditem{display:flex;gap:8px;padding:9px 0;border-bottom:1px solid #202A3C}
 .feeditem:last-child{border-bottom:none}
 .feeditem .ic{font-size:15px;flex-shrink:0}
@@ -165,6 +168,8 @@ table.tbl tr:last-child td{border-bottom:none}
 .dash-calday .lbl{color:var(--muted);font-size:10px;margin-bottom:4px;text-align:center}
 .dash-calday .box{background:var(--panel2);border-radius:6px;height:34px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted)}
 .dash-calday .box.game{background:var(--gold);color:#14100A}
+.dash-calday .box.practice{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.dash-calday .box.rest{background:rgba(76,175,110,.18);color:var(--green);border:1px solid var(--green)}
 .dash-fixrow{display:flex;justify-content:space-between;font-size:11.5px;padding:6px 0;border-bottom:1px solid #202A3C}
 .dash-fixrow:last-child{border-bottom:none}
 .dash-standrow{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:6px 0;border-bottom:1px solid #202A3C}
@@ -1109,7 +1114,12 @@ function runExpiry(){
 }
 /* ---------- contract structure: base salary + prorated signing bonus, NFL-style ---------- */
 function contractOf(p){
-  if(!p.contract) p.contract = { base: Array(Math.max(p.years,1)).fill(p.salary), bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0 };
+  if(!p.contract || p.contract.base.length !== p.years){
+    // no contract on file, or it's fallen out of sync with years/salary (e.g. an informal re-sign
+    // that changed years/salary directly) — rebuild a clean flat deal from the current numbers rather
+    // than let a stale/mismatched array silently produce a wrong (or zero) salary down the line
+    p.contract = { base: Array(Math.max(p.years,1)).fill(p.salary), bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0 };
+  }
   return p.contract;
 }
 function deadCapCharge(p){
@@ -1511,11 +1521,12 @@ function applyResult(res){
   if(res.as > res.bs){ A.w++; B.l++; } else { B.w++; A.l++; }
 }
 function userGame(){
-  const wk = G.schedule[G.week-1];
+  const wk = G.schedule && G.schedule[G.week-1];
+  if(!wk) return null;
   return wk.find(g => g.a === G.userTeam || g.b === G.userTeam);
 }
 /* ---------- player stats, stat-driven development, market value ---------- */
-function blankStats(){ return {gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,fgm:0}; }
+function blankStats(){ return {gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0}; }
 function stOf(p){ if(!p.st) p.st = blankStats(); return p.st; }
 function statScore(p){
   const s = p.st; if(!s) return 0;
@@ -1581,12 +1592,29 @@ function buildGameReport(ga, gb, asScore, bsScore, snap, myRisers, injury){
   });
   return report;
 }
+function statPointsForPlayer(pos, gl){
+  if(pos === 'QB'){
+    const yds = gl.py||0;
+    return (yds >= 200 ? Math.floor(yds/100) - 1 : 0) + (gl.ptd||0);
+  }
+  if(pos === 'RB' || pos === 'WR' || pos === 'TE'){
+    const yds = (gl.ry||0) + (gl.cy||0);
+    const tds = (gl.rtd||0) + (gl.ctd||0);
+    return Math.floor(yds/100) + tds;
+  }
+  if(pos === 'K') return Math.floor((gl.fgm||0)/2); // not specified — extrapolated to match the volume-based pattern of the rest
+  const turnoverPts = (gl.int||0) + (gl.sk||0) + (gl.ff||0);
+  if(pos === 'LB') return Math.floor((gl.tk||0)/3) + turnoverPts;
+  return Math.floor((gl.tk||0)/2) + turnoverPts; // DL, CB, S, and anyone else on D
+}
 function recordGameStats(ai, bi, as, bs){
   const risers = [];
-  function checkPlayerHot(p, hot){
-    if(hot && G.mode === 'player' && G.playerId && p.id === G.playerId){
-      G.trainPts = (G.trainPts||0) + 3;
-      logEv(p, 'dev', 'Excellent game — earned 3 training points', 0);
+  let myGamePlayed = false;
+  const myGameLine = {py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0};
+  function trackMe(p, delta){
+    if(G.mode === 'player' && G.playerId && p.id === G.playerId){
+      myGamePlayed = true;
+      Object.keys(delta).forEach(k => { myGameLine[k] = (myGameLine[k]||0) + delta[k]; });
     }
   }
   [[ai,as,bi],[bi,bs,ai]].forEach(([ti,pts,oi]) => {
@@ -1602,7 +1630,7 @@ function recordGameStats(ai, bi, as, bs){
     let ptd = 0, rtd = 0;
     for(let i=0;i<tds;i++){ if(Math.random() < passYd/(passYd+rushYd*1.4)) ptd++; else rtd++; }
     const qb = at('QB')[0], rbs = at('RB'), recvs = at('WR').concat(at('TE'));
-    if(qb){ const s=stOf(qb); s.gp++; s.py+=passYd; s.ptd+=ptd; const hot = passYd>=290||ptd>=4; checkPlayerHot(qb, hot); if(bumpDev(qb, hot)) risers.push(qb); }
+    if(qb){ const s=stOf(qb); s.gp++; s.py+=passYd; s.ptd+=ptd; const hot = passYd>=290||ptd>=4; trackMe(qb, {py:passYd, ptd:ptd}); if(bumpDev(qb, hot)) risers.push(qb); }
     // rushing: RB1 heavy, sprinkle to RB2/QB
     const rushers = rbs.length ? rbs.slice(0,2) : (qb ? [qb] : []);
     if(rushers.length){
@@ -1610,7 +1638,7 @@ function recordGameStats(ai, bi, as, bs){
       rushers.forEach((p,i) => {
         const yd = Math.round(rushYd*cuts[i]); const s=stOf(p); if(p!==qb) s.gp++;
         s.ry+=yd; const myTd = (i===0)? rtd : 0; s.rtd+=myTd;
-        const hot = yd>=115||myTd>=2; checkPlayerHot(p, hot);
+        const hot = yd>=115||myTd>=2; trackMe(p, {ry:yd, rtd:myTd});
         if(bumpDev(p, hot)) risers.push(p);
       });
     }
@@ -1620,7 +1648,7 @@ function recordGameStats(ai, bi, as, bs){
     recvs.forEach((p,i) => {
       const yd = Math.round(recYds[i]); const s=stOf(p); s.gp++;
       s.cy+=yd; const myTd = (p===tdOwner)? ptd : 0; s.ctd+=myTd;
-      const hot = yd>=100||myTd>=2; checkPlayerHot(p, hot);
+      const hot = yd>=100||myTd>=2; trackMe(p, {cy:yd, ctd:myTd});
       if(bumpDev(p, hot)) risers.push(p);
     });
     // defense
@@ -1630,20 +1658,38 @@ function recordGameStats(ai, bi, as, bs){
       shareOut(tackles*cut, grp, .4).forEach((v,i) => {
         const p = grp[i], s = stOf(p); s.gp++;
         const tk = Math.round(v); s.tk += tk;
-        const hot = tk>=11; checkPlayerHot(p, hot);
+        const hot = tk>=11; trackMe(p, {tk:tk});
         if(bumpDev(p, hot)) risers.push(p);
       });
     });
     const rushersD = dls.concat(lbs.filter(p=>p.spot==='OLB'));
     let sacks = clamp(Math.round(R(0,4.4) * (1 + (defPass(t)-offPass(o))/80)), 0, 7);
-    while(sacks-- > 0 && rushersD.length){ const p = pick(rushersD), s = stOf(p); s.sk++; const hot = Math.random()<.35; checkPlayerHot(p, hot); if(bumpDev(p, hot)) risers.push(p); }
+    while(sacks-- > 0 && rushersD.length){ const p = pick(rushersD), s = stOf(p); s.sk++; const hot = Math.random()<.35; trackMe(p, {sk:1}); if(bumpDev(p, hot)) risers.push(p); }
     let ints = Math.random() < .38 ? RI(1, 2) : 0;
     const balls = cbs.concat(ss);
-    while(ints-- > 0 && balls.length){ const p = pick(balls), s = stOf(p); s.int++; const hot = Math.random()<.6; checkPlayerHot(p, hot); if(bumpDev(p, hot)) risers.push(p); }
+    while(ints-- > 0 && balls.length){ const p = pick(balls), s = stOf(p); s.int++; const hot = Math.random()<.6; trackMe(p, {int:1}); if(bumpDev(p, hot)) risers.push(p); }
+    // forced fumbles — a real defensive stat, roughly one per team every couple games
+    let ffs = Math.random() < .4 ? 1 : 0;
+    const ffPool = dls.concat(lbs, cbs, ss);
+    while(ffs-- > 0 && ffPool.length){ const p = pick(ffPool), s = stOf(p); s.ff = (s.ff||0) + 1; trackMe(p, {ff:1}); }
     // kicker
     const k = depthAt(t,'K')[0];
-    if(k){ const s = stOf(k); s.gp++; s.fgm += fgs; const hot = fgs>=4; checkPlayerHot(k, hot); if(bumpDev(k, hot)) risers.push(k); }
+    if(k){ const s = stOf(k); s.gp++; s.fgm += fgs; const hot = fgs>=4; trackMe(k, {fgm:fgs}); if(bumpDev(k, hot)) risers.push(k); }
   });
+  if(G.mode === 'player' && G.playerId){
+    G.playerGamePlayed = myGamePlayed;
+    if(myGamePlayed){
+      const myP = mePlayer();
+      const gamePts = myP ? statPointsForPlayer(myP.pos, myGameLine) : 0;
+      G.trainPts = (G.trainPts||0) + gamePts;
+      if(gamePts > 0){
+        G.confidence = clamp(G.confidence + Math.min(gamePts*2, 16), 0, 100);
+        if(myP) logEv(myP, 'dev', 'Earned '+gamePts+' training point'+(gamePts!==1?'s':'')+' from this game', 0);
+      } else {
+        G.confidence = clamp(G.confidence - 1, 0, 100);
+      }
+    }
+  }
   return risers;
 }
 function finishWeek(userRes){
@@ -1668,8 +1714,25 @@ function finishWeek(userRes){
   G.results.push(results);
   const me = meT();
   const won = (userRes.a === G.userTeam) ? userRes.as > userRes.bs : userRes.bs > userRes.as;
-  if(G.mode !== 'player') G.trainPts += won ? 3 : 1;
-  G.confidence = clamp(G.confidence + (won ? 4 : -4), 0, 100);
+  if(G.mode !== 'player'){
+    G.trainPts += won ? 3 : 1;
+    G.confidence = clamp(G.confidence + (won ? 4 : -4), 0, 100);
+  } else if(!G.playerGamePlayed){
+    // position isn't individually tracked in the sim (e.g. OL) — fall back to a smaller team-outcome nudge
+    G.confidence = clamp(G.confidence + (won ? 2 : -2), 0, 100);
+  }
+  if(G.mode === 'player' && G.playerId){
+    const myP = mePlayer();
+    if(myP){
+      if(myP.fatigue === undefined) myP.fatigue = 0;
+      const plan = G.playerWeekPlan || [null,null,null,null,null];
+      plan.forEach(day => { myP.fatigue += (day === 'rest') ? -8 : 4; });
+      if(G.playerGamePlayed) myP.fatigue += 15;
+      myP.fatigue = clamp(myP.fatigue, 0, 100);
+    }
+    // deliberately NOT reset — last week's practice/rest plan carries forward as a standing schedule
+    // until the player changes it, rather than needing to be re-set every single week
+  }
   G.career[won ? 'w' : 'l']++;
   me.roster.forEach(p => {
     ensureBio(p);
@@ -1692,7 +1755,15 @@ function finishWeek(userRes){
   if(Math.random() < .22){
     const dressedHealthy = me.roster.filter(p => p.injWeeks === 0 && p.dressed !== false && p.pos !== 'K');
     if(dressedHealthy.length){
-      const p = pick(dressedHealthy);
+      let pool = dressedHealthy;
+      if(G.mode === 'player' && G.playerId){
+        const myP = dressedHealthy.find(p => p.id === G.playerId);
+        if(myP && (myP.fatigue||0) >= 50){
+          const extra = (myP.fatigue||0) >= 75 ? 4 : 2;
+          pool = dressedHealthy.concat(Array(extra).fill(myP));
+        }
+      }
+      const p = pick(pool);
       p.injWeeks = RI(1,4);
       G.lastInjury = p;
       logEv(p, 'inj', 'Injured — out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''), 0);
@@ -1720,8 +1791,8 @@ function buildPlayoffs(){
   G.phase = 'playoffs';
   const s0 = confSeeds(0), s1 = confSeeds(1);
   const berth = s0.includes(G.userTeam) || s1.includes(G.userTeam);
-  if(berth){ G.career.berths++; G.confidence = clamp(G.confidence + 10, 0, 100); }
-  else G.confidence = clamp(G.confidence - 8, 0, 100);
+  if(berth){ G.career.berths++; if(G.mode !== 'player') G.confidence = clamp(G.confidence + 10, 0, 100); }
+  else if(G.mode !== 'player') G.confidence = clamp(G.confidence - 8, 0, 100);
   G.playoffs = {
     round: 1, userIn: berth,
     r1: [ {a:s0[0], b:s0[3], done:false}, {a:s0[1], b:s0[2], done:false},
@@ -1767,8 +1838,12 @@ function recordPlayoffUserResult(res){
   G.lastGameReport = g.report;
   const won = g.winner === G.userTeam;
   const isChamp = P.round === 3; // Apex Bowl
-  if(G.mode !== 'player') G.trainPts += won ? (isChamp ? 7 : 5) : (isChamp ? 3 : 2);
-  G.confidence = clamp(G.confidence + (won ? 6 : -3), 0, 100);
+  if(G.mode !== 'player'){
+    G.trainPts += won ? (isChamp ? 7 : 5) : (isChamp ? 3 : 2);
+    G.confidence = clamp(G.confidence + (won ? 6 : -3), 0, 100);
+  } else if(!G.playerGamePlayed){
+    G.confidence = clamp(G.confidence + (won ? 3 : -3), 0, 100);
+  }
   G.career[won ? 'w' : 'l']++;
   simPlayoffRound();
 }
@@ -1785,7 +1860,7 @@ function advancePlayoffRound(){
     P.champion = P.r3[0].winner;
     if(P.champion === G.userTeam){
       G.career.titles++;
-      G.confidence = clamp(G.confidence + 18, 0, 100);
+      if(G.mode !== 'player') G.confidence = clamp(G.confidence + 18, 0, 100);
     }
     G.phase = 'offseason';
   }
@@ -2021,7 +2096,12 @@ function advanceToTag(){
   }
   // league-wide aging, progression, retirement
   const develop = p => {
+    const endRating = p.rating, endAge = p.age; // rating/age as the season that just ended
     p.age++;
+    if(endRating > 95 && endAge > 25){
+      p.rating = clamp(p.rating - 10, 50, 99);
+      logEv(p, 'dev', 'League catches up — regression after elite '+endRating+' OVR season', p.rating - endRating);
+    }
     const before = p.rating;
     if(p.age <= 25) p.rating += RI(0,3);
     else if(p.age <= 29) p.rating += RI(-1,2);
@@ -2039,13 +2119,21 @@ function advanceToTag(){
     if(p.st){ if(!p.cst) p.cst = blankStats(); Object.keys(p.st).forEach(k => p.cst[k] += p.st[k]); }
     p.lastScore = statScore(p); p.st = null; p.devPts = 0; p.statDev = 0;
   };
+  if(G.mode === 'player' && G.playerId){
+    const myP = mePlayer();
+    if(myP){
+      if(!G.playerEarnings) G.playerEarnings = [];
+      G.playerEarnings.push({ year: G.year, team: meT().city+' '+meT().name, salary: myP.salary });
+    }
+    G.playerGrievanceUsed = false;
+  }
   G.teams.forEach(t => {
     t.roster.forEach(develop);
     t.roster = t.roster.filter(p => !(p.age >= 33 && Math.random() < (p.age-32)*.25) && !(p.rating <= 54 && Math.random() < .4));
     t.roster.forEach(p => {
       if(!p.resigned){
+        const c = contractOf(p); // lazy-init BEFORE decrementing — must see the correct pre-decrement years for a first-time rollover
         p.years--;
-        const c = contractOf(p);
         c.base.shift();
         if(c.bonusYearsLeft > 0) c.bonusYearsLeft--;
         p.salary = Math.round(((c.base[0]||0) + (c.bonusYearsLeft > 0 ? c.bonusProration : 0)) * 10) / 10;
@@ -3321,9 +3409,9 @@ function sparkHTML(p){
 }
 function trainBtnHTML(p){
   if(!meT().roster.includes(p)) return '';
-  const cost = G.mode === 'player' ? 3 : ((posCoachOf(p.pos) && posCoachOf(p.pos).rating >= 78) ? 1 : 2);
+  const cost = G.mode === 'player' ? playerTrainCost(p.rating) : ((posCoachOf(p.pos) && posCoachOf(p.pos).rating >= 78) ? 1 : 2);
   const canTrain = G.trainPts >= cost && p.trained < 5 && p.rating < 99;
-  const title = G.mode === 'player' ? 'Costs 3 train pts for +1 OVR — earned by playing excellent games' :
+  const title = G.mode === 'player' ? 'Costs '+cost+' train pts for +1 OVR at his current '+p.rating+' OVR tier — earned from your own game performance' :
     'Costs '+cost+' train pt'+(cost>1?'s':'')+(posCoachOf(p.pos)&&posCoachOf(p.pos).rating>=88?' · elite coach doubles the gain':'');
   return '<button class="btn tiny" '+(canTrain?'':'disabled')+' onclick="trainPlayer('+p.id+')" title="'+title+'">🏋️ Train</button> ';
 }
@@ -3391,7 +3479,7 @@ function profileHTML(pid){
   s += '<button class="fbtn'+(profileActionsOpen?' on':'')+'" onclick="toggleProfileActions()">⚡ Actions'+(profileActionsOpen?' ▲':' ▼')+'</button>';
   s += '</div>';
   if(profileActionsOpen){
-    const allActions = trainBtnHTML(p) + extendBtnHTML(p) + tagBtnHTML(p) + positionBtnHTML(p) + tradeBtnHTML(p, t) + dressBtnHTML(p) + irBtnHTML(p) + cutBtnHTML(p);
+    const allActions = trainBtnHTML(p) + mentorBtnHTML(p) + recoveryBtnHTML(p) + moraleBtnHTML(p) + extendBtnHTML(p) + tagBtnHTML(p) + positionBtnHTML(p) + tradeBtnHTML(p, t) + dressBtnHTML(p) + irBtnHTML(p) + cutBtnHTML(p);
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Actions</div>' +
       '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' + (allActions.trim() ? allActions : '<p class="sub">Nothing you can do with him from here — he\'s not on your roster.</p>') + '</div></div>';
   }
@@ -3433,7 +3521,7 @@ function profileHTML(pid){
     s += '</table></div>';
   } else if(profileTab === 'prog'){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Rating Over Time</div>'+sparkHTML(p)+
-      (meT().roster.includes(p) ? '<div style="margin-top:8px">'+trainBtnHTML(p)+'<span class="sub">'+(G.mode==='player'?'3 pts = +1 OVR. Earn points by playing excellent games — no other source.':'2 pts = +1 OVR normally, elite position coach cuts the cost or doubles the gain.')+' Max +5/season.</span></div>' : '') +
+      (meT().roster.includes(p) ? '<div style="margin-top:8px">'+trainBtnHTML(p)+mentorBtnHTML(p)+'<span class="sub">'+(G.mode==='player'?playerTrainCost(p.rating)+' pts = +1 OVR at his current '+p.rating+' OVR (2 pts if mentored by you instead, teammates under 25 or younger than you only). Earn points from your own game stats (yards/TDs/tackles/turnovers), plus camp and the offseason — or spend them on recovery/morale from his profile.':'2 pts = +1 OVR normally, elite position coach cuts the cost or doubles the gain.')+' Max +5/season.</span></div>' : '') +
       '</div>';
     const evs = (p.history||[]).filter(e => e.k==='dev'||e.k==='inj');
     s += '<div class="panel"><div class="hd disp" style="font-size:14px">Development & Injury Log</div><table class="tbl">';
@@ -3489,9 +3577,10 @@ function relBarHTML(v){
   return '<div class="capbar" style="margin-top:2px"><i style="width:'+v+'%;background:'+c+'"></i></div>' +
     '<p class="sub" style="margin-top:2px;font-size:11px">'+v+'/100 · <b style="color:'+c+'">'+relTier(v)+'</b></p>';
 }
+function goToHub(){ G.activePage = null; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function navHTML(){
   const items = [['roster','📋 Roster'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','💼 GM\'s Office'],['league','🏆 League']];
-  let s = '<div class="navbar">';
+  let s = '<div class="navbar"><button class="navbtn'+(!G.activePage?' on':'')+'" onclick="goToHub()">🏠 Hub</button>';
   items.forEach(it => {
     s += '<button class="navbtn'+(G.activePage===it[0]?' on':'')+'" onclick="navTo(\''+it[0]+'\')">'+it[1]+'</button>';
   });
@@ -3547,27 +3636,36 @@ function render(){
   document.documentElement.style.setProperty('--team', (G.userTeam != null ? meT().c1 : '#FFD447'));
   let body = '';
   const canBrowsePages = G.phase !== 'game' && G.phase !== 'fired';
-  if(canBrowsePages && G.activePage){
-    body = pageChromeHTML(G.activePage);
+  try {
+    if(canBrowsePages && G.activePage){
+      body = pageChromeHTML(G.activePage);
+    }
+    else if(G.mode === 'owner' && G.phase !== 'fired'){
+      body = timelineHTML() + '<div class="phase-body">' + ownerDashboardHTML() + '</div>';
+    }
+    else if(G.mode === 'player' && G.phase !== 'fired'){
+      body = timelineHTML() + '<div class="phase-body">' + playerDashboardHTML() + '</div>';
+    }
+    else if(G.phase==='hub') body = timelineHTML() + hubHTML();
+    else if(G.phase==='game') body = gameHTML();
+    else if(G.phase==='tag') body = timelineHTML() + '<div class="phase-body">' + tagHTML() + '</div>';
+    else if(G.phase==='fa') body = timelineHTML() + '<div class="phase-body">' + faHTML() + '</div>';
+    else if(G.phase==='draft') body = timelineHTML() + '<div class="phase-body">' + draftHTML() + '</div>';
+    else if(G.phase==='ota') body = timelineHTML() + '<div class="phase-body">' + otaHTML() + '</div>';
+    else if(G.phase==='camp') body = timelineHTML() + '<div class="phase-body">' + campHTML() + '</div>';
+    else if(G.phase==='preseason') body = timelineHTML() + '<div class="phase-body">' + preseasonHTML() + '</div>';
+    else if(G.phase==='cutdown') body = timelineHTML() + '<div class="phase-body">' + cutdownHTML() + '</div>';
+    else if(G.phase==='playoffs') body = timelineHTML() + '<div class="phase-body">' + playoffsHTML() + '</div>';
+    else if(G.phase==='offseason') body = timelineHTML() + '<div class="phase-body">' + offseasonHTML() + '</div>';
+    else if(G.phase==='fired'){ modalView = null; modalArg = null; app.innerHTML = firedHTML(); return; }
+  } catch(err) {
+    // a single page's content threw — don't leave the whole app stuck on a blank/stale screen.
+    // Drop back to the hub/dashboard and surface a plain message, with navigation still working.
+    console.error('Page render failed, recovering:', err);
+    G.activePage = null;
+    body = '<div class="panel" style="border-color:var(--red)"><div class="hd disp" style="color:var(--red)">Something went wrong loading that page</div>' +
+      '<p class="sub">No progress was lost — your last save is intact. Try a different page from the nav above, or use Quit to Menu in Front Office.</p></div>';
   }
-  else if(G.mode === 'owner' && G.phase !== 'fired'){
-    body = timelineHTML() + '<div class="phase-body">' + ownerDashboardHTML() + '</div>';
-  }
-  else if(G.mode === 'player' && G.phase !== 'fired'){
-    body = timelineHTML() + '<div class="phase-body">' + playerDashboardHTML() + '</div>';
-  }
-  else if(G.phase==='hub') body = timelineHTML() + hubHTML();
-  else if(G.phase==='game') body = gameHTML();
-  else if(G.phase==='tag') body = timelineHTML() + '<div class="phase-body">' + tagHTML() + '</div>';
-  else if(G.phase==='fa') body = timelineHTML() + '<div class="phase-body">' + faHTML() + '</div>';
-  else if(G.phase==='draft') body = timelineHTML() + '<div class="phase-body">' + draftHTML() + '</div>';
-  else if(G.phase==='ota') body = timelineHTML() + '<div class="phase-body">' + otaHTML() + '</div>';
-  else if(G.phase==='camp') body = timelineHTML() + '<div class="phase-body">' + campHTML() + '</div>';
-  else if(G.phase==='preseason') body = timelineHTML() + '<div class="phase-body">' + preseasonHTML() + '</div>';
-  else if(G.phase==='cutdown') body = timelineHTML() + '<div class="phase-body">' + cutdownHTML() + '</div>';
-  else if(G.phase==='playoffs') body = timelineHTML() + '<div class="phase-body">' + playoffsHTML() + '</div>';
-  else if(G.phase==='offseason') body = timelineHTML() + '<div class="phase-body">' + offseasonHTML() + '</div>';
-  else if(G.phase==='fired'){ modalView = null; modalArg = null; app.innerHTML = firedHTML(); return; }
   const nav = (G.phase === 'game' || G.userTeam == null) ? '' : navHTML();
   app.innerHTML = headerHTML() + nav + body + modalHTML() + posPopupHTML();
   if(G.phase==='game'){ drawFormation(); renderLog(); updateGameUI(); }
@@ -3834,6 +3932,7 @@ function gmFreeAgentsHTML(){
   return s;
 }
 function gmOfficeHTML(){
+  if(G.mode === 'player') return playerGMOfficeHTML();
   let s = '<div class="filterbar" style="margin-bottom:12px">';
   [['fa','Free Agents'],['trades','Trades']].forEach(t => {
     s += '<button class="fbtn'+(gmTab===t[0]?' on':'')+'" onclick="setGMTab(\''+t[0]+'\')">'+t[1]+'</button>';
@@ -3842,6 +3941,92 @@ function gmOfficeHTML(){
   if(gmTab==='fa') s += gmFreeAgentsHTML();
   else if(gmTab==='trades') s += tradeHTML();
   return s;
+}
+function playerGMOfficeHTML(){
+  const myP = mePlayer();
+  const me = meT();
+  if(!myP) return '<div class="panel"><p class="sub">Between teams right now — nothing to manage here.</p></div>';
+  let s = '';
+
+  // trade rumors — passive, informational
+  const interested = interestedTeams(myP);
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Trade Rumors</div>';
+  if(!interested.length) s += '<p class="sub">Nothing circulating right now — no clubs have shown real interest.</p>';
+  else {
+    s += '<p class="sub">Word is these clubs have checked in on you:</p>';
+    interested.forEach(idx => { const t = G.teams[idx]; s += '<div class="dash-fixrow"><span>'+esc(t.city+' '+t.name)+'</span><span class="sub">need at '+myP.spot+'</span></div>'; });
+  }
+  s += '</div>';
+
+  // request trade
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Request a Trade</div>' +
+    '<p class="sub">Ask your agent to make it known you\'d welcome a move. Doesn\'t force anything — it just makes '+esc(me.city)+' more likely to listen when a real offer comes in.</p>' +
+    (myP.onBlock
+      ? '<p class="sub" style="color:var(--gold);margin-top:6px">🎯 Your camp has already put the word out.</p>'
+      : '<button class="btn" style="margin-top:6px" onclick="requestTrade()">Put In a Trade Request</button>') +
+    '</div>';
+
+  // request release
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Request Your Release</div>' +
+    '<p class="sub">Walk away from what\'s left on your deal and hit the open market immediately. Teams know you left money on the table to do it — expect lighter offers than testing free agency the normal way.</p>' +
+    '<button class="btn danger" style="margin-top:6px" onclick="requestRelease()">Ask to Be Released</button></div>';
+
+  // grievance
+  const isStarter = playerIsStarter(me, myP);
+  s += '<div class="panel"><div class="hd disp">File a Grievance</div>';
+  if(G.playerGrievanceUsed){
+    s += '<p class="sub">You\'ve already had your one conversation with management this season.</p>';
+  } else if(isStarter){
+    s += '<p class="sub">You\'re starting — nothing to grieve right now.</p>';
+  } else {
+    s += '<p class="sub">You\'re buried on the depth chart despite the work you\'ve put in. Take it to management — could get you a bigger role, could go nowhere.</p>' +
+      '<button class="btn" style="margin-top:6px" onclick="fileGrievance()">Request a Meeting</button>';
+  }
+  s += '</div>';
+  return s;
+}
+function playerIsStarter(t, p){
+  const isOff = ['QB','RB','WR','TE','OL'].includes(p.pos);
+  const form = isOff ? offFormOf(t) : defFormOf(t);
+  const formKey = isOff ? offFormKeyOf(t) : defFormKeyOf(t);
+  const lu = lineupFor(t, form, formKey);
+  return lu.some(slot => slot.p && slot.p.id === p.id);
+}
+function requestTrade(){
+  const myP = mePlayer();
+  if(!myP) return;
+  myP.onBlock = true;
+  logEv(myP, 'move', 'Requested a trade from '+meT().city, 0);
+  alert('Your agent has let the front office know you\'d welcome a trade. They\'ll factor that in going forward.');
+  save(); render();
+}
+function requestRelease(){
+  const myP = mePlayer();
+  if(!myP) return;
+  if(!confirm('Ask for your release? You\'ll walk away from what\'s left on your deal and hit free agency immediately, at a discount for leaving early.')) return;
+  const me = meT();
+  me.roster = me.roster.filter(p => p.id !== myP.id);
+  G.playerFreeAgent = myP;
+  const others = G.teams.filter(t => t.idx !== me.idx).sort(() => Math.random()-.5).slice(0,3);
+  G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.68,0.92) * 10) / 10 }));
+  logEv(myP, 'move', 'Requested and received release from '+me.city, 0);
+  save(); render();
+}
+function fileGrievance(){
+  const myP = mePlayer();
+  if(!myP || G.playerGrievanceUsed) return;
+  G.playerGrievanceUsed = true;
+  if(Math.random() < .45){
+    bumpRel(myP, 'coach', 8);
+    myP.dressed = true;
+    logEv(myP, 'move', 'Filed a grievance over playing time — management responded well', 0);
+    alert('Management heard you out. Expect a bigger role going forward.');
+  } else {
+    bumpRel(myP, 'coach', -10);
+    logEv(myP, 'move', 'Filed a grievance over playing time — it didn\'t land well', 0);
+    alert('That conversation didn\'t go the way you hoped. The relationship took a hit.');
+  }
+  save(); render();
 }
 function faHTML(){
   const me = meT();
@@ -4365,9 +4550,12 @@ function playerDashboardHTML(){
   const myP = mePlayer();
   if(!myP) return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>';
   const t = G.teams[G.userTeam];
+  const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
     '<p class="sub">'+esc(t.city+' '+t.name)+' · Age '+myP.age+' · <b style="color:var(--gold)">'+myP.rating+'</b> OVR · '+money(myP.salary)+'/yr, '+myP.years+' yr'+(myP.years!==1?'s':'')+' left</p>' +
-    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">'+trainBtnHTML(myP)+'</div></div>';
+    '<div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap">' + trainBtnHTML(myP) + recoveryBtnHTML(myP) + moraleBtnHTML(myP) +
+    (hasBlockingDecision ? '' : '<button class="btn primary" onclick="playerAdvance()">Advance →</button>') +
+    '</div>' + playerWeekPlanHTML() + '</div>';
 
   if(G.playerPendingContract){
     const pc = G.playerPendingContract;
@@ -4385,16 +4573,132 @@ function playerDashboardHTML(){
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">One More Season?</div>' +
       '<p class="sub">You\'re '+myP.age+' with a '+myP.rating+' OVR. The body\'s telling you something.</p>' +
       '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="playContinue()">Keep Playing</button><button class="btn danger" onclick="retirePlayer()">Retire</button></div></div>';
-  } else {
-    if(G.phase === 'offseason'){
-      s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Offseason Training</div>' +
-        '<p class="sub">Get after it before camp opens. You\'ve got <b style="color:var(--gold)">'+G.trainPts+'</b> train pts banked.</p>' +
-        trainBtnHTML(myP) + '</div>';
-    }
-    s += '<div class="panel" style="margin-bottom:12px;text-align:center"><button class="btn primary big" onclick="playerAdvance()">Advance →</button></div>';
+  } else if(G.phase === 'offseason'){
+    s += '<p class="sub" style="margin:-4px 0 12px 2px">Offseason — camp opens soon. '+G.trainPts+' train pts banked.</p>';
   }
 
-  s += '<div class="panel"><div class="hd disp">Season Stats</div><p>'+statLine(myP.st, myP.pos)+'</p></div>';
+  s += playerGridDashboardHTML(myP, t);
+  return s;
+}
+function playerWeekPlanHTML(){
+  if(G.phase !== 'hub' || !G.schedule){
+    const note = G.phase === 'offseason' ? 'Your weekly practice/rest planner opens back up once the season kicks off.'
+      : G.phase === 'playoffs' ? 'Practice/rest planning resumes if next season starts.'
+      : 'Your weekly practice/rest planner will appear here once the regular season begins.';
+    return '<div style="margin-top:12px" class="sub">'+note+'</div>';
+  }
+  if(!G.playerWeekPlan) G.playerWeekPlan = [null,null,null,null,null];
+  const gameDate = weekDate(G.year, G.week);
+  const gameDow = (gameDate.getDay()+6)%7; // 0=Mon..6=Sun
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let s = '<div style="margin-top:12px"><div class="sub" style="margin-bottom:6px">Week '+G.week+' plan — tap Mon–Fri to toggle Practice / Rest</div><div class="dash-calgrid">';
+  labels.forEach((d,i) => {
+    if(i === gameDow){
+      s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box game">GM</div></div>';
+    } else if(i < 5){
+      const val = (G.playerWeekPlan[i] === 'rest') ? 'rest' : 'practice';
+      const label = val === 'rest' ? 'REST' : 'PRAC';
+      s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box '+val+'" style="cursor:pointer" onclick="cyclePlanDay('+i+')">'+label+'</div></div>';
+    } else {
+      s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box"></div></div>';
+    }
+  });
+  s += '</div></div>';
+  return s;
+}
+function cyclePlanDay(dayIdx){
+  if(!G.playerWeekPlan) G.playerWeekPlan = [null,null,null,null,null];
+  G.playerWeekPlan[dayIdx] = (G.playerWeekPlan[dayIdx] === 'rest') ? 'practice' : 'rest';
+  save(); render();
+}
+function playerGridDashboardHTML(myP, t){
+  let s = '<div class="player-grid">';
+  s += '<div class="panel full"><div class="hd disp">Season Stats</div><p>'+statLine(myP.st, myP.pos)+'</p></div>';
+
+  const recent = [];
+  if(G.schedule){
+    for(let w=G.schedule.length-1; w>=0 && recent.length<3; w--){
+      const wk = G.schedule[w];
+      const gm = wk.find(x => x.a===G.userTeam || x.b===G.userTeam);
+      if(!gm) continue;
+      const playedWeek = G.results[w];
+      const r = playedWeek && playedWeek.find(x => x.a===G.userTeam || x.b===G.userTeam);
+      if(!r) continue;
+      recent.push({w, r, home: gm.a===G.userTeam});
+    }
+  }
+  s += '<div class="panel"><div class="hd disp">Recent Games</div>';
+  if(!recent.length) s += '<p class="sub">No games played yet.</p>';
+  else {
+    s += '<table class="tbl"><tr><th>Wk</th><th>Score</th><th>Your Line</th></tr>';
+    recent.forEach(({w,r,home}) => {
+      const myScore = home?r.as:r.bs, oppScore = home?r.bs:r.as;
+      let lineText = '<span class="sub">Did not play</span>';
+      if(r.report && r.report.teams){
+        const line = r.report.teams[G.userTeam] && r.report.teams[G.userTeam].lines.find(l=>l.id===myP.id);
+        if(line) lineText = gameLineText(line);
+      }
+      s += '<tr><td class="sub">Wk '+(w+1)+'</td><td><b style="color:'+(myScore>oppScore?'var(--green)':'var(--red)')+'">'+myScore+'–'+oppScore+'</b></td><td>'+lineText+'</td></tr>';
+    });
+    s += '</table>';
+  }
+  s += '</div>';
+
+  s += '<div class="panel"><div class="hd disp">Health</div>';
+  const fatigue = clamp(myP.fatigue||0, 0, 100);
+  const fatColor = fatigue >= 75 ? 'var(--red)' : fatigue >= 50 ? 'var(--gold)' : 'var(--green)';
+  const statusText = myP.ir ? 'On Injured Reserve' : myP.injWeeks > 0 ? 'Out '+myP.injWeeks+' more week'+(myP.injWeeks!==1?'s':'') : 'Healthy';
+  const statusColor = (myP.ir || myP.injWeeks > 0) ? 'var(--red)' : 'var(--green)';
+  s += '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px">' +
+    '<span style="color:'+statusColor+';font-weight:700">'+statusText+'</span>' +
+    '<span style="display:flex;align-items:center;gap:6px;min-width:110px"><span class="sub" style="white-space:nowrap">Fatigue</span><span class="capbar" style="flex:1;min-width:50px"><i style="width:'+fatigue+'%;background:'+fatColor+'"></i></span></span></div>';
+  const injEvents = (myP.history||[]).filter(e => e.k==='inj');
+  if(!injEvents.length) s += '<p class="sub">No injuries on record.</p>';
+  else injEvents.slice().reverse().slice(0,3).forEach(e => { s += '<div class="dash-fixrow"><span class="sub">'+e.y+'</span><span>'+esc(e.t)+'</span></div>'; });
+  s += '</div>';
+
+  const pc = myP.contract;
+  const hasBonus = pc && pc.bonusYearsLeft > 0;
+  s += '<div class="panel"><div class="hd disp">Contract</div>' +
+    '<p class="sub">'+money(myP.salary)+'/yr · '+myP.years+' yr'+(myP.years!==1?'s':'')+' left'+(myP.tagged?' · <span class="tag w">TAGGED</span>':'')+'</p>' +
+    (hasBonus ? '<p class="sub" style="margin-top:4px">Bonus: '+money(pc.bonusProration)+'/yr × '+pc.bonusYearsLeft+' yr'+(pc.bonusYearsLeft!==1?'s':'')+'</p>' : '') +
+    '</div>';
+
+  const earnings = G.playerEarnings || [];
+  s += '<div class="panel"><div class="hd disp">Career Earnings</div>';
+  if(!earnings.length) s += '<p class="sub">Nothing banked yet.</p>';
+  let total = 0;
+  earnings.slice().reverse().forEach(e => { total += e.salary; s += '<div class="dash-fixrow"><span>'+e.year+'</span><b>'+money(e.salary)+'</b></div>'; });
+  if(earnings.length) s += '<div class="dash-fixrow" style="border-top:2px solid var(--line);margin-top:4px;padding-top:6px"><span><b>Total</b></span><b style="color:var(--gold)">'+money(total)+'</b></div>';
+  s += '</div>';
+
+  s += '<div class="panel full"><div class="hd disp">Full Schedule</div>';
+  if(!G.schedule){ s += '<p class="sub">Your team\'s schedule isn\'t set yet — check back after cutdown day.</p></div>'; }
+  else {
+    s += '<table class="tbl"><tr><th>Wk</th><th>Opp</th><th>Score</th><th>Your Line</th></tr>';
+    for(let w=0; w<G.schedule.length; w++){
+      const wk = G.schedule[w];
+      const gm = wk.find(x => x.a===G.userTeam || x.b===G.userTeam);
+      if(!gm) continue;
+      const playedWeek = G.results[w];
+      const r = playedWeek && playedWeek.find(x => x.a===G.userTeam || x.b===G.userTeam);
+      const home = gm.a === G.userTeam;
+      const opp = G.teams[home ? gm.b : gm.a];
+      let scoreText = '<span class="sub">—</span>', lineText = '<span class="sub">—</span>';
+      if(r){
+        const myScore = home ? r.as : r.bs, oppScore = home ? r.bs : r.as;
+        scoreText = '<b style="color:'+(myScore>oppScore?'var(--green)':'var(--red)')+'">'+myScore+'–'+oppScore+'</b>';
+        if(r.report && r.report.teams){
+          const myTeamReport = r.report.teams[G.userTeam];
+          const line = myTeamReport && myTeamReport.lines.find(l => l.id === myP.id);
+          lineText = line ? gameLineText(line) : '<span class="sub">Did not play</span>';
+        }
+      }
+      s += '<tr><td class="sub">Wk '+(w+1)+'</td><td>'+(home?'vs':'@')+' '+esc(opp.abbr)+'</td><td>'+scoreText+'</td><td>'+lineText+'</td></tr>';
+    }
+    s += '</table></div>';
+  }
+  s += '</div>';
   return s;
 }
 /* ================= OWNER MODE ================= */
@@ -4892,22 +5196,44 @@ function allGamesHTML(){
   }
   return s;
 }
+function scoutingReportHTML(opp){
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Scouting Report — '+esc(opp.city+' '+opp.name)+'</div>' +
+    '<p class="sub" style="margin-bottom:8px">'+opp.w+'–'+opp.l+' · '+esc(offFormOf(opp).name)+' offense, '+esc(defFormOf(opp).name)+' defense</p>';
+  s += '<table class="tbl"><tr><th>Unit</th><th>Rating</th></tr>' +
+    '<tr><td>Pass Offense</td><td style="color:var(--gold);font-weight:700">'+Math.round(offPass(opp))+'</td></tr>' +
+    '<tr><td>Run Offense</td><td style="color:var(--gold);font-weight:700">'+Math.round(offRush(opp))+'</td></tr>' +
+    '<tr><td>Pass Defense</td><td style="color:var(--gold);font-weight:700">'+Math.round(defPass(opp))+'</td></tr>' +
+    '<tr><td>Run Defense</td><td style="color:var(--gold);font-weight:700">'+Math.round(defRush(opp))+'</td></tr></table>';
+  const topOff = opp.roster.filter(p=>!p.ir && ['QB','RB','WR','TE'].includes(p.pos)).sort((a,b)=>b.rating-a.rating).slice(0,3);
+  const topDef = opp.roster.filter(p=>!p.ir && ['DL','LB','CB','S'].includes(p.pos)).sort((a,b)=>b.rating-a.rating).slice(0,3);
+  s += '<p class="sub" style="margin-top:10px"><b style="color:var(--chalk)">Watch out for —</b><br>Offense: '+topOff.map(p=>esc(p.name)+' ('+p.spot+', <b style="color:var(--gold)">'+p.rating+'</b>)').join(', ')+'<br>Defense: '+topDef.map(p=>esc(p.name)+' ('+p.spot+', <b style="color:var(--gold)">'+p.rating+'</b>)').join(', ')+'</p></div>';
+  return s;
+}
 function scheduleHTML(){
   const devNote = (G.weekDevs && G.weekDevs.length) ? '<div class="panel" style="margin-bottom:12px"><p class="sub">📈 Developed off big games last week: '+G.weekDevs.map(d=>esc(d.name)+' ('+d.pos+') → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ')+'</p></div>' : '';
   const dl = tradesOpen() ? '<div class="panel" style="margin-bottom:12px"><p class="sub">🔁 Trade market open through <b style="color:var(--gold)">'+fmtDate(tradeDeadline(G.year))+'</b> (Tuesday after Week 9) — hit Trades in the nav.</p></div>' : '';
-  const g = userGame();
-  const opp = G.teams[g.a === G.userTeam ? g.b : g.a];
-  const home = g.a === G.userTeam;
-  const me = meT();
-  const dc = dressedCount(me);
-  let s = devNote + dl + '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Week '+G.week+' — '+fmtDate(weekDate(G.year, G.week))+'</div>' +
-    '<div class="nextgame"><div class="vs disp">'+ (home ? esc(opp.city+' '+opp.name)+' <small>at your place</small>' : '@ '+esc(opp.city+' '+opp.name)+' <small>on the road</small>') +
-    '</div><div style="text-align:right"><div class="sub">Opponent OVR <b style="color:var(--gold)">'+ovr(opp)+'</b> ('+opp.w+'–'+opp.l+') · You <b style="color:var(--gold)">'+ovr(me)+'</b></div>' +
-    '<div class="sub">Gameday actives: <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+Math.min(dc,LIMIT_DRESS)+'</b> of '+LIMIT_DRESS+' dress · manage in Roster tab</div>' +
-    '<div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end"><button class="btn primary" onclick="playWeek()">▶ Coach the Game</button><button class="btn" onclick="simWeek()">Sim Week</button></div></div></div>';
-  s += recsPanelHTML();
-  if(G.lastInjury && G.lastInjury.injWeeks > 0) s += '<p class="sub" style="margin-top:8px;color:var(--red)">Injury report: '+esc(G.lastInjury.name)+' ('+G.lastInjury.pos+') is out '+G.lastInjury.injWeeks+' more week'+(G.lastInjury.injWeeks===1?'':'s')+'.</p>';
-  s += '</div>';
+  let s = devNote + dl;
+  if(G.phase === 'hub' && G.schedule && G.schedule[G.week-1]){
+    const g = userGame();
+    if(g){
+      const opp = G.teams[g.a === G.userTeam ? g.b : g.a];
+      const home = g.a === G.userTeam;
+      const me = meT();
+      const dc = dressedCount(me);
+      s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Week '+G.week+' — '+fmtDate(weekDate(G.year, G.week))+'</div>' +
+        '<div class="nextgame"><div class="vs disp">'+ (home ? esc(opp.city+' '+opp.name)+' <small>at your place</small>' : '@ '+esc(opp.city+' '+opp.name)+' <small>on the road</small>') +
+        '</div><div style="text-align:right"><div class="sub">Opponent OVR <b style="color:var(--gold)">'+ovr(opp)+'</b> ('+opp.w+'–'+opp.l+') · You <b style="color:var(--gold)">'+ovr(me)+'</b></div>' +
+        '<div class="sub">Gameday actives: <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+Math.min(dc,LIMIT_DRESS)+'</b> of '+LIMIT_DRESS+' dress · manage in Roster tab</div>' +
+        '<div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end"><button class="btn primary" onclick="playWeek()">▶ Coach the Game</button><button class="btn" onclick="simWeek()">Sim Week</button></div></div></div>';
+      s += (G.mode === 'player') ? scoutingReportHTML(opp) : recsPanelHTML();
+      if(G.lastInjury && G.lastInjury.injWeeks > 0) s += '<p class="sub" style="margin-top:8px;color:var(--red)">Injury report: '+esc(G.lastInjury.name)+' ('+G.lastInjury.pos+') is out '+G.lastInjury.injWeeks+' more week'+(G.lastInjury.injWeeks===1?'':'s')+'.</p>';
+      s += '</div>';
+    }
+  } else if(G.phase === 'playoffs'){
+    s += playoffsHTML();
+  } else if(G.phase !== 'hub'){
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Season Complete</div><p class="sub">Nothing on the schedule right now — check back once the new league year kicks off.</p></div>';
+  }
   if(G.results.length){
     s += '<div class="panel"><div class="hd disp">Your Season So Far</div><table class="tbl"><tr><th>Wk</th><th>Date</th><th>Opponent</th><th>Result</th></tr>';
     G.results.forEach((wk,i) => {
@@ -4952,10 +5278,8 @@ function rosterHTML(){
     '<p class="sub" style="margin-top:8px">Train: 2 pts = +1 OVR (max +5/season).'+(G.phase==='hub' ? ' Dress/Sit toggles who suits up Sunday — extras above 46 are healthy scratches.' : '')+' Need a body? Open Players above.</p></div>';
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+label+'</div>' +
     rosterTable(me, p => {
-      const tCoach = posCoachOf(p.pos);
-      const tCost = (tCoach && tCoach.rating >= 78) ? 1 : 2;
-      const canTrain = G.trainPts >= tCost && p.trained < 5 && p.rating < 99;
-      let a = '<button class="btn tiny" '+(canTrain?'':'disabled')+' onclick="trainPlayer('+p.id+')" title="Costs '+tCost+' train pt'+(tCost>1?'s':'')+(tCoach&&tCoach.rating>=88?' · elite coach doubles the gain':'')+'">Train</button> ';
+      if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">—</span>';
+      let a = trainBtnHTML(p);
       a += '<button class="btn tiny" onclick="openModal(\'extend\','+p.id+')">Extend</button> ';
       a += '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">Position</button> ';
       if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button> ';
@@ -5755,12 +6079,19 @@ function campHTML(){
   s += posNeedsHTML(meT());
   return s;
 }
+function playerTrainCost(rating){
+  if(rating <= 60) return 2;
+  if(rating <= 70) return 3;
+  if(rating <= 80) return 4;
+  if(rating <= 90) return 5;
+  return 6; // 91-99
+}
 function trainPlayer(pid){
   const p = meT().roster.find(x => x.id === pid);
   if(!p || p.trained >= 5 || p.rating >= 99) return;
   let cost, rawGain;
   if(G.mode === 'player'){
-    cost = 3; rawGain = 1;
+    cost = playerTrainCost(p.rating); rawGain = 1;
   } else {
     const coach = posCoachOf(p.pos);
     cost = (coach && coach.rating >= 78) ? 1 : 2;
@@ -5774,13 +6105,77 @@ function trainPlayer(pid){
   logEv(p, 'dev', 'Trained in practice', gain);
   save(); render();
 }
+const RECOVERY_COST = 2, MORALE_COST = 2, MENTOR_COST = 2;
+function recoveryBtnHTML(p){
+  if(G.mode !== 'player' || !meT().roster.includes(p) || p.injWeeks <= 0 || p.ir) return '';
+  const can = G.trainPts >= RECOVERY_COST;
+  return '<button class="btn tiny" '+(can?'':'disabled')+' onclick="boostRecovery('+p.id+')" title="Costs '+RECOVERY_COST+' train pts — shaves a week off his recovery">🩹 Speed Recovery</button> ';
+}
+function boostRecovery(pid){
+  const p = meT().roster.find(x => x.id === pid);
+  if(!p || G.mode !== 'player' || p.injWeeks <= 0 || p.ir || G.trainPts < RECOVERY_COST) return;
+  G.trainPts -= RECOVERY_COST;
+  p.injWeeks = Math.max(0, p.injWeeks - 1);
+  logEv(p, 'inj', 'Spent training points on extra rehab', 0);
+  save(); render();
+}
+function moraleBtnHTML(p){
+  if(G.mode !== 'player' || !meT().roster.includes(p)) return '';
+  const can = G.trainPts >= MORALE_COST;
+  return '<button class="btn tiny" '+(can?'':'disabled')+' onclick="boostMorale('+p.id+')" title="Costs '+MORALE_COST+' train pts — a locker-room talk that lifts his standing with the staff">🤝 Team Talk</button> ';
+}
+function boostMorale(pid){
+  const p = meT().roster.find(x => x.id === pid);
+  if(!p || G.mode !== 'player' || G.trainPts < MORALE_COST) return;
+  G.trainPts -= MORALE_COST;
+  bumpRel(p, 'coach', R(4,7));
+  logEv(p, 'dev', 'Team talk — spirits lifted around the building', 0);
+  save(); render();
+}
+function mentorEligible(p){
+  const myP = mePlayer();
+  if(!myP || p.id === myP.id) return false;
+  return p.age < 25 || p.age < myP.age;
+}
+function mentorBtnHTML(p){
+  if(G.mode !== 'player' || !meT().roster.includes(p) || !mentorEligible(p)) return '';
+  if(p.trained >= 5 || p.rating >= 99) return '';
+  const can = G.trainPts >= MENTOR_COST;
+  return '<button class="btn tiny" '+(can?'':'disabled')+' onclick="mentorPlayer('+p.id+')" title="Costs '+MENTOR_COST+' train pts — you personally mentor him, +1 OVR. Only works on teammates younger than you or under 25.">🎓 Mentor</button> ';
+}
+function mentorPlayer(pid){
+  const myP = mePlayer();
+  const p = meT().roster.find(x => x.id === pid);
+  if(!myP || !p || !mentorEligible(p) || p.trained >= 5 || p.rating >= 99 || G.trainPts < MENTOR_COST) return;
+  const gain = Math.min(1, 5 - p.trained);
+  G.trainPts -= MENTOR_COST;
+  p.rating = clamp(p.rating + gain, 50, 99);
+  p.trained += gain;
+  logEv(p, 'dev', 'Mentored by '+myP.name, gain);
+  bumpRel(p, 'coach', R(1,3));
+  save(); render();
+}
 function confColor(){ return G.confidence > 60 ? 'var(--green)' : G.confidence > 30 ? 'var(--gold)' : 'var(--red)'; }
+function quitToMenu(){
+  if(!confirm('Return to the career picking screen? Your progress is already saved — nothing will be lost.')) return;
+  save();
+  G = null;
+  titleFlow = 'list';
+  pendingMode = null;
+  render();
+}
 function careerHTML(){
   const c = G.career, me = meT();
+  const confDesc = G.mode === 'player'
+    ? 'Owner confidence — this tracks how <i>you</i> personally are playing, not the team\'s record. Excellent games move it up fast; ordinary ones nudge it, quiet ones don\'t hurt you.'
+    : 'Owner confidence — win to keep the job. Hit zero at season\'s end and you\'re done.';
+  const confDetail = G.mode === 'player'
+    ? G.confidence+'/100 · +6 for an excellent individual game, +1 for a normal one you were part of'
+    : G.confidence+'/100 · +4 per win, −4 per loss, big swings for playoffs and titles';
   return '<div class="panel"><div class="hd disp">Front Office</div>' +
-    '<p class="sub" style="margin-bottom:6px">Owner confidence — win to keep the job. Hit zero at season\'s end and you\'re done.</p>' +
+    '<p class="sub" style="margin-bottom:6px">'+confDesc+'</p>' +
     '<div class="conf-meter"><i style="width:'+G.confidence+'%;background:'+confColor()+'"></i></div>' +
-    '<p class="sub" style="margin-top:4px">'+G.confidence+'/100 · +4 per win, −4 per loss, big swings for playoffs and titles</p>' +
+    '<p class="sub" style="margin-top:4px">'+confDetail+'</p>' +
     '<div style="margin-top:14px">'+capBarHTML(me)+'</div>' +
     '<table class="tbl" style="margin-top:14px"><tr><th>Career Record</th><th>Seasons</th><th>Playoff Berths</th><th>Apex Bowls</th></tr>' +
     '<tr><td>'+c.w+'–'+c.l+'</td><td>'+(c.seasons + 1)+'</td><td>'+c.berths+'</td><td style="color:var(--gold);font-weight:700">'+c.titles+'</td></tr></table>' +
@@ -5788,6 +6183,7 @@ function careerHTML(){
     '<button class="btn" onclick="save();alert(\'Career saved.\')">💾 Save Now</button>' +
     '<button class="btn" onclick="exportSave()">⬇️ Export Save</button>' +
     '<button class="btn" onclick="triggerImport()">⬆️ Import Save</button>' +
+    '<button class="btn" onclick="quitToMenu()">🚪 Quit to Menu</button>' +
     '<button class="btn danger" style="margin-left:auto" onclick="if(confirm(\'Abandon this career and start over?\')){store.clear();G=null;render();}">Resign / New Career</button></div>' +
     '<p class="sub" style="margin-top:8px">Progress auto-saves in this browser. Export a save file to back it up or move it to another device/browser.</p></div>';
 }
