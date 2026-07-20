@@ -758,6 +758,27 @@ function fireCoach(role, pos){
   if(role === 'POS') G.staff.pos[pos] = null; else G.staff[role] = null;
   save(); render();
 }
+/* Silent version of hireCoach for automated staffing — no alert/save/closeModal, just the assignment. */
+function autoHireCoach(cand, role, pos){
+  if(role === 'POS') G.staff.pos[pos] = cand; else G.staff[role] = cand;
+  const i = G.coachPool.findIndex(c => c.id === cand.id);
+  if(i >= 0) G.coachPool.splice(i, 1);
+}
+/* In Owner/Player mode the human isn't the GM day-to-day, so an "AI GM/HC" fills and refreshes the
+   coaching staff on its own — otherwise those modes would silently never get any coaching bonuses
+   (position coaches directly affect player development), since nobody ever visits the Staff screen. */
+function autoManageStaff(){
+  if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
+  const fillSlot = (role, pos) => {
+    if(currentCoach(role, pos)) return;
+    const room = staffCapRoom();
+    const cands = G.coachPool.filter(c => c.role===role && (role!=='POS' || c.pos===pos) && c.salary <= room)
+      .sort((a,b) => b.rating - a.rating);
+    if(cands.length) autoHireCoach(cands[0], role, pos);
+  };
+  ['OC','DC','STC'].forEach(role => fillSlot(role));
+  COACH_POS.forEach(pos => fillSlot('POS', pos));
+}
 function ocBoost(){ const c = G.staff && G.staff.OC; return c ? (c.rating - 70) / 9 : 0; }
 function dcBoost(){ const c = G.staff && G.staff.DC; return c ? (c.rating - 70) / 9 : 0; }
 function stcBoost(){ const c = G.staff && G.staff.STC; return c ? (c.rating - 70) / 9 : 0; }
@@ -960,6 +981,7 @@ function newCareer(teamIdx, mode){
   }));
   G.teams.forEach(t => t.roster = pv[t.idx].roster);
   G.coachPool = makeCoachPool();
+  if(G.mode === 'owner' || G.mode === 'player') autoManageStaff();
   // every club owns its own picks for this draft + the next 2 future draft classes
   G.draftPicks = [];
   for(let y = G.year; y <= G.year + 2; y++){
@@ -1252,6 +1274,13 @@ function teamNeed(t){
     if(gap > worstGap){ worstGap = gap; worst = pos; }
   });
   return worst;
+}
+function teamTopNeeds(t, n){
+  return POS_ORDER.map(pos => ({ pos, gap: PT75[pos] - posCount(t, pos) }))
+    .filter(x => x.gap > 0)
+    .sort((a,b) => b.gap - a.gap)
+    .slice(0, n || 3)
+    .map(x => x.pos);
 }
 function aiFAWave(n){
   const ais = G.teams.filter(t => t.idx !== G.userTeam);
@@ -1980,6 +2009,16 @@ function extendHTML(pid){
   return s;
 }
 function advanceToTag(){
+  // archive the season that just finished — schedule, results, playoffs, and final standings —
+  // before anything below resets team records or clears G.schedule/G.results/G.playoffs
+  if(!G.seasonHistory) G.seasonHistory = [];
+  if(G.schedule){
+    G.seasonHistory.push({
+      season: G.season, year: G.year,
+      preSchedule: G.preSchedule, schedule: G.schedule, results: G.results, playoffs: G.playoffs,
+      standings: G.teams.map(t => ({ idx:t.idx, city:t.city, name:t.name, abbr:t.abbr, w:t.w, l:t.l, pf:t.pf, pa:t.pa }))
+    });
+  }
   // league-wide aging, progression, retirement
   const develop = p => {
     p.age++;
@@ -2028,6 +2067,19 @@ function advanceToTag(){
   G.fa.forEach(develop);
   G.fa = G.fa.filter(p => p.age < 34 && p.rating > 52);
   G.coachPool = makeCoachPool(); // fresh coaching market each offseason
+  if(G.mode === 'owner' || G.mode === 'player'){
+    // AI GM/HC ticks down staff contracts and lets expired ones walk, same as it would for any club
+    if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
+    ['OC','DC','STC'].forEach(role => {
+      const c = G.staff[role];
+      if(c){ c.years--; if(c.years <= 0) G.staff[role] = null; }
+    });
+    COACH_POS.forEach(pos => {
+      const c = G.staff.pos[pos];
+      if(c){ c.years--; if(c.years <= 0) G.staff.pos[pos] = null; }
+    });
+    autoManageStaff(); // then re-fill any open chair from this year's fresh market
+  }
   G.career.seasons++;
   G.season++; G.year++;
   if(!G.draftPicks) G.draftPicks = [];
@@ -3490,6 +3542,7 @@ function render(){
       G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx, orig:t.idx }); });
     }
   }
+  if(!G.seasonHistory) G.seasonHistory = [];
   if(G.activePage === undefined) G.activePage = null;
   document.documentElement.style.setProperty('--team', (G.userTeam != null ? meT().c1 : '#FFD447'));
   let body = '';
@@ -3648,10 +3701,7 @@ function playerRow(p, actions){
 }
 function rosterTable(t, actionFn){
   const cols = [['name','Player'],['spot','Pos'],['scheme','Scheme'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Years']];
-  let s = '<div class="filterbar">';
-  ['ALL'].concat(POS_ORDER).forEach(f => {
-    s += '<button class="fbtn'+(rFilter===f?' on':'')+'" onclick="setRFilter(\''+f+'\')">'+f+(f!=='ALL'?' <span style="opacity:.7">'+posCount(t,f)+'</span>':'')+'</button>';
-  });
+  let s = '<div class="filterbar">' + posFilterPillsHTML(t, rFilter, 'setRFilter');
   s += '</div><table class="tbl"><tr>';
   cols.forEach(c => {
     const on = rSort.key === c[0];
@@ -3851,15 +3901,16 @@ function faHTML(){
   }
   return s;
 }
-function faPosFilterPillsHTML(t){
-  let s = '<button class="fbtn'+(faFilter==='ALL'?' on':'')+'" onclick="setFAFilter(\'ALL\')">ALL</button>';
+function posFilterPillsHTML(t, active, setter){
+  let s = '<button class="fbtn'+(active==='ALL'?' on':'')+'" onclick="'+setter+'(\'ALL\')">ALL</button>';
   POS_ORDER.forEach(pos => {
     const have = posCount(t, pos), min = MIN53[pos];
     const starterOvr = have > 0 ? st(t, pos, 0) : null;
-    s += '<button class="fbtn'+(faFilter===pos?' on':'')+(have<min?' short':'')+'" onclick="setFAFilter(\''+pos+'\')">'+pos+' <span class="mb-n">'+have+'/'+min+'</span>'+(starterOvr!=null?' · <span class="mb-ovr">'+starterOvr+'</span>':'')+'</button>';
+    s += '<button class="fbtn'+(active===pos?' on':'')+(have<min?' short':'')+'" onclick="'+setter+'(\''+pos+'\')">'+pos+' <span class="mb-n">'+have+'/'+min+'</span>'+(starterOvr!=null?' · <span class="mb-ovr">'+starterOvr+'</span>':'')+'</button>';
   });
   return s;
 }
+function faPosFilterPillsHTML(t){ return posFilterPillsHTML(t, faFilter, 'setFAFilter'); }
 function setFAFilter(f){ faFilter = f; render(); }
 function setFASort(k){
   if(faSort.key === k) faSort.dir *= -1;
@@ -3884,10 +3935,17 @@ function draftBoardHTML(){
   const pickNum = G.draftPickIdx + 1;
   const onClock = pickObj ? G.teams[pickObj.team] : null;
   const isMe = pickObj && pickObj.team === G.userTeam;
+  const actionBtns = !pickObj ? '' : isMe
+    ? '<button class="btn" onclick="passDraftPick()">Pass This Pick →</button>' +
+      '<button class="btn" onclick="openPage(\'gm\');setGMTab(\'trades\')">🔁 Trade Picks</button>' +
+      '<button class="btn" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button>'
+    : '<button class="btn primary" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button>';
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">UFA Draft — '+fmtDate(draftDate(G.year))+'</div>' +
     '<p class="sub" style="margin-top:6px">Overall pick <b style="color:var(--gold)">'+pickNum+'</b> of '+(DRAFT_ROUNDS*16)+' · Round '+round+' · '+
     (onClock ? (isMe ? '<b style="color:var(--gold)">You\'re on the clock.</b>' : esc(onClock.city+' '+onClock.name)+' is on the clock.') : 'Draft complete.') +
-    '</p></div>';
+    '</p>' +
+    (actionBtns ? '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px">'+actionBtns+'</div>' : '') +
+    '</div>';
   if(G.draftLog && G.draftLog.length){
     const recent = G.draftLog.slice(-8).reverse();
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Recent Picks</div>';
@@ -3897,13 +3955,10 @@ function draftBoardHTML(){
     });
     s += '</div>';
   }
-  if(!isMe){
-    s += '<div class="panel" style="text-align:center"><button class="btn primary" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button></div>';
-    return s;
-  }
+  if(!isMe) return s;
   s += posNeedsHTML(me);
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Big Board</div>' +
-    '<div class="rosterctl" style="margin:8px 0"><select class="fselect" onchange="setDraftBoardFilter(this.value)">' + posFilterOptionsHTML() + '</select></div>';
+    '<div class="rosterctl" style="margin:8px 0"><select class="fselect" onchange="setDraftBoardFilter(this.value)">' + posFilterOptionsHTML(G.draftBoardFilter) + '</select></div>';
   let pool = G.draftPool.slice();
   if(G.draftBoardFilter) pool = pool.filter(pr => pr.spot === G.draftBoardFilter);
   const sortKey = G.draftBoardSort.key, sortDir = G.draftBoardSort.dir;
@@ -3930,10 +3985,6 @@ function draftBoardHTML(){
       '<td><button class="btn tiny primary" onclick="userDraftPick('+pr.id+')">Draft</button></td></tr>';
   });
   s += '</table></div>';
-  s += '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
-    '<button class="btn" onclick="passDraftPick()">Pass This Pick →</button>' +
-    '<button class="btn" onclick="openPage(\'gm\');setGMTab(\'trades\')">🔁 Trade Picks</button>' +
-    '<button class="btn" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button></div>';
   return s;
 }
 function draftReviewHTML(){
@@ -4046,6 +4097,7 @@ function newPlayerCareer(position){
   }));
   G.teams.forEach(t => t.roster = pv[t.idx].roster);
   G.coachPool = makeCoachPool();
+  autoManageStaff(); // Player mode — the human isn't the GM, so the staff hires itself
   G.draftPicks = [];
   for(let y = G.year; y <= G.year + 2; y++){
     G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year:y, round:r, team:t.idx, orig:t.idx }); });
@@ -4738,22 +4790,31 @@ function recsPanelHTML(){
 }
 /* ---------- full season game browser: preseason through championship ---------- */
 let gamesFilter = 'me';
+let gamesSeasonView = 'current'; // 'current' or an index into G.seasonHistory
 function setGamesFilter(v){ gamesFilter = v; render(); }
+function setGamesSeasonView(v){ gamesSeasonView = v; render(); }
 function resolveFilterTeam(){ return gamesFilter==='all' ? null : (gamesFilter==='me' ? G.userTeam : gamesFilter); }
-function openGameReport(kind, idx, a, b){
+function gamesDataSource(){
+  if(gamesSeasonView === 'current') return { season:G.season, year:G.year, preSchedule:G.preSchedule, schedule:G.schedule, results:G.results, playoffs:G.playoffs };
+  return G.seasonHistory[gamesSeasonView] || null;
+}
+function openGameReport(kind, idx, a, b, seasonView){
+  const src = (seasonView === 'current' || seasonView === undefined) ? { preSchedule:G.preSchedule, results:G.results, playoffs:G.playoffs } : G.seasonHistory[seasonView];
+  if(!src) return;
   let g = null;
-  if(kind==='pre'){ const round = G.preSchedule && G.preSchedule[idx]; g = round && round.find(x=>x.a===a&&x.b===b); }
-  else if(kind==='reg'){ const wk = G.results[idx]; g = wk && wk.find(x=>x.a===a&&x.b===b); }
-  else if(kind==='po'){ const rk = 'r'+idx; g = G.playoffs && G.playoffs[rk] && G.playoffs[rk].find(x=>x.a===a&&x.b===b); }
+  if(kind==='pre'){ const round = src.preSchedule && src.preSchedule[idx]; g = round && round.find(x=>x.a===a&&x.b===b); }
+  else if(kind==='reg'){ const wk = src.results[idx]; g = wk && wk.find(x=>x.a===a&&x.b===b); }
+  else if(kind==='po'){ const rk = 'r'+idx; g = src.playoffs && src.playoffs[rk] && src.playoffs[rk].find(x=>x.a===a&&x.b===b); }
   if(g && g.report) openModal('gamereport', g.report);
 }
-function gameRowHTML(kind, idx, g, label){
+function gameRowHTML(kind, idx, g, label, seasonView){
   const tA = G.teams[g.a], tB = G.teams[g.b];
   const played = !!g.done || (g.as != null && g.bs != null);
   const clickable = played && g.report;
+  const sv = (seasonView === undefined || seasonView === 'current') ? "'current'" : seasonView;
   const scoreHTML = played
     ? (clickable
-        ? '<span class="pname" onclick="openGameReport(\''+kind+'\','+idx+','+g.a+','+g.b+')" style="font-weight:700">'+g.as+' – '+g.bs+'</span>'
+        ? '<span class="pname" onclick="openGameReport(\''+kind+'\','+idx+','+g.a+','+g.b+','+sv+')" style="font-weight:700">'+g.as+' – '+g.bs+'</span>'
         : '<b>'+g.as+' – '+g.bs+'</b>')
     : '<span class="sub">—</span>';
   const meInGame = g.a === G.userTeam || g.b === G.userTeam;
@@ -4761,22 +4822,37 @@ function gameRowHTML(kind, idx, g, label){
     '<td>'+esc(tA.abbr)+(g.a===G.userTeam?' ★':'')+'</td><td class="sub">at</td><td>'+esc(tB.abbr)+(g.b===G.userTeam?' ★':'')+'</td>' +
     '<td style="text-align:right">'+scoreHTML+'</td></tr>';
 }
+function seasonPickerHTML(){
+  let s = '<div class="filterbar" style="margin-bottom:8px">' +
+    '<button class="fbtn'+(gamesSeasonView==='current'?' on':'')+'" onclick="setGamesSeasonView(\'current\')">This Season</button>';
+  for(let i = G.seasonHistory.length - 1; i >= 0; i--){
+    const snap = G.seasonHistory[i];
+    s += '<button class="fbtn'+(gamesSeasonView===i?' on':'')+'" onclick="setGamesSeasonView('+i+')">S'+snap.season+' ('+snap.year+')</button>';
+  }
+  return s + '</div>';
+}
 function allGamesHTML(){
+  const src = gamesDataSource();
   const ft = resolveFilterTeam();
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Full Schedule</div>' +
-    '<p class="sub" style="margin:2px 0 8px">Every game, preseason through the Apex Bowl. Click any final score for the full box score.</p>' +
-    '<div class="filterbar">' +
+  const sv = gamesSeasonView;
+  if(!src){
+    return '<div class="panel"><p class="sub">No archived data for that season.</p></div>';
+  }
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Full Schedule'+(sv==='current'?'':' — Season '+src.season+' ('+src.year+')')+'</div>' +
+    '<p class="sub" style="margin:2px 0 8px">Every game, preseason through the Apex Bowl'+(sv==='current'?'':', archived')+'. Click any final score for the full box score.</p>';
+  if(G.seasonHistory.length) s += seasonPickerHTML();
+  s += '<div class="filterbar">' +
     '<button class="fbtn'+(gamesFilter==='me'?' on':'')+'" onclick="setGamesFilter(\'me\')">My Team</button>' +
     '<button class="fbtn'+(gamesFilter==='all'?' on':'')+'" onclick="setGamesFilter(\'all\')">All Teams</button>';
   G.teams.forEach(t => { s += '<button class="fbtn'+(gamesFilter===t.idx?' on':'')+'" onclick="setGamesFilter('+t.idx+')">'+esc(t.abbr)+'</button>'; });
   s += '</div></div>';
 
   // Preseason
-  if(G.preSchedule){
+  if(src.preSchedule){
     const rows = [];
-    G.preSchedule.forEach((round, i) => round.forEach(g => {
+    src.preSchedule.forEach((round, i) => round.forEach(g => {
       if(ft!=null && g.a!==ft && g.b!==ft) return;
-      rows.push(gameRowHTML('pre', i, g, 'Pre Wk '+(i+1)));
+      rows.push(gameRowHTML('pre', i, g, 'Pre Wk '+(i+1), sv));
     }));
     if(rows.length){
       s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Preseason</div>' +
@@ -4784,14 +4860,14 @@ function allGamesHTML(){
     }
   }
   // Regular season
-  if(G.schedule){
+  if(src.schedule){
     const rows = [];
-    for(let w=0; w<G.schedule.length; w++){
-      const playedWeek = G.results[w];
-      const source = playedWeek || G.schedule[w];
+    for(let w=0; w<src.schedule.length; w++){
+      const playedWeek = src.results[w];
+      const source = playedWeek || src.schedule[w];
       source.forEach(g => {
         if(ft!=null && g.a!==ft && g.b!==ft) return;
-        rows.push(gameRowHTML('reg', w, g, 'Week '+(w+1)));
+        rows.push(gameRowHTML('reg', w, g, 'Week '+(w+1), sv));
       });
     }
     if(rows.length){
@@ -4800,13 +4876,13 @@ function allGamesHTML(){
     }
   }
   // Playoffs
-  if(G.playoffs){
+  if(src.playoffs){
     const roundLabel = {1:'Wild Card', 2:'Divisional', 3:'Apex Bowl'};
     const rows = [];
     [1,2,3].forEach(rn => {
-      (G.playoffs['r'+rn]||[]).forEach(g => {
+      (src.playoffs['r'+rn]||[]).forEach(g => {
         if(ft!=null && g.a!==ft && g.b!==ft) return;
-        rows.push(gameRowHTML('po', rn, g, roundLabel[rn]));
+        rows.push(gameRowHTML('po', rn, g, roundLabel[rn], sv));
       });
     });
     if(rows.length){
@@ -5453,13 +5529,14 @@ function resolveIncomingOffer(offerId, action){
   }
 }
 
-function posFilterOptionsHTML(){
-  return '<option value="">All Positions</option>' +
-    '<option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option>' +
-    '<optgroup label="Offensive Line"><option value="LT">LT</option><option value="LG">LG</option><option value="C">C</option><option value="RG">RG</option><option value="RT">RT</option></optgroup>' +
-    '<optgroup label="Defensive Line"><option value="DE">DE</option><option value="DT">DT</option></optgroup>' +
-    '<optgroup label="Linebacker"><option value="OLB">OLB</option><option value="MLB">MLB</option></optgroup>' +
-    '<option value="CB">CB</option><option value="S">S</option><option value="K">K</option>';
+function posFilterOptionsHTML(current){
+  const sel = v => (current === v ? ' selected' : '');
+  return '<option value=""'+sel('')+'>All Positions</option>' +
+    '<option value="QB"'+sel('QB')+'>QB</option><option value="RB"'+sel('RB')+'>RB</option><option value="WR"'+sel('WR')+'>WR</option><option value="TE"'+sel('TE')+'>TE</option>' +
+    '<optgroup label="Offensive Line"><option value="LT"'+sel('LT')+'>LT</option><option value="LG"'+sel('LG')+'>LG</option><option value="C"'+sel('C')+'>C</option><option value="RG"'+sel('RG')+'>RG</option><option value="RT"'+sel('RT')+'>RT</option></optgroup>' +
+    '<optgroup label="Defensive Line"><option value="DE"'+sel('DE')+'>DE</option><option value="DT"'+sel('DT')+'>DT</option></optgroup>' +
+    '<optgroup label="Linebacker"><option value="OLB"'+sel('OLB')+'>OLB</option><option value="MLB"'+sel('MLB')+'>MLB</option></optgroup>' +
+    '<option value="CB"'+sel('CB')+'>CB</option><option value="S"'+sel('S')+'>S</option><option value="K"'+sel('K')+'>K</option>';
 }
 function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock){
   const filter = tradeFilterState[which];
@@ -5473,7 +5550,7 @@ function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock)
     if(typeof va === 'string') return va.localeCompare(vb) * sort.dir;
     return ((va - vb) || (b.rating - a.rating)) * sort.dir;
   });
-  let s = '<div class="rosterctl" style="margin-bottom:8px"><select class="fselect" onchange="setTradeFilter(\''+which+'\', this.value)">' + posFilterOptionsHTML() + '</select></div>';
+  let s = '<div class="rosterctl" style="margin-bottom:8px"><select class="fselect" onchange="setTradeFilter(\''+which+'\', this.value)">' + posFilterOptionsHTML(filter) + '</select></div>';
   const cols = [['name','Player'],['rating','OVR'],['salary','$'],['status','Status']];
   s += '<table class="tbl"><tr>';
   cols.forEach(c => {
@@ -5604,9 +5681,13 @@ function tradeHTML(){
   // RIGHT: trade partner
   s += '<div>';
   s += '<div class="panel" style="margin-bottom:12px"><select class="fselect" style="width:100%;text-align:center;padding:8px;font-size:13px" onchange="setTradeTeam(parseInt(this.value))">';
-  G.teams.forEach(t => { if(t.idx===G.userTeam) return; s += '<option value="'+t.idx+'" '+(t.idx===tradeTeam?'selected':'')+'>'+esc(t.city+' '+t.name)+'</option>'; });
+  G.teams.forEach(t => {
+    if(t.idx===G.userTeam) return;
+    const needs = teamTopNeeds(t, 3);
+    s += '<option value="'+t.idx+'" '+(t.idx===tradeTeam?'selected':'')+'>'+esc(t.city+' '+t.name)+(needs.length?' — needs '+needs.join('/'):'')+'</option>';
+  });
   s += '</select>' +
-    '<p class="sub" style="margin-top:6px">'+them.w+'-'+them.l+'</p><p class="sub" style="margin-top:2px">Needs: <b style="color:var(--gold)">'+(need||'nothing')+'</b></p></div>';
+    '<p class="sub" style="margin-top:6px">'+them.w+'-'+them.l+'</p><p class="sub" style="margin-top:2px">Top needs: <b style="color:var(--gold)">'+(teamTopNeeds(them,3).join(', ')||'nothing pressing')+'</b></p></div>';
   s += '<div class="panel"><div class="hd disp" style="font-size:14px">🎯 Their Roster &amp; Trade Block</div>' +
     '<p class="sub" style="margin-bottom:8px">You can offer for anyone here except a <b style="color:var(--red)">🔒 Protected</b> player — teams keep their true cornerstones off the table no matter what you put up.</p>' +
     tradeRosterTableHTML('theirs', them, cart.get, 'toggleGet', false) + '</div>';
