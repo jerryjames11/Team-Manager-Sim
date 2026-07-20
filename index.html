@@ -2034,7 +2034,7 @@ function advanceToTag(){
   // roll the tradeable-picks window forward so every club always has a picture 3 draft classes out
   G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year: G.year+2, round: r, team: t.idx, orig: t.idx }); });
   G.results = []; G.playoffs = null; G.preResults = [];
-  if(G.mode !== 'player') G.trainPts += 3;
+  G.trainPts += 3;
   G.tagUsed = false; G.otaWeek = 0; G.preReport = null;
   if(G.mode !== 'owner' && G.mode !== 'player' && G.confidence <= 0){ G.phase = 'fired'; save(); render(); return; }
   G.phase = 'tag';
@@ -2203,7 +2203,7 @@ function runOTA(focus){
 function simOTAs(){ while(G.phase==='ota') runOTA('team'); }
 function runCamp(){
   // late-July padded practices: extra training points + a couple of camp risers
-  if(G.mode !== 'player') G.trainPts += 4;
+  G.trainPts += 4;
   const me = meT();
   const risers = me.roster.filter(p => p.rating < 95).sort(() => Math.random()-.5).slice(0, 2);
   G.campReport = risers.map(p => { p.rating = clamp(p.rating+1,50,99); logEv(p,'dev','Training camp riser',1); return {name:p.name, pos:p.spot, delta:1}; });
@@ -4074,6 +4074,54 @@ function newPlayerCareer(position){
   G.draftLog = [];
   G.playerDraftReveal = null;
   G.playerId = null;
+  G.preDraftPhase = true;
+  G.preDraftWorkoutsLeft = 3;
+  G.preDraftProDayUsed = false;
+  G.preDraftLog = [];
+  save(); render();
+}
+function myProspect(){ return (G.draftPool||[]).find(p => p.id === G.myProspectId) || null; }
+function doPreDraftWorkout(){
+  if(!G.preDraftPhase || (G.preDraftWorkoutsLeft||0) <= 0) return;
+  const pr = myProspect();
+  if(!pr) return;
+  const roll = Math.random();
+  let delta, note;
+  if(roll < .15){ delta = -RI(0,2); note = 'Had an off day — a little rusty out there.'; }
+  else if(roll < .75){ delta = RI(1,3); note = 'Solid session — tightened up the range a bit.'; }
+  else { delta = RI(4,6); note = 'Excellent workout — teams took real notice.'; }
+  pr.scoutLo = clamp(pr.scoutLo + delta, 50, 99);
+  pr.scoutHi = clamp(pr.scoutHi + Math.max(0, Math.round(delta*.6)), pr.scoutLo, 99);
+  G.preDraftWorkoutsLeft--;
+  G.preDraftLog.unshift(note+' Now projecting '+pr.scoutLo+'–'+pr.scoutHi+' OVR.');
+  save(); render();
+}
+function doProDay(){
+  if(!G.preDraftPhase || G.preDraftProDayUsed) return;
+  const pr = myProspect();
+  if(!pr) return;
+  G.preDraftProDayUsed = true;
+  const roll = Math.random();
+  let note;
+  if(roll < .25){
+    const hit = RI(6,12);
+    pr.scoutLo = clamp(pr.scoutLo-hit,50,99); pr.scoutHi = clamp(pr.scoutHi-Math.round(hit*.6),50,99);
+    note = 'Pro Day disaster — teams saw enough to get worried.';
+  } else if(roll < .65){
+    const bump = RI(2,5);
+    pr.scoutLo = clamp(pr.scoutLo+bump,50,99); pr.scoutHi = clamp(pr.scoutHi+bump,50,99);
+    note = 'Solid Pro Day — a real, if modest, bump across the board.';
+  } else {
+    const bump = RI(8,14);
+    pr.scoutHi = clamp(pr.scoutHi+bump,50,99); pr.scoutLo = clamp(pr.scoutLo+Math.round(bump*.5),50,99);
+    note = 'Electric Pro Day — you\'re the talk of the league today.';
+  }
+  if(pr.scoutLo > pr.scoutHi) pr.scoutHi = pr.scoutLo;
+  G.preDraftLog.unshift(note+' Now projecting '+pr.scoutLo+'–'+pr.scoutHi+' OVR.');
+  save(); render();
+}
+function beginDraftForReal(){
+  G.preDraftPhase = false;
   advanceDraftPointerPlayerMode();
   save(); render();
 }
@@ -4229,6 +4277,25 @@ function playerAdvance(){
   save(); render();
 }
 function playerDashboardHTML(){
+  if(G.preDraftPhase){
+    const pr = myProspect();
+    if(!pr) return '<div class="panel"><p class="sub">Something went wrong finding your prospect profile.</p></div>';
+    let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Pre-Draft — Make Your Case</div>' +
+      '<p class="sub">Scouts have you projected at <b style="color:var(--gold)">'+pr.scoutLo+'–'+pr.scoutHi+'</b> OVR right now. This is your last chance to move that number before the draft.</p></div>';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Private Workouts</div>' +
+      '<p class="sub">'+(G.preDraftWorkoutsLeft||0)+' session'+(G.preDraftWorkoutsLeft!==1?'s':'')+' left. Modest, mostly-safe gains.</p>' +
+      '<button class="btn primary" '+((G.preDraftWorkoutsLeft||0)>0?'':'disabled')+' onclick="doPreDraftWorkout()">Run a Workout</button></div>';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Pro Day</div>' +
+      '<p class="sub">One shot, high variance. Could be the best day of your life — could be a disaster. Only usable once, and only if you\'re not happy with where you stand.</p>' +
+      '<button class="btn danger" '+(G.preDraftProDayUsed?'disabled':'')+' onclick="doProDay()">'+(G.preDraftProDayUsed?'Already Used':'Go For It')+'</button></div>';
+    if(G.preDraftLog && G.preDraftLog.length){
+      s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Results</div>';
+      G.preDraftLog.forEach(l => { s += '<p class="sub">'+esc(l)+'</p>'; });
+      s += '</div>';
+    }
+    s += '<div class="panel" style="text-align:center"><button class="btn primary big" onclick="beginDraftForReal()">Enter the Draft →</button></div>';
+    return s;
+  }
   if(G.playerDraftReveal){
     const t = G.teams[G.playerDraftReveal.team];
     const revealText = G.playerDraftReveal.undrafted
@@ -4267,6 +4334,11 @@ function playerDashboardHTML(){
       '<p class="sub">You\'re '+myP.age+' with a '+myP.rating+' OVR. The body\'s telling you something.</p>' +
       '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="playContinue()">Keep Playing</button><button class="btn danger" onclick="retirePlayer()">Retire</button></div></div>';
   } else {
+    if(G.phase === 'offseason'){
+      s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Offseason Training</div>' +
+        '<p class="sub">Get after it before camp opens. You\'ve got <b style="color:var(--gold)">'+G.trainPts+'</b> train pts banked.</p>' +
+        trainBtnHTML(myP) + '</div>';
+    }
     s += '<div class="panel" style="margin-bottom:12px;text-align:center"><button class="btn primary big" onclick="playerAdvance()">Advance →</button></div>';
   }
 
