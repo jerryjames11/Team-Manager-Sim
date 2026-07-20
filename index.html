@@ -1780,12 +1780,13 @@ function finishWeek(userRes){
 function sortStand(list){
   return list.slice().sort((x,y) => (y.w - x.w) || ((y.pf-y.pa)-(x.pf-x.pa)) || (y.pf - x.pf));
 }
+function seedSort(list){
+  return list.slice().sort((x,y) => (y.w - x.w) || (x.pa - y.pa)); // wins desc, then points forced (allowed) asc — fewer points forced by the defense = higher seed
+}
 function confSeeds(conf){
   const teams = G.teams.filter(t => t.conf === conf);
-  const divWinners = [0,1].map(d => sortStand(teams.filter(t => t.div === d))[0]);
-  const winnersSorted = sortStand(divWinners);
-  const rest = sortStand(teams.filter(t => !divWinners.includes(t)));
-  return winnersSorted.concat(rest.slice(0,2)).map(t => t.idx);
+  const divQualifiers = [0,1].flatMap(d => seedSort(teams.filter(t => t.div === d)).slice(0,2)); // top 2 from each division
+  return seedSort(divQualifiers).map(t => t.idx);
 }
 function buildPlayoffs(){
   G.phase = 'playoffs';
