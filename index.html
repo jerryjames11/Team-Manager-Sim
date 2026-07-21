@@ -1128,7 +1128,18 @@ function runExpiry(){
       } else stay.push(p);
     });
     t.roster = stay;
-    go.forEach(p => { p.years = 0; G.fa.push(p); });
+    go.forEach(p => {
+      p.years = 0;
+      if(G.mode === 'player' && G.playerId && p.id === G.playerId && !G.playerFreeAgent){
+        // this is the human player's own character — give them the proper free-agency spotlight
+        // (immediate offers from interested clubs) instead of dumping them in the anonymous pool
+        G.playerFreeAgent = p;
+        const others = G.teams.filter(ot => ot.idx !== t.idx).sort(() => Math.random()-.5).slice(0,3);
+        G.playerFAOffers = others.map(ot => ({ teamIdx: ot.idx, offer: Math.round(userPrice(p,1) * R(0.85,1.2) * 10) / 10 }));
+      } else {
+        G.fa.push(p);
+      }
+    });
   });
   G.fa.sort((a,b) => b.rating - a.rating);
   if(G.fa.length > 150) G.fa.length = 150;
@@ -4717,8 +4728,23 @@ function playerDashboardHTML(){
       '<p style="margin:10px 0">'+esc(snap.name||'You')+' — '+esc(snap.pos||'')+', retired at '+(snap.finalAge||'')+' with a final rating of <b style="color:var(--gold)">'+(snap.finalRating||'')+'</b> OVR.</p>' +
       '<p class="sub">Thanks for the ride.</p></div>';
   }
-  const myP = mePlayer();
-  if(!myP) return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>';
+  let myP = mePlayer();
+  if(!myP && G.playerId != null && !G.playerFreeAgent && !G.playerRetireDecision){
+    // recovery path: the player-character isn't on any roster and isn't flagged as a free agent —
+    // most likely they got swept into the anonymous FA pool by a generic league-wide process.
+    // Pull them back out and give them the proper free-agency treatment instead of a dead end.
+    const lost = G.fa.find(p => p.id === G.playerId);
+    if(lost){
+      G.fa = G.fa.filter(p => p.id !== G.playerId);
+      G.playerFreeAgent = lost;
+      const others = G.teams.sort(() => Math.random()-.5).slice(0,3);
+      G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(lost,1) * R(0.85,1.2) * 10) / 10 }));
+      save();
+      myP = mePlayer();
+    }
+  }
+  if(!myP) return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>' +
+    '<div class="panel" style="text-align:center"><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
   const t = G.teams[G.userTeam];
   const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
