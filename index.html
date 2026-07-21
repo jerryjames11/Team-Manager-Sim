@@ -251,6 +251,17 @@ th.sorth.on{color:var(--gold)}
 .play.st{background:#D8DEE9;border-left-color:#41506B}
 .play.def{background:#C9D8EE;border-left-color:#2C4E86}
 .play:disabled{opacity:.35;transform:none;box-shadow:none;cursor:default}
+.qblive{display:flex;flex-direction:column;gap:8px}
+.qbclock{text-align:center;font-size:26px;font-weight:800;color:#7A2E20}
+.qbclockbar{height:8px;border-radius:5px;background:#00000022;overflow:hidden;margin:-4px 0 2px}
+.qbclockbar i{display:block;height:100%;background:linear-gradient(90deg,#2F7D3B,#C9A227,#C0392B);transition:width .1s linear}
+.qbtarget{background:#F0EBDA;border:1px solid #00000022;border-radius:8px;padding:8px 10px;cursor:pointer;transition:.12s}
+.qbtarget:hover{border-color:#41506B;transform:translateY(-1px)}
+.qbtarget-name{font-weight:700;font-size:13px;color:#17150E;margin-bottom:5px}
+.qbtarget-name small{font-weight:600;opacity:.6;margin-left:4px}
+.qbopenbar{height:15px;border-radius:8px;background:#00000022;position:relative;overflow:hidden}
+.qbopenbar i{display:block;height:100%;transition:width .12s linear,background .12s linear}
+.qbopenpct{position:absolute;right:6px;top:0;font-size:10px;font-weight:800;line-height:15px;color:#14100A}
 #gamelog{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-height:170px;overflow-y:auto;font-size:12.5px;line-height:1.75}
 #gamelog .q{color:var(--gold);font-weight:700;letter-spacing:.1em}
 #gamelog .big{color:var(--gold);font-weight:700}
@@ -374,22 +385,22 @@ const MODE_LABEL = { coachgm: 'Coach / GM', owner: 'Owner', player: 'Player' };
 const CONF_NAMES = ['Liberty','Frontier'];
 const DIV_NAMES  = ['East','West'];
 const TEAM_DEFS = [
-  {city:'Brooklyn', state:'NY',    name:'Bulldogs',   abbr:'BKN', conf:0, div:0, c1:'#5A3A22', c2:'#E0B67A'},
-  {city:'Boston', state:'MA',      name:'Beacons',    abbr:'BOS', conf:0, div:0, c1:'#1F4E8C', c2:'#F2D14B'},
-  {city:'Philadelphia', state:'PA',name:'Founders',   abbr:'PHI', conf:0, div:0, c1:'#5E2A84', c2:'#D8CFAF'},
-  {city:'Charlotte', state:'NC',   name:'Aviators',   abbr:'CLT', conf:0, div:0, c1:'#1B7F8C', c2:'#E8E8E8'},
-  {city:'Chicago', state:'IL',     name:'Blizzard',   abbr:'CHI', conf:0, div:1, c1:'#4C7FB5', c2:'#E9F2FA'},
-  {city:'St. Louis', state:'MO',   name:'Archers',    abbr:'STL', conf:0, div:1, c1:'#8C1F2F', c2:'#E7C24F'},
-  {city:'Minneapolis', state:'MN', name:'Frost',      abbr:'MIN', conf:0, div:1, c1:'#3D5A80', c2:'#CFE8F5'},
-  {city:'Kansas City', state:'MO', name:'Twisters',   abbr:'KC',  conf:0, div:1, c1:'#B0492A', c2:'#F0E4C8'},
-  {city:'Atlanta', state:'GA',     name:'Firebirds',  abbr:'ATL', conf:1, div:0, c1:'#C24914', c2:'#2B2B2B'},
-  {city:'Miami', state:'FL',       name:'Barracudas', abbr:'MIA', conf:1, div:0, c1:'#0E8C7F', c2:'#F26D9A'},
-  {city:'Nashville', state:'TN',   name:'Rhythm',     abbr:'NSH', conf:1, div:0, c1:'#6B3FA0', c2:'#F2B950'},
-  {city:'Orlando', state:'FL',     name:'Comets',     abbr:'ORL', conf:1, div:0, c1:'#2456B0', c2:'#8FD3F0'},
-  {city:'Dallas', state:'TX',      name:'Stampede',   abbr:'DAL', conf:1, div:1, c1:'#7A2E1F', c2:'#D9A441'},
-  {city:'Austin', state:'TX',      name:'Armadillos', abbr:'AUS', conf:1, div:1, c1:'#4C6B3C', c2:'#D8CBA8'},
-  {city:'Denver', state:'CO',      name:'Summit',     abbr:'DEN', conf:1, div:1, c1:'#37476B', c2:'#E8E2D4'},
-  {city:'Portland', state:'OR',    name:'Pioneers',   abbr:'POR', conf:1, div:1, c1:'#2F6E4F', c2:'#C9B58A'}
+  {city:'Brooklyn', state:'NY',    name:'Bulldogs',   abbr:'BKN', conf:0, div:0, c1:'#5A3A22', c2:'#E0B67A', market:5},
+  {city:'Boston', state:'MA',      name:'Beacons',    abbr:'BOS', conf:0, div:0, c1:'#1F4E8C', c2:'#F2D14B', market:4},
+  {city:'Philadelphia', state:'PA',name:'Founders',   abbr:'PHI', conf:0, div:0, c1:'#5E2A84', c2:'#D8CFAF', market:4},
+  {city:'Charlotte', state:'NC',   name:'Aviators',   abbr:'CLT', conf:0, div:0, c1:'#1B7F8C', c2:'#E8E8E8', market:3},
+  {city:'Chicago', state:'IL',     name:'Blizzard',   abbr:'CHI', conf:0, div:1, c1:'#4C7FB5', c2:'#E9F2FA', market:5},
+  {city:'St. Louis', state:'MO',   name:'Archers',    abbr:'STL', conf:0, div:1, c1:'#8C1F2F', c2:'#E7C24F', market:2},
+  {city:'Minneapolis', state:'MN', name:'Frost',      abbr:'MIN', conf:0, div:1, c1:'#3D5A80', c2:'#CFE8F5', market:3},
+  {city:'Kansas City', state:'MO', name:'Twisters',   abbr:'KC',  conf:0, div:1, c1:'#B0492A', c2:'#F0E4C8', market:2},
+  {city:'Atlanta', state:'GA',     name:'Firebirds',  abbr:'ATL', conf:1, div:0, c1:'#C24914', c2:'#2B2B2B', market:4},
+  {city:'Miami', state:'FL',       name:'Barracudas', abbr:'MIA', conf:1, div:0, c1:'#0E8C7F', c2:'#F26D9A', market:4},
+  {city:'Nashville', state:'TN',   name:'Rhythm',     abbr:'NSH', conf:1, div:0, c1:'#6B3FA0', c2:'#F2B950', market:3},
+  {city:'Orlando', state:'FL',     name:'Comets',     abbr:'ORL', conf:1, div:0, c1:'#2456B0', c2:'#8FD3F0', market:3},
+  {city:'Dallas', state:'TX',      name:'Stampede',   abbr:'DAL', conf:1, div:1, c1:'#7A2E1F', c2:'#D9A441', market:5},
+  {city:'Austin', state:'TX',      name:'Armadillos', abbr:'AUS', conf:1, div:1, c1:'#4C6B3C', c2:'#D8CBA8', market:3},
+  {city:'Denver', state:'CO',      name:'Summit',     abbr:'DEN', conf:1, div:1, c1:'#37476B', c2:'#E8E2D4', market:3},
+  {city:'Portland', state:'OR',    name:'Pioneers',   abbr:'POR', conf:1, div:1, c1:'#2F6E4F', c2:'#C9B58A', market:3}
 ];
 const FN = ['Marcus','DeShawn','Tyler','Jalen','Chris','Aaron','Devin','Malik','Jordan','Trevor','Cam','Isaiah','Xavier','Brandon','Zeke','Andre','Kyle','Darius','Nate','Trey','Jamal','Cody','Reggie','Vince','Terrell','Shane','Omar','Dante','Grant','Leon','Micah','Rashad','Colt','Emeka','Judah','Silas','Knox','Bo','Ray','Dez',
   'Elijah','Josiah','Caleb','Miles','Tucker','Wyatt','Gunnar','Lamar','Deion','Jayden','Amir','Kobe','Braylon','Maxwell','Julian','Sean','Travis','Corey','Dominique','Deshaun','Antoine','Marquis','Rodney','Chase','Hunter','Levi','Ezekiel','Amari','Cole','Garrett','Jared','Preston','Roman','Sterling','Elias','Nasir','Kellen','Mason','Drew','Jerome',
@@ -676,21 +687,30 @@ function recMeterHTML(){
 function askOwnerForBudget(){
   if(G.budgetAskYear === G.year){ alert('You already asked the owner this year — try again next season.'); return; }
   G.budgetAskYear = G.year;
+  const reserve = 2; // the owner won't let cash reserves drop below this floor
+  const available = Math.max(0, (G.cash||0) - reserve);
+  if(available < 0.5){
+    save(); render();
+    return { ok:false, reason:'cash' };
+  }
   const chance = clamp(G.confidence/100, .05, .95);
   const roll = Math.random();
   if(roll < chance){
-    const grant = Math.round((2 + (G.confidence/100)*4) * 10) / 10;
+    const desired = 2 + (G.confidence/100)*4;
+    const grant = Math.round(Math.min(desired, available) * 10) / 10;
     G.staffCapBonus = (G.staffCapBonus||0) + grant;
+    G.cash = Math.round(((G.cash||0) - grant) * 10) / 10;
     save(); render();
     return { ok:true, amount: grant };
   }
   save(); render();
-  return { ok:false };
+  return { ok:false, reason:'confidence' };
 }
 function doAskOwner(){
   const result = askOwnerForBudget();
   if(!result) return;
-  if(result.ok) alert('The owner comes through — staff budget increased by '+money(result.amount)+'.');
+  if(result.ok) alert('The owner comes through — staff budget increased by '+money(result.amount)+', drawn straight from the club\'s cash reserves.');
+  else if(result.reason === 'cash') alert('The cupboard is bare — there isn\'t enough cash in the club\'s reserves to fund this right now. Ticket revenue and sponsorships need a season or two to build it back up.');
   else alert('The owner turns you down this time. Confidence in the front office matters — try again next year.');
 }
 function coachSalaryFor(rating, role){
@@ -968,13 +988,15 @@ function newCareer(teamIdx, mode){
     nextId: pv.nextId,
     teams: null, schedule: null, results: [],
     fa: [], preWeek: 1, preOpps: [], preResults: [],
-    trainPts: 4, confidence: 50,
+    trainPts: 4, confidence: 50, fanApproval: 50, cash: (TEAM_DEFS[teamIdx].market||3) * 8, financeLog: [],
     playoffs: null, prospects: null,
     phase: 'tag', tagUsed: false, otaWeek: 0, preReport: null,
     offForm: 'single', defForm: 'f43', lineupOverride: {}, activePage: null,
     staff: { OC:null, DC:null, STC:null, pos:{} },
     coachPool: [],
     career: { seasons:0, w:0, l:0, titles:0, berths:0 },
+    owner: { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: 2026 },
+    franchiseHistory: { banners: [], ringOfHonor: [], ownershipLog: [] },
     lastInjury: null
   };
   G.teams = TEAM_DEFS.map((d,i) => ({
@@ -1246,6 +1268,7 @@ function signFA(pid){
   p.injWeeks = 0; p.dressed = true;
   logEv(p, 'ct', 'Signed with '+me.city+' — '+money(p.salary)+'/yr × '+p.years, 0);
   bumpRel(p, 'coach', 2);
+  bumpFan(p.rating >= 85 ? 5 : p.rating >= 75 ? 2 : 0);
   me.roster.push(p);
   G.fa.splice(i,1);
   if(G.phase === 'fa') aiFAWave(RI(2,4));  // the market moves while you shop
@@ -1264,6 +1287,7 @@ function cutPlayer(pid){
     logEv(p, 'ct', 'Released — '+money(dead)+' in unamortized bonus hits '+me.city+'\'s cap as dead money', 0);
   }
   bumpRel(p, 'coach', -8);
+  bumpFan(p.rating >= 85 ? -5 : p.rating >= 75 ? -2 : 0);
   p.years = 0;
   G.fa.push(p);
   G.fa.sort((a,b) => b.rating - a.rating);
@@ -1717,6 +1741,7 @@ function finishWeek(userRes){
   if(G.mode !== 'player'){
     G.trainPts += won ? 3 : 1;
     G.confidence = clamp(G.confidence + (won ? 4 : -4), 0, 100);
+    bumpFan(won ? 1 : -1);
   } else if(!G.playerGamePlayed){
     // position isn't individually tracked in the sim (e.g. OL) — fall back to a smaller team-outcome nudge
     G.confidence = clamp(G.confidence + (won ? 2 : -2), 0, 100);
@@ -1726,9 +1751,17 @@ function finishWeek(userRes){
     if(myP){
       if(myP.fatigue === undefined) myP.fatigue = 0;
       const plan = G.playerWeekPlan || [null,null,null,null,null];
-      plan.forEach(day => { myP.fatigue += (day === 'rest') ? -8 : 4; });
+      plan.forEach(day => { if(day === 'rest') myP.fatigue -= 8; else if(day === 'practice') myP.fatigue += 4; });
       if(G.playerGamePlayed) myP.fatigue += 15;
       myP.fatigue = clamp(myP.fatigue, 0, 100);
+      const practicesThisWeek = plan.filter(day => day === 'practice').length;
+      G.practiceAccum = (G.practiceAccum || 0) + practicesThisWeek;
+      const earnedPts = Math.floor(G.practiceAccum / 2);
+      if(earnedPts > 0){
+        G.practiceAccum -= earnedPts * 2;
+        G.trainPts = (G.trainPts || 0) + earnedPts;
+        logEv(myP, 'dev', 'Earned '+earnedPts+' train pt'+(earnedPts!==1?'s':'')+' from practice reps', 0);
+      }
     }
     // deliberately NOT reset — last week's practice/rest plan carries forward as a standing schedule
     // until the player changes it, rather than needing to be re-set every single week
@@ -1792,8 +1825,8 @@ function buildPlayoffs(){
   G.phase = 'playoffs';
   const s0 = confSeeds(0), s1 = confSeeds(1);
   const berth = s0.includes(G.userTeam) || s1.includes(G.userTeam);
-  if(berth){ G.career.berths++; if(G.mode !== 'player') G.confidence = clamp(G.confidence + 10, 0, 100); }
-  else if(G.mode !== 'player') G.confidence = clamp(G.confidence - 8, 0, 100);
+  if(berth){ G.career.berths++; if(G.mode !== 'player') G.confidence = clamp(G.confidence + 10, 0, 100); bumpFan(4); }
+  else{ if(G.mode !== 'player') G.confidence = clamp(G.confidence - 8, 0, 100); bumpFan(-2); }
   G.playoffs = {
     round: 1, userIn: berth,
     r1: [ {a:s0[0], b:s0[3], done:false}, {a:s0[1], b:s0[2], done:false},
@@ -1845,6 +1878,7 @@ function recordPlayoffUserResult(res){
   } else if(!G.playerGamePlayed){
     G.confidence = clamp(G.confidence + (won ? 3 : -3), 0, 100);
   }
+  bumpFan(won ? 2 : -1);
   G.career[won ? 'w' : 'l']++;
   simPlayoffRound();
 }
@@ -1861,7 +1895,12 @@ function advancePlayoffRound(){
     P.champion = P.r3[0].winner;
     if(P.champion === G.userTeam){
       G.career.titles++;
+      if(G.mode === 'owner'){
+        if(!G.franchiseHistory) G.franchiseHistory = { banners:[], ringOfHonor:[], ownershipLog:[] };
+        G.franchiseHistory.banners.push({ year:G.year, season:G.season, owner: G.owner ? G.owner.name : null });
+      }
       if(G.mode !== 'player') G.confidence = clamp(G.confidence + 18, 0, 100);
+      bumpFan(15);
     }
     G.phase = 'offseason';
   }
@@ -1958,6 +1997,7 @@ function proposeExtension(pid){
   p.resigned = true; // don't double-decrement at the next March expiry pass
   logEv(p, 'ct', 'Extended +'+preview.d.addYears+' yr'+(preview.d.addYears>1?'s':'')+' — '+money(offeredTotal)+' total, '+money(sched.bonusProration)+'/yr bonus proration × '+sched.bonusYearsLeft+' yrs', 0);
   bumpRel(p, 'coach', 4 + (preview.d.bonusPct >= 40 ? 1 : 0));
+  bumpFan(p.rating >= 85 ? 5 : p.rating >= 75 ? 2 : 0);
   extendDraft = null;
   save(); closeModal();
 }
@@ -2094,6 +2134,22 @@ function advanceToTag(){
       preSchedule: G.preSchedule, schedule: G.schedule, results: G.results, playoffs: G.playoffs,
       standings: G.teams.map(t => ({ idx:t.idx, city:t.city, name:t.name, abbr:t.abbr, w:t.w, l:t.l, pf:t.pf, pa:t.pa }))
     });
+    // club finances — gate + sponsorship revenue (driven by market size and fan approval) minus staff payroll and basic ops
+    const me = meT();
+    const market = me.market || 3;
+    const winPct = (me.w + me.l) > 0 ? me.w/(me.w+me.l) : 0.5;
+    const stadiumMult = (STADIUM_TIERS[G.stadiumLevel||0]||STADIUM_TIERS[0]).gateMult;
+    const gate = market * (2.2 + (G.fanApproval/100)*2.4 + winPct*1.2) * stadiumMult;
+    const sponsorship = market * (0.6 + (G.fanApproval/100)*0.8);
+    const revenue = Math.round((gate + sponsorship) * 10) / 10;
+    const staffCost = Math.round(staffPayroll() * 10) / 10;
+    const opsCost = Math.round(market * 0.8 * 10) / 10;
+    const net = Math.round((revenue - staffCost - opsCost) * 10) / 10;
+    if(G.cash == null) G.cash = market * 8;
+    G.cash = Math.round((G.cash + net) * 10) / 10;
+    if(!G.financeLog) G.financeLog = [];
+    G.financeLog.push({ season:G.season, year:G.year, revenue, staffCost, opsCost, net, cash:G.cash });
+    if(G.financeLog.length > 10) G.financeLog.shift();
   }
   // league-wide aging, progression, retirement
   const develop = p => {
@@ -2130,7 +2186,12 @@ function advanceToTag(){
   }
   G.teams.forEach(t => {
     t.roster.forEach(develop);
-    t.roster = t.roster.filter(p => !(p.age >= 33 && Math.random() < (p.age-32)*.25) && !(p.rating <= 54 && Math.random() < .4));
+    const retiring = t.roster.filter(p => (p.age >= 33 && Math.random() < (p.age-32)*.25) || (p.rating <= 54 && Math.random() < .4));
+    if(G.mode === 'owner' && t.idx === G.userTeam && retiring.length){
+      if(!G.recentRetirees) G.recentRetirees = [];
+      retiring.forEach(p => G.recentRetirees.push({ id:p.id, name:p.name, pos:p.spot||p.pos, rating:p.rating, joinYear: joinYear(p), retiredYear: G.year }));
+    }
+    t.roster = t.roster.filter(p => !retiring.includes(p));
     t.roster.forEach(p => {
       if(!p.resigned){
         const c = contractOf(p); // lazy-init BEFORE decrementing — must see the correct pre-decrement years for a first-time rollover
@@ -2171,6 +2232,11 @@ function advanceToTag(){
   }
   G.career.seasons++;
   G.season++; G.year++;
+  if(G.owner) G.owner.age++;
+  if(G.stadiumPending){
+    G.stadiumLevel = G.stadiumPending.level;
+    G.stadiumPending = null;
+  }
   if(!G.draftPicks) G.draftPicks = [];
   // roll the tradeable-picks window forward so every club always has a picture 3 draft classes out
   G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year: G.year+2, round: r, team: t.idx, orig: t.idx }); });
@@ -2256,6 +2322,7 @@ function draftProspect(prospectId, teamIdx, pickObj){
   G.draftLog.push({ pickNum: G.draftPickIdx+1, round, team: teamIdx, name: pr.name, pos: pr.spot, ovr: pr.trueRating });
   if(teamIdx === G.userTeam){
     G.draftClass.push({ round, id: rook.id, scoutLo: pr.scoutLo, scoutHi: pr.scoutHi, trueRating: pr.trueRating });
+    bumpFan(round === 1 ? 3 : round === 2 ? 1 : 0);
   }
   G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
   return rook;
@@ -3621,11 +3688,34 @@ function modalHTML(){
 }
 function render(){
   const app = $('#app');
-  if(!G){ modalView = null; modalArg = null; app.innerHTML = titleHTML(); return; }
+  if(!G){
+    modalView = null; modalArg = null;
+    try {
+      app.innerHTML = titleHTML();
+    } catch(err) {
+      console.error('Title screen render failed, recovering:', err);
+      titleFlow = 'list';
+      pendingMode = null;
+      try { app.innerHTML = careerListHTML(); }
+      catch(err2) {
+        console.error('Career list also failed to render:', err2);
+        app.innerHTML = '<div class="panel" style="border-color:var(--red);margin:16px"><div class="hd disp" style="color:var(--red)">Something went wrong</div><p class="sub">Try reloading the page. Your saves are stored separately and should not be affected.</p></div>';
+      }
+    }
+    return;
+  }
   if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
   if(!G.coachPool) G.coachPool = makeCoachPool();
   if(G.tagUsed === undefined) G.tagUsed = false;
   if(G.otaWeek === undefined) G.otaWeek = 0;
+  if(G.fanApproval == null) G.fanApproval = 50;
+  if(G.stadiumLevel == null) G.stadiumLevel = 0;
+  if(G.stadiumPending === undefined) G.stadiumPending = null;
+  if(G.mode === 'owner' && !G.owner) G.owner = { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: G.year };
+  if(!G.franchiseHistory) G.franchiseHistory = { banners: [], ringOfHonor: [], ownershipLog: [] };
+  if(G.recentRetirees === undefined) G.recentRetirees = [];
+  if(G.cash == null && G.userTeam != null) G.cash = (meT().market||3) * 8;
+  if(!G.financeLog) G.financeLog = [];
   if(!G.draftPicks){
     G.draftPicks = [];
     for(let y = G.year; y <= G.year + 2; y++){
@@ -3641,10 +3731,10 @@ function render(){
     if(canBrowsePages && G.activePage){
       body = pageChromeHTML(G.activePage);
     }
-    else if(G.mode === 'owner' && G.phase !== 'fired'){
+    else if(G.mode === 'owner' && G.phase !== 'fired' && G.phase !== 'game'){
       body = timelineHTML() + '<div class="phase-body">' + ownerDashboardHTML() + '</div>';
     }
-    else if(G.mode === 'player' && G.phase !== 'fired'){
+    else if(G.mode === 'player' && G.phase !== 'fired' && G.phase !== 'game'){
       body = timelineHTML() + '<div class="phase-body">' + playerDashboardHTML() + '</div>';
     }
     else if(G.phase==='hub') body = timelineHTML() + hubHTML();
@@ -4265,7 +4355,8 @@ function newPlayerCareer(position){
     nextId: pv.nextId,
     teams: null, schedule: null, results: [],
     fa: [], preWeek: 1, preOpps: [], preResults: [],
-    trainPts: 4, confidence: 50,
+    trainPts: 4, confidence: 50, fanApproval: 50, cash: null, financeLog: [],
+    practiceAccum: 0, playerWeekPlan: [null,null,null,null,null],
     playoffs: null, prospects: null,
     phase: 'draft', tagUsed: false, otaWeek: 0, preReport: null,
     offForm: 'single', defForm: 'f43', lineupOverride: {}, activePage: null,
@@ -4380,6 +4471,7 @@ function advanceDraftPointerPlayerMode(){
         G.draftPickIdx++;
         if(wasMe && rook){
           G.userTeam = owner;
+          G.cash = (t.market||3) * 8;
           G.playerId = rook.id;
           G.playerDraftReveal = { team: owner, round, pickNum: G.draftPickIdx, undrafted:false };
           save(); render();
@@ -4405,6 +4497,7 @@ function advanceDraftPointerPlayerMode(){
     rook.history = [{y:G.year, k:'move', t:'Signed as an undrafted free agent by '+t.city, d:0}];
     t.roster.push(rook);
     G.userTeam = t.idx;
+    G.cash = (t.market||3) * 8;
     G.playerId = rook.id;
     G.playerDraftReveal = { team: t.idx, round: 0, pickNum: 0, undrafted: true };
     save(); render();
@@ -4473,6 +4566,7 @@ function signWithTeam(teamIdx){
   logEv(myP, 'move', 'Signed with '+t.city+' as a free agent — '+money(offerObj.offer)+'/yr', 0);
   t.roster.push(myP);
   G.userTeam = teamIdx;
+  G.cash = (t.market||3) * 8;
   G.playerFreeAgent = null;
   G.playerFAOffers = null;
   openFreeAgency();
@@ -4554,6 +4648,7 @@ function playerDashboardHTML(){
   const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
     '<p class="sub">'+esc(t.city+' '+t.name)+' · Age '+myP.age+' · <b style="color:var(--gold)">'+myP.rating+'</b> OVR · '+money(myP.salary)+'/yr, '+myP.years+' yr'+(myP.years!==1?'s':'')+' left</p>' +
+    (G.phase === 'hub' && !hasBlockingDecision && userGame() ? '<div style="margin-top:8px;display:flex;justify-content:flex-end"><button class="btn primary big" onclick="playWeek()">🏈 Play Game</button></div>' : '') +
     '<div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap">' + trainBtnHTML(myP) + recoveryBtnHTML(myP) + moraleBtnHTML(myP) +
     (hasBlockingDecision ? '' : '<button class="btn primary" onclick="playerAdvance()">Advance →</button>') +
     '</div>' + playerWeekPlanHTML() + '</div>';
@@ -4592,24 +4687,28 @@ function playerWeekPlanHTML(){
   const gameDate = weekDate(G.year, G.week);
   const gameDow = (gameDate.getDay()+6)%7; // 0=Mon..6=Sun
   const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  let s = '<div style="margin-top:12px"><div class="sub" style="margin-bottom:6px">Week '+G.week+' plan — tap Mon–Fri to toggle Practice / Rest</div><div class="dash-calgrid">';
+  const practicesThisWeek = G.playerWeekPlan.filter(d => d === 'practice').length;
+  const carry = G.practiceAccum || 0;
+  let s = '<div style="margin-top:12px"><div class="sub" style="margin-bottom:6px">Week '+G.week+' plan — tap Mon–Fri to set Practice / Rest / Off</div><div class="dash-calgrid">';
   labels.forEach((d,i) => {
     if(i === gameDow){
       s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box game">GM</div></div>';
     } else if(i < 5){
-      const val = (G.playerWeekPlan[i] === 'rest') ? 'rest' : 'practice';
-      const label = val === 'rest' ? 'REST' : 'PRAC';
+      const raw = G.playerWeekPlan[i];
+      const val = raw === 'rest' ? 'rest' : raw === 'practice' ? 'practice' : 'off';
+      const label = val === 'rest' ? 'REST' : val === 'practice' ? 'PRAC' : '—';
       s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box '+val+'" style="cursor:pointer" onclick="cyclePlanDay('+i+')">'+label+'</div></div>';
     } else {
       s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box"></div></div>';
     }
   });
-  s += '</div></div>';
+  s += '</div><div class="sub" style="margin-top:6px">'+practicesThisWeek+' practice'+(practicesThisWeek!==1?'s':'')+' planned'+(carry>0?' · '+carry+' banked from last week':'')+' — every 2 practices earns 1 train pt (leftovers carry to next week)</div></div>';
   return s;
 }
 function cyclePlanDay(dayIdx){
   if(!G.playerWeekPlan) G.playerWeekPlan = [null,null,null,null,null];
-  G.playerWeekPlan[dayIdx] = (G.playerWeekPlan[dayIdx] === 'rest') ? 'practice' : 'rest';
+  const cur = G.playerWeekPlan[dayIdx];
+  G.playerWeekPlan[dayIdx] = (cur == null) ? 'practice' : (cur === 'practice') ? 'rest' : null;
   save(); render();
 }
 function playerGridDashboardHTML(myP, t){
@@ -4884,6 +4983,41 @@ function fireGM(){
   G.gmPool = makeGMPool();
   save(); render();
 }
+const OWNER_MIN_TENURE = 5;
+function canStepDown(){ return G.mode === 'owner' && !!G.owner && (G.career.seasons||0) >= OWNER_MIN_TENURE; }
+function stepDownAsOwner(){
+  if(!canStepDown()) return;
+  const c = G.career;
+  if(!confirm('Step down and pass the '+meT().city+' '+meT().name+' to an heir? '+esc(G.owner.name)+'\'s era ends at '+c.w+'-'+c.l+' with '+c.titles+' title'+(c.titles!==1?'s':'')+'. The franchise carries on — same team, new owner.')) return;
+  if(!G.franchiseHistory) G.franchiseHistory = { banners:[], ringOfHonor:[], ownershipLog:[] };
+  const old = G.owner;
+  G.franchiseHistory.ownershipLog.push({
+    name: old.name, startYear: old.tookOverYear, endYear: G.year,
+    seasons: c.seasons, w: c.w, l: c.l, titles: c.titles, berths: c.berths
+  });
+  const heir = { name: pick(FN)+' '+pick(LN), age: RI(30,45), tookOverYear: G.year };
+  G.succession = { oldOwner: { name: old.name, tenureSeasons: c.seasons, w: c.w, l: c.l, titles: c.titles }, heir };
+  G.owner = heir;
+  G.career = { seasons:0, w:0, l:0, titles:0, berths:0 };
+  G.confidence = 60;
+  save(); render();
+}
+function acknowledgeSuccession(){ G.succession = null; save(); render(); }
+function inductRingOfHonor(pid){
+  if(!G.recentRetirees) return;
+  const idx = G.recentRetirees.findIndex(p => p.id === pid);
+  if(idx < 0) return;
+  const p = G.recentRetirees[idx];
+  if(!G.franchiseHistory) G.franchiseHistory = { banners:[], ringOfHonor:[], ownershipLog:[] };
+  G.franchiseHistory.ringOfHonor.push({ id:p.id, name:p.name, pos:p.pos, tenure: p.joinYear+'–'+p.retiredYear, finalRating:p.rating, inductedYear:G.year });
+  G.recentRetirees.splice(idx,1);
+  save(); render();
+}
+function dismissRetiree(pid){
+  if(!G.recentRetirees) return;
+  G.recentRetirees = G.recentRetirees.filter(p => p.id !== pid);
+  save(); render();
+}
 function ownerAdvance(){
   if(!G.gm){ if(!G.gmPool) G.gmPool = makeGMPool(); render(); return; }
   if(G.pendingApproval) return;
@@ -4913,10 +5047,37 @@ function ownerDashboardHTML(){
     });
     return s;
   }
+  if(!G.owner) G.owner = { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: G.year };
+  const tenure = G.career.seasons || 0;
+  const canStep = canStepDown();
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(me.city+' '+me.name)+' — Ownership</div>' +
     '<p class="sub">GM: <b style="color:var(--chalk)">'+esc(G.gm.name)+'</b> · Record '+me.w+'-'+me.l+' · '+phaseLabelFor(G.phase)+'</p>' +
+    '<p class="sub" style="margin-top:2px">Owner: <b style="color:var(--chalk)">'+esc(G.owner.name)+'</b>, age '+G.owner.age+' · '+tenure+' season'+(tenure!==1?'s':'')+' in charge (since '+G.owner.tookOverYear+')</p>' +
     '<div class="sub" style="margin:6px 0 2px">GM Confidence</div><div class="capbar"><i style="width:'+(G.gmConfidence||60)+'%;background:'+((G.gmConfidence||60)>=50?'var(--green)':'var(--red)')+'"></i></div>' +
-    '<button class="btn danger" style="margin-top:8px" onclick="fireGM()">Fire GM</button></div>';
+    '<div class="sub" style="margin:8px 0 2px">Fan Approval</div><div class="capbar"><i style="width:'+G.fanApproval+'%;background:'+fanColor()+'"></i></div>' +
+    '<p class="sub" style="margin-top:2px">'+G.fanApproval+'/100 — the fanbase cares less about the week-to-week grind than the GM does, and a lot more about splashy moves: star signings, blockbuster trades, big draft picks, playoff runs, and titles.</p>' +
+    '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="btn danger" onclick="fireGM()">Fire GM</button>' +
+    '<button class="btn" '+(canStep?'':'disabled')+' onclick="stepDownAsOwner()" title="'+(canStep?'Retire and pass the team to an heir':'Needs at least '+OWNER_MIN_TENURE+' seasons in charge first ('+tenure+'/'+OWNER_MIN_TENURE+')')+'">👴 Step Down</button></div></div>';
+
+  if(G.succession){
+    const suc = G.succession;
+    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold);text-align:center"><div class="hd disp">A New Era Begins</div>' +
+      '<p style="margin:8px 0">'+esc(suc.oldOwner.name)+' steps down after '+suc.oldOwner.tenureSeasons+' season'+(suc.oldOwner.tenureSeasons!==1?'s':'')+' — '+suc.oldOwner.w+'–'+suc.oldOwner.l+', '+suc.oldOwner.titles+' title'+(suc.oldOwner.titles!==1?'s':'')+'.</p>' +
+      '<p class="sub">The team passes to <b style="color:var(--gold)">'+esc(suc.heir.name)+'</b>, age '+suc.heir.age+'.</p>' +
+      '<button class="btn primary" style="margin-top:8px" onclick="acknowledgeSuccession()">Begin the New Era</button></div>';
+  }
+
+  if(G.recentRetirees && G.recentRetirees.length){
+    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Ring of Honor Nominations</div>' +
+      '<p class="sub" style="margin-bottom:8px">These veterans hung it up this offseason. Induct any of them into the Ring of Honor?</p>';
+    G.recentRetirees.forEach(p => {
+      s += '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
+        '<span style="display:flex;gap:6px"><button class="btn tiny primary" onclick="inductRingOfHonor('+p.id+')">🏵️ Induct</button><button class="btn tiny" onclick="dismissRetiree('+p.id+')">Let it go</button></span></div>';
+    });
+    s += '</div>';
+  }
+
+  s += financesHTML();
 
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Mandate</div>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
@@ -4947,7 +5108,23 @@ function ownerDashboardHTML(){
     G.ownerLog.forEach(e => { s += '<div class="dash-fixrow"><span>'+e.y+'</span><span>'+esc(e.t)+'</span></div>'; });
     s += '</div>';
   }
+  s += franchiseLegacyHTML();
   return s;
+}
+function franchiseLegacyHTML(){
+  const fh = G.franchiseHistory || { banners:[], ringOfHonor:[], ownershipLog:[] };
+  let s = '<div class="panel" style="margin-top:12px"><div class="hd disp">Franchise Legacy</div>';
+  s += '<div class="sub" style="margin-top:6px">🏆 Championship Banners</div>';
+  if(!fh.banners.length) s += '<p class="sub">None hung yet.</p>';
+  else s += fh.banners.slice().reverse().map(b => '<div class="dash-fixrow"><span>'+b.year+'</span><span style="color:var(--gold)">Apex Bowl Champions'+(b.owner?' — owner '+esc(b.owner):'')+'</span></div>').join('');
+  s += '<div class="sub" style="margin-top:10px">🏵️ Ring of Honor</div>';
+  if(!fh.ringOfHonor.length) s += '<p class="sub">Nobody inducted yet.</p>';
+  else s += fh.ringOfHonor.slice().reverse().map(p => '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+')</span></span><span class="sub">'+p.tenure+' · '+p.finalRating+' OVR final</span></div>').join('');
+  s += '<div class="sub" style="margin-top:10px">📜 Ownership History</div>';
+  if(!fh.ownershipLog.length) s += '<p class="sub">You\'re the first owner on record.</p>';
+  else s += '<table class="tbl" style="margin-top:4px"><tr><th>Owner</th><th>Years</th><th>Record</th><th>Titles</th></tr>' +
+    fh.ownershipLog.slice().reverse().map(o => '<tr><td>'+esc(o.name)+'</td><td>'+o.startYear+'–'+o.endYear+'</td><td>'+o.w+'-'+o.l+'</td><td style="color:var(--gold)">'+o.titles+'</td></tr>').join('') + '</table>';
+  return s + '</div>';
 }
 /* ================= END OWNER MODE ================= */
 
@@ -5369,14 +5546,79 @@ function coachCardHTML(role, pos, label, boost){
     '</div></div></div>';
   return s;
 }
+const STADIUM_TIERS = [
+  { name: 'Original Stadium', gateMult: 1.00 },
+  { name: 'Renovated Seating', gateMult: 1.10, costMult: 9 },
+  { name: 'Modern Upgrades', gateMult: 1.22, costMult: 16 },
+  { name: 'Premium Expansion', gateMult: 1.36, costMult: 26 },
+  { name: 'Signature Stadium', gateMult: 1.52, costMult: 40 }
+];
+function stadiumCost(tierIdx, market){
+  const t = STADIUM_TIERS[tierIdx];
+  if(!t || !t.costMult) return 0;
+  return Math.round(t.costMult * market * 10) / 10;
+}
+function startStadiumUpgrade(){
+  if(G.stadiumPending) return;
+  const level = G.stadiumLevel || 0;
+  const next = level + 1;
+  if(next >= STADIUM_TIERS.length) return;
+  const market = meT().market || 3;
+  const cost = stadiumCost(next, market);
+  if((G.cash||0) < cost) return;
+  G.cash = Math.round(((G.cash||0) - cost) * 10) / 10;
+  G.stadiumPending = { level: next, cost };
+  save(); render();
+}
+function stadiumHTML(){
+  const level = G.stadiumLevel || 0;
+  const tier = STADIUM_TIERS[level];
+  const market = meT().market || 3;
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Stadium</div>' +
+    '<p class="sub">Current: <b style="color:var(--gold)">'+esc(tier.name)+'</b> — gate revenue <b style="color:var(--green)">×'+tier.gateMult.toFixed(2)+'</b></p>';
+  if(G.stadiumPending){
+    const nt = STADIUM_TIERS[G.stadiumPending.level];
+    s += '<p class="sub" style="margin-top:6px">🚧 Under construction: <b style="color:var(--chalk)">'+esc(nt.name)+'</b> — opens for the '+(G.year+1)+' season.</p>';
+  } else if(level+1 < STADIUM_TIERS.length){
+    const nt = STADIUM_TIERS[level+1];
+    const cost = stadiumCost(level+1, market);
+    const afford = (G.cash||0) >= cost;
+    s += '<p class="sub" style="margin-top:6px">Next: <b>'+esc(nt.name)+'</b> — gate ×'+nt.gateMult.toFixed(2)+' · costs <b style="color:var(--gold)">'+money(cost)+'</b> (scales with your market size) · takes effect at the start of next season.</p>' +
+      '<button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="startStadiumUpgrade()">🏗️ Break Ground</button>' +
+      (afford?'':'<span class="sub" style="margin-left:8px">Not enough cash on hand</span>');
+  } else {
+    s += '<p class="sub" style="margin-top:6px">Fully built out — the flagship venue in the league.</p>';
+  }
+  return s + '</div>';
+}
+function financesHTML(){
+  const me = meT();
+  const market = me.market || 3;
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Team Finances</div>' +
+    '<p class="sub">'+esc(me.city)+' is a <b style="color:var(--gold)">'+'★'.repeat(market)+'</b> market (out of 5). Ticket and sponsorship revenue scale with market size and fan approval — see the Fan Approval meter for what moves it.</p>' +
+    '<div class="sub" style="margin-top:8px">Cash on Hand</div>' +
+    '<div style="font-size:22px;font-weight:700;color:'+((G.cash||0)>=0?'var(--green)':'var(--red)')+'">'+money(G.cash||0)+'</div>';
+  const last = (G.financeLog||[])[G.financeLog.length-1];
+  if(last){
+    s += '<table class="tbl" style="margin-top:8px"><tr><th>Season '+last.season+' (' +last.year+ ')</th><th style="text-align:right">Amount</th></tr>' +
+      '<tr><td>Gate + Sponsorship Revenue</td><td style="text-align:right;color:var(--green)">+'+money(last.revenue)+'</td></tr>' +
+      '<tr><td>Staff Payroll</td><td style="text-align:right;color:var(--red)">−'+money(last.staffCost)+'</td></tr>' +
+      '<tr><td>Facility &amp; Operations</td><td style="text-align:right;color:var(--red)">−'+money(last.opsCost)+'</td></tr>' +
+      '<tr><td style="font-weight:700">Net</td><td style="text-align:right;font-weight:700;color:'+(last.net>=0?'var(--green)':'var(--red)')+'">'+(last.net>=0?'+':'')+money(last.net)+'</td></tr></table>';
+  } else {
+    s += '<p class="sub" style="margin-top:8px">No season has closed yet — the books settle up each year at the Franchise Tag window.</p>';
+  }
+  return s + '</div>' + stadiumHTML();
+}
 function staffHTML(){
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
+  let s = financesHTML();
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
     '<p class="sub" style="margin-bottom:8px">Coordinators boost your unit ratings on Sundays. Position coaches speed up training and nudge development at their group every offseason. Staff has its own budget, separate from the player cap.</p>' +
     staffBarHTML();
   const askedThisYear = G.budgetAskYear === G.year;
   s += '<div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
     '<button class="btn tiny" '+(askedThisYear?'disabled':'')+' onclick="doAskOwner()">💰 Ask Owner for More Budget</button>' +
-    '<span class="sub">'+(askedThisYear ? 'Already asked this year — try again next season.' : 'Once a year · odds depend on owner confidence ('+G.confidence+'/100)')+'</span></div></div>';
+    '<span class="sub">'+(askedThisYear ? 'Already asked this year — try again next season.' : 'Once a year · pulled from cash reserves ('+money(G.cash||0)+' on hand) · odds depend on owner confidence ('+G.confidence+'/100)')+'</span></div></div>';
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="margin-bottom:6px">Coordinators</div>';
   s += coachCardHTML('OC', null, 'Offensive Coordinator', ocBoost() ? (ocBoost()>0?'+':'')+ocBoost().toFixed(1)+' Pass O / Run O' : null);
   s += coachCardHTML('DC', null, 'Defensive Coordinator', dcBoost() ? (dcBoost()>0?'+':'')+dcBoost().toFixed(1)+' Pass D / Run D' : null);
@@ -5713,6 +5955,9 @@ function proposeTrade(){
   const verdict = tradeVerdict(giveVal, getVal, needBonus);
   if(verdict.tier === 'accept'){
     executeTrade(me, them, giveP, givePk, getP, getPk);
+    const bestGet = getP.reduce((m,p) => Math.max(m, p.rating), 0);
+    const totalAssets = giveP.length + givePk.length + getP.length + getPk.length;
+    bumpFan(bestGet >= 85 || totalAssets >= 4 ? 6 : (bestGet >= 75 || totalAssets >= 3 ? 2 : 0));
     const summary = (giveP.length||givePk.length ? (giveP.map(p=>p.name).concat(givePk.map(pickLabel)).join(', ')) : 'nothing') +
       ' for ' + (getP.length||getPk.length ? (getP.map(p=>p.name).concat(getPk.map(pickLabel)).join(', ')) : 'nothing');
     G.tradeCarts[tradeTeam] = {give:[], givePicks:[], get:[], getPicks:[]};
@@ -6157,6 +6402,10 @@ function mentorPlayer(pid){
   save(); render();
 }
 function confColor(){ return G.confidence > 60 ? 'var(--green)' : G.confidence > 30 ? 'var(--gold)' : 'var(--red)'; }
+function fanColor(){ return G.fanApproval > 60 ? 'var(--green)' : G.fanApproval > 30 ? 'var(--gold)' : 'var(--red)'; }
+/* Fans care less about the week-to-week grind than the owner does, and much more about
+   splashy moves — a star signing, a blockbuster trade, a title — than a routine win. */
+function bumpFan(delta){ G.fanApproval = clamp((G.fanApproval==null?50:G.fanApproval) + delta, 0, 100); }
 function quitToMenu(){
   if(!confirm('Return to the career picking screen? Your progress is already saved — nothing will be lost.')) return;
   save();
@@ -6280,6 +6529,7 @@ function buildCallsheet(){
     return;
   }
   if(userOnO()){
+    if(G.mode === 'player'){ renderPlayerOffenseCallsheet(); return; }
     title.textContent = 'Offense — ' + ordinal(GM.down) + ' & ' + (GM.spot+GM.dist>=100?'Goal':GM.dist);
     side.textContent = coachSimPausedFor4th ? 'Coach Sim paused — your call' : 'you have the ball';
     let s = '';
@@ -6293,12 +6543,184 @@ function buildCallsheet(){
     if(GM.q>=4 && GM.clock<130 && lead>0 && GM.down<4) s += '<button class="play st" onclick="doKneel()">Kneel<small>burn the clock</small></button>';
     grid.innerHTML = s;
   } else {
+    if(G.mode === 'player'){
+      title.textContent = 'Defense — ' + ordinal(GM.down) + ' & ' + (GM.spot+GM.dist>=100?'Goal':GM.dist);
+      side.textContent = 'coach calls it';
+      grid.innerHTML = '<button class="play st" onclick="playerAutoPlay()">▶ Run the Play<small>let the coach call it</small></button>';
+      return;
+    }
     title.textContent = 'Defense — ' + ordinal(GM.down) + ' & ' + (GM.spot+GM.dist>=100?'Goal':GM.dist);
     side.textContent = GM.down===4 ? 'they may kick…' : 'guess their call';
     let s = '';
     Object.keys(DEF_PLAYS).forEach(k => { s += playBtn(k, 'def', DEF_PLAYS[k].label, DEF_PLAYS[k].sub, 'userCall'); });
     grid.innerHTML = s;
   }
+}
+/* ---------- Player Mode: live on-field mechanics ---------- */
+let livePlayState = null;
+function playerLiveMechanic(){
+  if(G.mode !== 'player' || !G.playerId) return 'auto';
+  const myP = mePlayer();
+  if(!myP || !userOnO()) return 'auto';
+  if(myP.pos !== 'QB') return 'auto'; // WR/RB/K land in follow-up work
+  const lu = lineupFor(offT(), offFormOf(offT()), offFormKeyOf(offT()));
+  const onField = lu.some(s => s.p && s.p.id === myP.id);
+  return onField ? 'qb' : 'auto';
+}
+function playerAutoPlay(){
+  if(busy || !GM || GM.over) return;
+  busy = true;
+  const oc = aiOffCall(), dc = aiDefCall();
+  const res = resolvePlay(oc, dc);
+  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); if(coachSimPausedFor4th){ coachSimPausedFor4th=false; coachSimStep(); } });
+}
+function renderPlayerOffenseCallsheet(){
+  const grid = document.getElementById('playgrid');
+  const title = document.getElementById('cs-title');
+  const side = document.getElementById('cs-side');
+  const mech = playerLiveMechanic();
+  if(mech !== 'qb'){
+    title.textContent = 'Your Team Has the Ball';
+    side.textContent = 'coach calls it';
+    grid.innerHTML = '<button class="play st" onclick="playerAutoPlay()">▶ Run the Play<small>let the coach call it</small></button>';
+    return;
+  }
+  const oc = aiOffCall();
+  if(OFF_PLAYS[oc].fam === 'run'){
+    title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
+    side.textContent = 'handoff';
+    grid.innerHTML = '<button class="play st" onclick="playerRunHandoff(\''+oc+'\')">▶ Snap It<small>hand it off</small></button>';
+    return;
+  }
+  const dc = aiDefCall();
+  livePlayState = buildQBPlayState(oc, dc);
+  title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
+  side.textContent = 'your read';
+  grid.innerHTML = '<div class="qblive"><button class="play st" onclick="snapTheBall()">🏈 Snap the Ball<small>read it, then throw when you like the window</small></button></div>';
+}
+function playerRunHandoff(oc){
+  if(busy || !GM || GM.over) return;
+  busy = true;
+  const dc = aiDefCall();
+  const res = resolvePlay(oc, dc);
+  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); });
+}
+function buildQBPlayState(oc, dc){
+  const off = offT(), def = defT();
+  const lu = lineupFor(off, offFormOf(off), offFormKeyOf(off));
+  const defAvg = defPass(def);
+  function baseOpen(p, depth){ return clamp(55 + ((p?p.rating:60) - defAvg)*0.55 - depth*8, 8, 90); }
+  const rb = lu.find(s => s.spot==='RB' && s.p);
+  const wrs = lu.filter(s => (s.spot==='WR'||s.spot==='TE') && s.p);
+  const targets = [];
+  if(rb) targets.push({ key:'rb', name:rb.p.name, label:rb.spot+' · checkdown', p:rb.p, base:baseOpen(rb.p,0), vol:6 });
+  if(wrs[0]) targets.push({ key:'w1', name:wrs[0].p.name, label:wrs[0].spot+' · underneath', p:wrs[0].p, base:baseOpen(wrs[0].p,1), vol:14 });
+  if(wrs[1]) targets.push({ key:'w2', name:wrs[1].p.name, label:wrs[1].spot+' · deep', p:wrs[1].p, base:baseOpen(wrs[1].p,2), vol:20 });
+  targets.forEach(t => t.openness = t.base);
+  const myP = mePlayer();
+  return { oc, dc, targets, elapsed:0, totalWindow:4.0, evadeUsed:false, evadeShown:false,
+    evadeWindowStart:3.0, evadeWindowEnd:4.0, snapped:false, tickHandle:null,
+    eliteQB: !!(myP && myP.rating >= 88), qbRating: myP ? myP.rating : 70 };
+}
+function snapTheBall(){
+  const st = livePlayState;
+  if(!st || st.snapped || !st.targets.length) return;
+  st.snapped = true;
+  const grid = document.getElementById('playgrid');
+  let s = '<div class="qblive"><div class="qbclock mono" id="qbclock">4.0s</div><div class="qbclockbar"><i id="qbclockfill" style="width:100%"></i></div>';
+  st.targets.forEach((t,i) => {
+    s += '<div class="qbtarget" onclick="qbThrow('+i+')"><div class="qbtarget-name">'+esc(t.name)+' <small>'+esc(t.label)+'</small></div>' +
+      '<div class="qbopenbar"><i id="qbopen'+i+'" style="width:'+t.openness+'%"></i><span class="qbopenpct" id="qbopenpct'+i+'">'+Math.round(t.openness)+'%</span></div></div>';
+  });
+  s += '<div id="qbevade"></div>';
+  s += '<div style="display:flex;gap:6px"><button class="play st" onclick="qbThrowAway()">Throw It Away<small>live to see 2nd down</small></button><button class="play st" onclick="qbScramble()">Tuck &amp; Run<small>take off</small></button></div></div>';
+  grid.innerHTML = s;
+  st.tickHandle = setInterval(qbTick, 100);
+}
+function qbTick(){
+  const st = livePlayState;
+  if(!st) return;
+  st.elapsed += 0.1;
+  const remaining = Math.max(0, st.totalWindow - st.elapsed);
+  const clockEl = document.getElementById('qbclock');
+  if(clockEl) clockEl.textContent = remaining.toFixed(1)+'s';
+  const fillEl = document.getElementById('qbclockfill');
+  if(fillEl) fillEl.style.width = (remaining/(st.evadeUsed?7:4)*100)+'%';
+  st.targets.forEach((t,i) => {
+    t.openness = clamp(t.openness + (Math.random()-0.5)*t.vol, 4, 96);
+    const openEl = document.getElementById('qbopen'+i);
+    const pctEl = document.getElementById('qbopenpct'+i);
+    if(openEl){ openEl.style.width = t.openness+'%'; openEl.style.background = t.openness>=65?'var(--green)':t.openness>=35?'var(--gold)':'var(--red)'; }
+    if(pctEl) pctEl.textContent = Math.round(t.openness)+'%';
+  });
+  if(!st.evadeUsed && st.elapsed >= st.evadeWindowStart && st.elapsed < st.evadeWindowEnd && !st.evadeShown){
+    const chance = st.eliteQB ? 1.0 : 0.35;
+    if(Math.random() < chance*0.3){
+      st.evadeShown = true;
+      const ev = document.getElementById('qbevade');
+      if(ev) ev.innerHTML = '<button class="play st" onclick="qbEvade()">⚡ Step Up in the Pocket!</button>';
+    }
+  }
+  if(st.evadeShown && st.elapsed >= st.evadeWindowEnd){
+    const ev = document.getElementById('qbevade');
+    if(ev) ev.innerHTML = '';
+  }
+  if(st.elapsed >= st.totalWindow){
+    clearInterval(st.tickHandle);
+    qbSacked();
+  }
+}
+function qbEvade(){
+  const st = livePlayState;
+  if(!st || st.evadeUsed) return;
+  st.evadeUsed = true;
+  st.totalWindow = 7.0;
+  const ev = document.getElementById('qbevade');
+  if(ev) ev.innerHTML = '<span class="sub" style="color:var(--gold)">Pocket extended to 7s.</span>';
+}
+function finishPlayerPlay(res){
+  livePlayState = null;
+  busy = true;
+  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); });
+}
+function qbThrow(idx){
+  const st = livePlayState;
+  if(!st || !st.snapped) return;
+  clearInterval(st.tickHandle);
+  const t = st.targets[idx];
+  if(!t) return;
+  const captured = t.openness;
+  const compProb = clamp(captured + (st.qbRating-70)*0.25, 4, 96);
+  const roll = Math.random()*100;
+  const oc = t.key==='rb' ? 'sc' : (t.key==='w1' ? 'sp' : 'dp');
+  let res;
+  if(roll < compProb){
+    const yac = Math.round(3 + captured/10 + Math.random()*8 + (t.key==='w2'?10:0));
+    res = { oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.15 };
+  } else if(captured < 35 && roll < compProb + (100-compProb)*0.3){
+    res = { oc, dc: st.dc, type:'int', yards: Math.round(R(2,14)) };
+  } else {
+    res = { oc, dc: st.dc, type:'inc', yards: 0 };
+  }
+  finishPlayerPlay(res);
+}
+function qbThrowAway(){
+  const st = livePlayState;
+  if(!st || !st.snapped) return;
+  clearInterval(st.tickHandle);
+  finishPlayerPlay({ oc: (OFF_PLAYS[st.oc] && OFF_PLAYS[st.oc].fam==='shot') ? 'pa' : 'mp', dc: st.dc, type:'inc', yards:0 });
+}
+function qbScramble(){
+  const st = livePlayState;
+  if(!st || !st.snapped) return;
+  clearInterval(st.tickHandle);
+  const yards = Math.round(2 + (st.qbRating-60)/8 + Math.random()*9);
+  finishPlayerPlay({ oc:'ir', dc: st.dc, type:'run', yards });
+}
+function qbSacked(){
+  const st = livePlayState;
+  if(!st) return;
+  finishPlayerPlay({ oc: st.oc, dc: st.dc, type:'sack', yards: -RI(4,9) });
 }
 function showFinal(){
   if(!GM) return;
