@@ -3693,7 +3693,7 @@ function navHTML(){
   s += '</div>';
   return s;
 }
-function modalTitle(v){ return {gamereport:'Game Report', player:'Player Profile', extend:'Contract', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', rosterPopup:'Your Roster'}[v] || ''; }
+function modalTitle(v){ return {gamereport:'Game Report', player:'Player Profile', extend:'Contract', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
   if(v === 'player') return profileHTML(modalArg);
@@ -3702,19 +3702,24 @@ function modalBodyHTML(v){
   if(v === 'assign') return assignHTML(modalArg);
   if(v === 'hireCoach') return hireCoachHTML(modalArg);
   if(v === 'rosterPopup') return rosterPopupHTML();
+  if(v === 'team') return teamDetailHTML(modalArg);
   return '';
 }
-function rosterPopupHTML(){
-  const me = meT();
+function teamLink(t){ return '<span class="pname" onclick="openModal(\'team\','+t.idx+')">'+esc(t.city+' '+t.name)+'</span>'; }
+function teamDetailHTML(idx){
+  const t = G.teams[idx];
+  if(!t) return '<div class="panel"><p class="sub">Team not found.</p></div>';
   const limit = rosterLimit();
-  return '<div class="panel" style="margin-bottom:12px">' +
-    '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:8px">' +
-      '<span class="countpill'+(activeCount(me)>limit?' over':'')+'">Roster <b>'+activeCount(me)+'</b> / '+limit+'</span>' +
-      '<span class="sub">Tap a column header to sort · tap a name for the full profile</span>' +
-    '</div>' +
-    rosterTable(me, () => '') +
-    '</div>';
+  const activeCt = activeCount(t);
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(t.city+' '+t.name)+(t.idx===G.userTeam?' <span class="tag w">YOU</span>':'')+'</div>' +
+    '<p class="sub">'+CONF_NAMES[t.conf]+' · '+DIV_NAMES[t.div]+' Division · '+t.w+'-'+t.l+' · PF '+t.pf+' · PA '+t.pa+'</p>' +
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">' +
+    '<span class="countpill'+(activeCt>limit?' over':'')+'">Roster <b>'+activeCt+'</b> / '+limit+'</span>' +
+    '<span class="sub">Tap a column header to sort · tap a name for the full profile</span></div></div>';
+  s += '<div class="panel">' + rosterTable(t, () => '') + '</div>';
+  return s;
 }
+function rosterPopupHTML(){ return teamDetailHTML(G.userTeam); }
 function modalHTML(){
   if(!modalView) return '';
   const closeLabel = modalBack ? '← Back' : '✕ Close';
@@ -5535,7 +5540,7 @@ function standingsHTML(){
     [0,1].forEach(div => {
       s += '<table class="tbl" style="margin-bottom:10px"><tr><th>'+DIV_NAMES[div]+'</th><th>W</th><th>L</th><th>PF</th><th>PA</th></tr>';
       sortStand(G.teams.filter(t => t.conf===conf && t.div===div)).forEach(t => {
-        s += '<tr'+(t.idx===G.userTeam?' class="me"':'')+'><td>'+esc(t.city+' '+t.name)+'</td><td>'+t.w+'</td><td>'+t.l+'</td><td>'+t.pf+'</td><td>'+t.pa+'</td></tr>';
+        s += '<tr'+(t.idx===G.userTeam?' class="me"':'')+'><td>'+teamLink(t)+'</td><td>'+t.w+'</td><td>'+t.l+'</td><td>'+t.pf+'</td><td>'+t.pa+'</td></tr>';
       });
       s += '</table>';
     });
