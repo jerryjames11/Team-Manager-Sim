@@ -1154,6 +1154,24 @@ function chargeDeadCap(t, amount){
   if(!G.deadCap) G.deadCap = {};
   G.deadCap[t.idx] = Math.round(((G.deadCap[t.idx]||0) + amount) * 10) / 10;
 }
+function enforceCapCompliance(t){
+  // release lowest value-per-dollar players (respecting minimums where possible) until the team is cap-compliant
+  let guard = 30;
+  while(capRoom(t) < 0 && guard-- > 0){
+    const cuttable = t.roster.filter(p => posCount(t, p.pos) > MIN53[p.pos]);
+    const pool = cuttable.length ? cuttable : t.roster.slice();
+    if(!pool.length) break;
+    pool.sort((a,b) => (a.rating/(a.salary||0.1)) - (b.rating/(b.salary||0.1)));
+    const p = pool[0];
+    t.roster = t.roster.filter(x => x.id !== p.id);
+    const dead = deadCapCharge(p);
+    if(dead > 0) chargeDeadCap(t, dead);
+    p.years = 0;
+    if(t.idx === G.userTeam) logEv(p, 'ct', 'Released to get under the cap before the season opener', 0);
+    G.fa.push(p);
+  }
+  G.fa.sort((a,b) => b.rating - a.rating);
+}
 function buildContractSchedule(totalValue, years, bonusPct, escalating){
   years = Math.max(1, Math.round(years));
   bonusPct = clamp(bonusPct, 0, 0.6);
@@ -1471,6 +1489,7 @@ function aiCutdowns(){
     const cuts = t.roster.filter(p => !keep.has(p.id));
     t.roster = t.roster.filter(p => keep.has(p.id));
     cuts.forEach(p => { p.years = 0; G.fa.push(p); });
+    enforceCapCompliance(t);
   });
   G.fa.sort((a,b) => b.rating - a.rating);
   if(G.fa.length > 150) G.fa.length = 150;
@@ -2183,6 +2202,7 @@ function advanceToTag(){
       G.playerEarnings.push({ year: G.year, team: meT().city+' '+meT().name, salary: myP.salary });
     }
     G.playerGrievanceUsed = false;
+    G.playerRaiseRequestUsed = false;
   }
   G.teams.forEach(t => {
     t.roster.forEach(develop);
@@ -2482,6 +2502,7 @@ function confirmCutdown(){
   const me = meT();
   if(me.roster.length > LIMIT_REG){ alert('Still over the limit — you must get to '+LIMIT_REG+'.'); return; }
   if(!meetsMinimums(me)){ alert('Roster doesn\'t meet positional minimums (QB2 RB3 WR5 TE3 OL8 DL6 LB5 CB4 S3 K1).'); return; }
+  if(capRoom(me) < 0){ alert('You\'re over the salary cap by '+money(-capRoom(me))+'. Restructure or release players to get to $0 or better before the season can open.'); return; }
   aiCutdowns();
   G.schedule = makeSchedule();
   G.week = 1;
@@ -2848,10 +2869,10 @@ function finishGame(){
 }
 function gameResult(){ return {a:GM.home, b:GM.away, as:GM.hs, bs:GM.as}; }
 /* ---------- coach sim mode: auto-play with pauses at real decision points ---------- */
-let coachSimActive = false, coachSimLastQ = 0, coachSimAwaitingBreak = false, coachSimPausedFor4th = false;
+let coachSimActive = false, coachSimLastQ = 0, coachSimAwaitingBreak = false, coachSimPausedFor4th = false, coachSimPausedForPlayer = false;
 function toggleCoachSim(){
   coachSimActive = !coachSimActive;
-  coachSimAwaitingBreak = false; coachSimPausedFor4th = false;
+  coachSimAwaitingBreak = false; coachSimPausedFor4th = false; coachSimPausedForPlayer = false;
   if(coachSimActive){ coachSimLastQ = GM.q; coachSimStep(); }
   else updateGameUI();
 }
@@ -2861,14 +2882,20 @@ function coachSimStep(){
   if(GM.q !== coachSimLastQ){
     coachSimLastQ = GM.q;
     coachSimAwaitingBreak = true;
-    logQ('⏸ Coach Sim — quarter break. Review your lineup, then continue.');
+    logQ('⏸ '+(G.mode==='player'?'Sim to Player':'Coach Sim')+' — quarter break. Review your lineup, then continue.');
     updateGameUI();
     return;
   }
   if(userOnO() && GM.down === 4 && !GM.pending){
     coachSimPausedFor4th = true;
-    logMsg('⏸ Coach Sim paused — your call on 4th down.', 'q');
+    logMsg('⏸ '+(G.mode==='player'?'Sim to Player':'Coach Sim')+' paused — your call on 4th down.', 'q');
     updateGameUI(); // buildCallsheet shows the normal Go/Punt/FG choice; resolving it resumes coach sim
+    return;
+  }
+  if(G.mode === 'player' && userOnO() && !GM.pending && playerLiveMechanic() === 'qb'){
+    coachSimPausedForPlayer = true;
+    logMsg('⏸ Sim to Player — you\'re on the field. Take the snap.', 'q');
+    updateGameUI(); // buildCallsheet falls through to renderPlayerOffenseCallsheet()'s live QB minigame
     return;
   }
   if(GM.pending){ busy = true; doTry(Math.random() < .88 ? 'xp' : '2pt'); busy = false; coachSimStep(); return; }
@@ -4062,6 +4089,20 @@ function playerGMOfficeHTML(){
     '<p class="sub">Walk away from what\'s left on your deal and hit the open market immediately. Teams know you left money on the table to do it — expect lighter offers than testing free agency the normal way.</p>' +
     '<button class="btn danger" style="margin-top:6px" onclick="requestRelease()">Ask to Be Released</button></div>';
 
+  // request raise / renegotiation
+  const fairValue = marketFor(myP, 0);
+  const underpaid = fairValue > myP.salary * 1.05;
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Request a Raise</div>';
+  if(G.playerRaiseRequestUsed){
+    s += '<p class="sub">You\'ve already had your one contract conversation with management this season.</p>';
+  } else if(!underpaid){
+    s += '<p class="sub">Your current deal ('+money(myP.salary)+'/yr) is already close to your market value ('+money(fairValue)+'/yr) — not much of a case to make right now.</p>';
+  } else {
+    s += '<p class="sub">Your camp thinks you\'re underpaid — market value looks more like <b style="color:var(--gold)">'+money(fairValue)+'</b>/yr against your current '+money(myP.salary)+'/yr. Whether it lands depends on whether '+esc(me.city)+' has the cap room to make it work.</p>' +
+      '<button class="btn" style="margin-top:6px" onclick="requestRaise()">Ask For a Raise</button>';
+  }
+  s += '</div>';
+
   // grievance
   const isStarter = playerIsStarter(me, myP);
   s += '<div class="panel"><div class="hd disp">File a Grievance</div>';
@@ -4116,6 +4157,34 @@ function fileGrievance(){
     bumpRel(myP, 'coach', -10);
     logEv(myP, 'move', 'Filed a grievance over playing time — it didn\'t land well', 0);
     alert('That conversation didn\'t go the way you hoped. The relationship took a hit.');
+  }
+  save(); render();
+}
+function requestRaise(){
+  const myP = mePlayer();
+  if(!myP || G.playerRaiseRequestUsed) return;
+  G.playerRaiseRequestUsed = true;
+  const me = meT();
+  const fair = marketFor(myP, 0);
+  const current = myP.salary;
+  if(fair <= current * 1.05){
+    alert('Management points out you\'re already paid fairly at '+money(current)+'/yr. No deal.');
+    save(); render();
+    return;
+  }
+  const ask = Math.round(Math.min(fair, current * 1.35) * 10) / 10; // camp doesn't push all the way to full market in one ask
+  const room = capRoom(me) + current; // room available once his current cap hit is backed out
+  if(ask > room){
+    bumpRel(myP, 'coach', -4);
+    logEv(myP, 'ct', 'Asked for a raise to '+money(ask)+'/yr — turned down, the cap won\'t allow it', 0);
+    alert(esc(me.city)+' would love to, but there\'s only '+money(Math.max(room,0))+' in cap room right now — not enough to get you to '+money(ask)+'/yr.');
+  } else {
+    myP.salary = ask;
+    const c = contractOf(myP);
+    c.base = Array(Math.max(myP.years,1)).fill(ask);
+    bumpRel(myP, 'coach', 6);
+    logEv(myP, 'ct', 'Renegotiated — new salary '+money(ask)+'/yr', 0);
+    alert('Deal done. New salary: '+money(ask)+'/yr.');
   }
   save(); render();
 }
@@ -4608,6 +4677,12 @@ function playerAdvance(){
   }
   save(); render();
 }
+function playForMeButtonHTML(hasBlockingDecision){
+  if(hasBlockingDecision) return '';
+  if(G.phase === 'hub' && userGame()) return '<div style="margin-top:8px;display:flex;justify-content:flex-end"><button class="btn primary big" onclick="playWeek()">🏈 Play Game</button></div>';
+  if(G.phase === 'playoffs' && playoffUserGame()) return '<div style="margin-top:8px;display:flex;justify-content:flex-end"><button class="btn primary big" onclick="playPlayoffGame()">🏈 Play Game</button></div>';
+  return '';
+}
 function playerDashboardHTML(){
   if(G.preDraftPhase){
     const pr = myProspect();
@@ -4648,7 +4723,7 @@ function playerDashboardHTML(){
   const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
     '<p class="sub">'+esc(t.city+' '+t.name)+' · Age '+myP.age+' · <b style="color:var(--gold)">'+myP.rating+'</b> OVR · '+money(myP.salary)+'/yr, '+myP.years+' yr'+(myP.years!==1?'s':'')+' left</p>' +
-    (G.phase === 'hub' && !hasBlockingDecision && userGame() ? '<div style="margin-top:8px;display:flex;justify-content:flex-end"><button class="btn primary big" onclick="playWeek()">🏈 Play Game</button></div>' : '') +
+    (playForMeButtonHTML(hasBlockingDecision)) +
     '<div style="margin-top:8px;display:flex;justify-content:flex-end;gap:6px;flex-wrap:wrap">' + trainBtnHTML(myP) + recoveryBtnHTML(myP) + moraleBtnHTML(myP) +
     (hasBlockingDecision ? '' : '<button class="btn primary" onclick="playerAdvance()">Advance →</button>') +
     '</div>' + playerWeekPlanHTML() + '</div>';
@@ -4927,6 +5002,7 @@ function ownerHandlePreseason(){
   doAutoCut();
   if(!meetsMinimums(meT())) fillMinimums();
   if(meT().roster.length > LIMIT_REG) doAutoCut();
+  enforceCapCompliance(meT());
   confirmCutdown();
   logOwnerMove('Roster set for Week 1.');
 }
@@ -5611,8 +5687,7 @@ function financesHTML(){
   return s + '</div>' + stadiumHTML();
 }
 function staffHTML(){
-  let s = financesHTML();
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
     '<p class="sub" style="margin-bottom:8px">Coordinators boost your unit ratings on Sundays. Position coaches speed up training and nudge development at their group every offseason. Staff has its own budget, separate from the player cap.</p>' +
     staffBarHTML();
   const askedThisYear = G.budgetAskYear === G.year;
@@ -6422,7 +6497,7 @@ function careerHTML(){
   const confDetail = G.mode === 'player'
     ? G.confidence+'/100 · +6 for an excellent individual game, +1 for a normal one you were part of'
     : G.confidence+'/100 · +4 per win, −4 per loss, big swings for playoffs and titles';
-  return '<div class="panel"><div class="hd disp">Front Office</div>' +
+  return financesHTML() + '<div class="panel"><div class="hd disp">Front Office</div>' +
     '<p class="sub" style="margin-bottom:6px">'+confDesc+'</p>' +
     '<div class="conf-meter"><i style="width:'+G.confidence+'%;background:'+confColor()+'"></i></div>' +
     '<p class="sub" style="margin-top:4px">'+confDetail+'</p>' +
@@ -6460,7 +6535,7 @@ function gameHTML(){
     '<div class="gamectl">' +
     '<button class="btn" id="hurryBtn" onclick="toggleHurry()">Hurry-Up: OFF</button>' +
     '<button class="btn" onclick="simQuarter()">⏭ Sim Quarter</button>' +
-    '<button class="btn" id="coachSimBtn" onclick="toggleCoachSim()">🎯 Coach Sim: OFF</button>' +
+    '<button class="btn" id="coachSimBtn" onclick="toggleCoachSim()">'+coachSimLabel(false)+'</button>' +
     '<button class="btn" onclick="simRest()">⏩ Sim to Final</button>' +
     '</div><div id="gamelog"></div><div id="finalOverlay"></div>';
 }
@@ -6495,7 +6570,10 @@ function updateGameUI(){
   buildCallsheet();
   drawFormation();
   const csb = el('coachSimBtn');
-  if(csb) csb.textContent = '🎯 Coach Sim: ' + (coachSimActive ? 'ON' : 'OFF');
+  if(csb) csb.textContent = coachSimLabel(coachSimActive);
+}
+function coachSimLabel(isOn){
+  return G.mode === 'player' ? '🎯 Sim to Player: '+(isOn?'ON':'OFF') : '🎯 Coach Sim: '+(isOn?'ON':'OFF');
 }
 function playBtn(code, cls, label, sub, handler){
   return '<button class="play '+cls+'" onclick="'+handler+'(\''+code+'\')">'+label+'<small>'+sub+'</small></button>';
@@ -6507,15 +6585,15 @@ function buildCallsheet(){
   if(!grid) return;
   if(GM.over){ grid.innerHTML=''; title.textContent='Game Over'; side.textContent=''; return; }
   if(coachSimActive && coachSimAwaitingBreak){
-    title.textContent = 'Coach Sim — Quarter Break';
+    title.textContent = (G.mode==='player'?'Sim to Player':'Coach Sim') + ' — Quarter Break';
     side.textContent = 'your move';
-    grid.innerHTML = '<button class="play st" onclick="coachSimResume()">▶ Continue Auto-Play<small>keep coach sim running</small></button>' +
+    grid.innerHTML = '<button class="play st" onclick="coachSimResume()">▶ Continue Auto-Play<small>keep it running</small></button>' +
       '<button class="play st" onclick="openPage(\'depth\')">📋 Manage Lineup<small>give someone else reps</small></button>' +
       '<button class="play st" onclick="toggleCoachSim()">✋ Take Manual Control<small>call plays yourself</small></button>';
     return;
   }
-  if(coachSimActive && !coachSimPausedFor4th){
-    title.textContent = 'Coach Sim Running';
+  if(coachSimActive && !coachSimPausedFor4th && !coachSimPausedForPlayer){
+    title.textContent = (G.mode==='player'?'Sim to Player':'Coach Sim') + ' Running';
     side.textContent = 'auto-playing…';
     grid.innerHTML = '<button class="play st" onclick="toggleCoachSim()">✋ Take Manual Control<small>stop auto-play, call it yourself</small></button>';
     return;
@@ -6572,7 +6650,10 @@ function playerAutoPlay(){
   busy = true;
   const oc = aiOffCall(), dc = aiDefCall();
   const res = resolvePlay(oc, dc);
-  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); if(coachSimPausedFor4th){ coachSimPausedFor4th=false; coachSimStep(); } });
+  animatePlay(res, () => {
+    applyPlay(res); busy = false; checkAITurn(); updateGameUI();
+    if(coachSimPausedFor4th){ coachSimPausedFor4th = false; coachSimStep(); }
+  });
 }
 function renderPlayerOffenseCallsheet(){
   const grid = document.getElementById('playgrid');
@@ -6603,7 +6684,10 @@ function playerRunHandoff(oc){
   busy = true;
   const dc = aiDefCall();
   const res = resolvePlay(oc, dc);
-  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); });
+  animatePlay(res, () => {
+    applyPlay(res); busy = false; checkAITurn(); updateGameUI();
+    if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
+  });
 }
 function buildQBPlayState(oc, dc){
   const off = offT(), def = defT();
@@ -6681,7 +6765,10 @@ function qbEvade(){
 function finishPlayerPlay(res){
   livePlayState = null;
   busy = true;
-  animatePlay(res, () => { applyPlay(res); busy = false; checkAITurn(); updateGameUI(); });
+  animatePlay(res, () => {
+    applyPlay(res); busy = false; checkAITurn(); updateGameUI();
+    if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
+  });
 }
 function qbThrow(idx){
   const st = livePlayState;
