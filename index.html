@@ -262,6 +262,13 @@ th.sorth.on{color:var(--gold)}
 .qbopenbar{height:15px;border-radius:8px;background:#00000022;position:relative;overflow:hidden}
 .qbopenbar i{display:block;height:100%;transition:width .12s linear,background .12s linear}
 .qbopenpct{position:absolute;right:6px;top:0;font-size:10px;font-weight:800;line-height:15px;color:#14100A}
+.kickbar{position:relative;height:22px;background:#00000022;border-radius:11px;overflow:visible;margin:6px 0}
+.kickzone{position:absolute;top:0;bottom:0;background:rgba(47,125,59,.35);border-left:2px solid #2F7D3B;border-right:2px solid #2F7D3B;border-radius:4px}
+.kickmarker{position:absolute;top:-4px;width:6px;height:30px;background:#C0392B;border-radius:3px;transform:translateX(-50%);transition:left .03s linear}
+.statbox-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.statbox-team-name{font-weight:800;color:var(--gold);font-size:12px;margin-bottom:4px}
+.statbox-line{display:flex;flex-direction:column;gap:1px;margin-bottom:6px;font-size:12px}
+.statbox-line .sub{font-size:11px}
 #gamelog{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;max-height:170px;overflow-y:auto;font-size:12.5px;line-height:1.75}
 #gamelog .q{color:var(--gold);font-weight:700;letter-spacing:.1em}
 #gamelog .big{color:var(--gold);font-weight:700}
@@ -1134,7 +1141,7 @@ function runExpiry(){
         // this is the human player's own character — give them the proper free-agency spotlight
         // (immediate offers from interested clubs) instead of dumping them in the anonymous pool
         G.playerFreeAgent = p;
-        const others = G.teams.filter(ot => ot.idx !== t.idx).sort(() => Math.random()-.5).slice(0,3);
+        const others = pickFAOfferTeams(t.idx, userPrice(p,1));
         G.playerFAOffers = others.map(ot => ({ teamIdx: ot.idx, offer: Math.round(userPrice(p,1) * R(0.85,1.2) * 10) / 10 }));
       } else {
         G.fa.push(p);
@@ -1146,6 +1153,7 @@ function runExpiry(){
   ensureFADepth();
 }
 /* ---------- contract structure: base salary + prorated signing bonus, NFL-style ---------- */
+function isPostJune1(){ return ['ota','camp','preseason','cutdown','hub','playoffs'].includes(G.phase); }
 function contractOf(p){
   if(!p.contract || p.contract.base.length !== p.years){
     // no contract on file, or it's fallen out of sync with years/salary (e.g. an informal re-sign
@@ -1156,8 +1164,26 @@ function contractOf(p){
   return p.contract;
 }
 function deadCapCharge(p){
+  if(isPostJune1()) return p.salary; // the year's cap hit is guaranteed once we're past the June 1 point — cutting him saves nothing this season
   const c = contractOf(p);
   return c.bonusYearsLeft > 0 ? Math.round(c.bonusProration * c.bonusYearsLeft * 10) / 10 : 0;
+}
+function teamCanRealisticallyAfford(t, annualCost){
+  // not just "does this one contract fit right now" — does the team still have room to field
+  // a complete legal roster afterward, so they're not forced to cut the guy at cutdown
+  const roomAfter = capRoom(t) - annualCost;
+  const spotsStillNeeded = Math.max(0, (LIMIT_REG||53) - (t.roster.length + 1));
+  const reserveNeeded = spotsStillNeeded * 0.9; // rough veteran-minimum cushion per remaining open spot
+  return roomAfter >= reserveNeeded;
+}
+function pickFAOfferTeams(excludeIdx, marketRate){
+  const pool = G.teams.filter(t => t.idx !== excludeIdx);
+  let affordable = pool.filter(t => teamCanRealisticallyAfford(t, marketRate));
+  if(!affordable.length){
+    // nobody comfortably fits him — fall back to whoever has the most room rather than leave zero offers
+    affordable = pool.slice().sort((a,b) => capRoom(b)-capRoom(a)).slice(0,3);
+  }
+  return affordable.sort(() => Math.random()-.5).slice(0,3);
 }
 function deadCapFor(t){ return (G.deadCap && G.deadCap[t.idx]) || 0; }
 function chargeDeadCap(t, amount){
@@ -1174,8 +1200,9 @@ function enforceCapCompliance(t){
     if(!pool.length) break;
     pool.sort((a,b) => (a.rating/(a.salary||0.1)) - (b.rating/(b.salary||0.1)));
     const p = pool[0];
-    t.roster = t.roster.filter(x => x.id !== p.id);
     const dead = deadCapCharge(p);
+    if(p.salary - dead <= 0.05) break; // his cap hit is guaranteed either way (post-June-1) — cutting him wouldn't actually help, stop rather than cut for nothing
+    t.roster = t.roster.filter(x => x.id !== p.id);
     if(dead > 0) chargeDeadCap(t, dead);
     p.years = 0;
     if(t.idx === G.userTeam) logEv(p, 'ct', 'Released to get under the cap before the season opener', 0);
@@ -1499,7 +1526,12 @@ function aiCutdowns(){
     const keep = autoCutList(t);
     const cuts = t.roster.filter(p => !keep.has(p.id));
     t.roster = t.roster.filter(p => keep.has(p.id));
-    cuts.forEach(p => { p.years = 0; G.fa.push(p); });
+    cuts.forEach(p => {
+      const dead = deadCapCharge(p);
+      if(dead > 0) chargeDeadCap(t, dead);
+      p.years = 0;
+      G.fa.push(p);
+    });
     enforceCapCompliance(t);
   });
   G.fa.sort((a,b) => b.rating - a.rating);
@@ -1661,7 +1693,7 @@ function statPointsForPlayer(pos, gl){
   if(pos === 'LB') return Math.floor((gl.tk||0)/3) + turnoverPts;
   return Math.floor((gl.tk||0)/2) + turnoverPts; // DL, CB, S, and anyone else on D
 }
-function recordGameStats(ai, bi, as, bs){
+function recordGameStats(ai, bi, as, bs, liveBox){
   const risers = [];
   let myGamePlayed = false;
   const myGameLine = {py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0};
@@ -1670,6 +1702,41 @@ function recordGameStats(ai, bi, as, bs){
       myGamePlayed = true;
       Object.keys(delta).forEach(k => { myGameLine[k] = (myGameLine[k]||0) + delta[k]; });
     }
+  }
+  if(liveBox){
+    // this game was actually played live — use the real per-play tracked stats instead of
+    // the random aggregate-then-distribute algorithm, so the live stat box matches the final box score exactly
+    [ai, bi].forEach(ti => {
+      const t = G.teams[ti];
+      const box = liveBox[ti] || {};
+      Object.values(box).forEach(line => {
+        const p = t.roster.find(x => x.id === line.id);
+        if(!p) return;
+        const s = stOf(p);
+        s.gp++;
+        ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm'].forEach(k => { s[k] = (s[k]||0) + (line[k]||0); });
+        const hot = (line.py>=290) || (line.ptd>=4) || (line.ry>=115) || (line.rtd>=2) || (line.cy>=100) || (line.ctd>=2) || (line.tk>=11) || (line.sk>=1 && Math.random()<.35) || (line.int>=1 && Math.random()<.6) || (line.fgm>=4);
+        const delta = {};
+        ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm'].forEach(k => { if(line[k]) delta[k] = line[k]; });
+        trackMe(p, delta);
+        if(bumpDev(p, hot)) risers.push(p);
+      });
+    });
+    if(G.mode === 'player' && G.playerId){
+      G.playerGamePlayed = myGamePlayed;
+      if(myGamePlayed){
+        const myP = mePlayer();
+        const gamePts = myP ? statPointsForPlayer(myP.pos, myGameLine) : 0;
+        G.trainPts = (G.trainPts||0) + gamePts;
+        if(gamePts > 0){
+          G.confidence = clamp(G.confidence + Math.min(gamePts*2, 16), 0, 100);
+          if(myP) logEv(myP, 'dev', 'Earned '+gamePts+' training point'+(gamePts!==1?'s':'')+' from this game', 0);
+        } else {
+          G.confidence = clamp(G.confidence - 1, 0, 100);
+        }
+      }
+    }
+    return risers;
   }
   [[ai,as,bi],[bi,bs,ai]].forEach(([ti,pts,oi]) => {
     const t = G.teams[ti], o = G.teams[oi];
@@ -1746,7 +1813,7 @@ function recordGameStats(ai, bi, as, bs){
   }
   return risers;
 }
-function finishWeek(userRes){
+function finishWeek(userRes, liveBox){
   revertTempLineups();
   const wk = G.schedule[G.week-1];
   const results = [];
@@ -1757,7 +1824,7 @@ function finishWeek(userRes){
     else { r = quickSim(g.a, g.b); results.push(r); applyResult(r); }
     const isUserGame = r.a === G.userTeam || r.b === G.userTeam;
     const snap = snapshotStats([r.a, r.b]);
-    const ris = recordGameStats(r.a, r.b, r.as, r.bs);
+    const ris = recordGameStats(r.a, r.b, r.as, r.bs, isUserGame ? liveBox : null);
     const myRisers = isUserGame ? ris.filter(p => meT().roster.includes(p)).map(p => ({id:p.id, name:p.name, pos:p.spot, ovr:p.rating})) : [];
     if(isUserGame) myRisers.forEach(p => G.weekDevs.push(p));
     r.report = buildGameReport(r.a, r.b, r.as, r.bs, snap, myRisers, null);
@@ -1887,14 +1954,14 @@ function simPlayoffRound(){
   });
   advancePlayoffRound();
 }
-function recordPlayoffUserResult(res){
+function recordPlayoffUserResult(res, liveBox){
   const g = playoffUserGame();
   const P = G.playoffs;
   g.as = (res.a === g.a) ? res.as : res.bs;
   g.bs = (res.a === g.a) ? res.bs : res.as;
   g.done = true; g.winner = g.as > g.bs ? g.a : g.b;
   const snap = snapshotStats([g.a, g.b]);
-  const ris = recordGameStats(g.a, g.b, g.as, g.bs);
+  const ris = recordGameStats(g.a, g.b, g.as, g.bs, liveBox);
   const myRisers = ris.filter(p => meT().roster.includes(p)).map(p => ({id:p.id, name:p.name, pos:p.spot, ovr:p.rating}));
   g.report = buildGameReport(g.a, g.b, g.as, g.bs, snap, myRisers, null);
   g.round = P.round; g.year = G.year; g.phase = 'playoffs';
@@ -1933,6 +2000,10 @@ function advancePlayoffRound(){
       bumpFan(15);
     }
     G.phase = 'offseason';
+    if(G.mode === 'player'){
+      const myP = mePlayer();
+      if(myP) myP.fatigue = 0;
+    }
   }
   if(G.playoffs.userIn && !playoffUserGame() && P.champion == null){
     G.playoffs.userIn = false;
@@ -2509,11 +2580,15 @@ function simPre(){
   LINEUP = 'full';
   afterPreseasonGame(r.as > r.bs, r.as, r.bs);
 }
-function confirmCutdown(){
+function confirmCutdown(force){
   const me = meT();
-  if(me.roster.length > LIMIT_REG){ alert('Still over the limit — you must get to '+LIMIT_REG+'.'); return; }
-  if(!meetsMinimums(me)){ alert('Roster doesn\'t meet positional minimums (QB2 RB3 WR5 TE3 OL8 DL6 LB5 CB4 S3 K1).'); return; }
-  if(capRoom(me) < 0){ alert('You\'re over the salary cap by '+money(-capRoom(me))+'. Restructure or release players to get to $0 or better before the season can open.'); return; }
+  if(!force){
+    if(me.roster.length > LIMIT_REG){ alert('Still over the limit — you must get to '+LIMIT_REG+'.'); return; }
+    if(!meetsMinimums(me)){ alert('Roster doesn\'t meet positional minimums (QB2 RB3 WR5 TE3 OL8 DL6 LB5 CB4 S3 K1).'); return; }
+    if(capRoom(me) < 0){ alert('You\'re over the salary cap by '+money(-capRoom(me))+'. Restructure or release players to get to $0 or better before the season can open.'); return; }
+  } else if(me.roster.length > LIMIT_REG){
+    doAutoCut(); // automated flow — no human to click through this, just make the roster legal in size no matter what
+  }
   aiCutdowns();
   G.schedule = makeSchedule();
   G.week = 1;
@@ -2545,6 +2620,21 @@ function fillMinimumsFor(t){
       t.roster.push(cand);
     }
   });
+  // positional floors only sum to ~40 — also make sure the roster actually reaches the legal 53,
+  // otherwise a team that got trimmed below that elsewhere (e.g. a hard cap-compliance pass) could
+  // get permanently stuck too small with no cap room left to sign its way back up
+  let guard = 30;
+  while(t.roster.length < (LIMIT_REG||53) && guard-- > 0){
+    const need = POS_ORDER.filter(p => posCount(t,p) < (MIN53[p]||0)*1.5); // lean toward positions still thin
+    const pos = need.length ? pick(need) : pick(POS_ORDER);
+    let cand = G.fa.filter(p => p.pos === pos && salaryFor(p.rating,p.pos,p.age) <= capRoom(t)).sort((a,b)=>b.rating-a.rating)[0];
+    if(cand) G.fa.splice(G.fa.indexOf(cand), 1);
+    else cand = makePlayer(pos, R(50,58), RI(22,28), 1); // rock-bottom camp body — a slightly-over-cap legal roster beats a permanently stuck one
+    cand.salary = salaryFor(cand.rating, cand.pos, cand.age);
+    cand.years = Math.max(1, cand.years || 1);
+    cand.injWeeks = 0; cand.dressed = true;
+    t.roster.push(cand);
+  }
 }
 function fillMinimums(){
   // emergency signings so the roster can legally kick off
@@ -2607,9 +2697,9 @@ function startGame(opts){
     over:false, ot:false, pending:null,
     hurry:false, playoff: !!opts.playoff, preseason: !!opts.preseason,
     runTend:0, passTend:0,
-    log:[]
+    log:[], liveBox: {}
   };
-  coachSimActive = false; coachSimAwaitingBreak = false; coachSimPausedFor4th = false; coachSimLastQ = 1;
+  coachSimActive = false; coachSimAwaitingBreak = false; coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimLastQ = 1; busy = false;
   if(!opts.preseason && (home===G.userTeam || away===G.userTeam)){
     generateWeeklyRecs();
     GM.gameplan = computeGameplan();
@@ -2739,14 +2829,70 @@ function endQuarter(){
 function startPossession(teamIdx, spot){
   GM.poss = teamIdx; GM.spot = spot; GM.down = 1; GM.dist = 10;
 }
+function pickWeighted(players){
+  if(!players || !players.length) return null;
+  const w = players.map(p => Math.pow(p.rating, 1.6));
+  const sum = w.reduce((a,b)=>a+b, 0);
+  let r = Math.random()*sum;
+  for(let i=0;i<players.length;i++){ r -= w[i]; if(r<=0) return players[i]; }
+  return players[players.length-1];
+}
+function creditLive(teamIdx, p, delta){
+  if(!p || !GM || !GM.liveBox) return;
+  if(!GM.liveBox[teamIdx]) GM.liveBox[teamIdx] = {};
+  if(!GM.liveBox[teamIdx][p.id]) GM.liveBox[teamIdx][p.id] = { id:p.id, name:p.name, pos:p.pos, gp:1, py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0 };
+  const line = GM.liveBox[teamIdx][p.id];
+  Object.keys(delta).forEach(k => { line[k] = (line[k]||0) + delta[k]; });
+}
+function attributePlay(res, offIdx, dIdx, isTD){
+  if(!GM || !GM.liveBox) return;
+  const off = G.teams[offIdx], def = G.teams[dIdx];
+  const oLu = lineupFor(off, offFormOf(off), offFormKeyOf(off));
+  const dLu = lineupFor(def, defFormOf(def), defFormKeyOf(def));
+  const qbSlot = oLu.find(s => s.spot==='QB' && s.p);
+  const qb = qbSlot ? qbSlot.p : null;
+  const rbs = oLu.filter(s => s.spot==='RB' && s.p).map(s => s.p);
+  const recvs = oLu.filter(s => (s.spot==='WR'||s.spot==='TE') && s.p).map(s => s.p);
+  const lbs = dLu.filter(s => s.p && s.p.pos==='LB').map(s => s.p);
+  const dls = dLu.filter(s => s.p && s.p.pos==='DL').map(s => s.p);
+  const cbs = dLu.filter(s => s.p && s.p.pos==='CB').map(s => s.p);
+  const ss = dLu.filter(s => s.p && s.p.pos==='S').map(s => s.p);
+  const defenders = lbs.concat(dls, cbs, ss);
+
+  if(res.type === 'run'){
+    const carrier = res.carrier || pickWeighted(rbs) || qb;
+    if(carrier) creditLive(offIdx, carrier, { ry: res.yards, rtd: isTD?1:0 });
+    const tackler = pickWeighted(defenders);
+    if(tackler && res.yards <= 8) creditLive(dIdx, tackler, { tk: 1 });
+  } else if(res.type === 'pass'){
+    if(qb) creditLive(offIdx, qb, { py: res.yards, ptd: isTD?1:0 });
+    const target = res.target || pickWeighted(recvs);
+    if(target) creditLive(offIdx, target, { cy: res.yards, ctd: isTD?1:0 });
+    if(!isTD){
+      const tackler = pickWeighted(defenders);
+      if(tackler) creditLive(dIdx, tackler, { tk: 1 });
+    }
+  } else if(res.type === 'int'){
+    const picker = pickWeighted(cbs.concat(ss));
+    if(picker) creditLive(dIdx, picker, { int: 1 });
+  } else if(res.type === 'sack'){
+    const sacker = pickWeighted(dls.concat(lbs));
+    if(sacker) creditLive(dIdx, sacker, { sk: 1 });
+  } else if(res.type === 'fumble'){
+    const forcer = pickWeighted(defenders);
+    if(forcer) creditLive(dIdx, forcer, { ff: 1 });
+  }
+}
 function applyPlay(res){
   const offName = G.teams[GM.poss].abbr;
+  const offIdxAtSnap = GM.poss, dIdxAtSnap = defIdx();
   if(userOnO()){ if(OFF_PLAYS[res.oc].fam==='run') GM.runTend++; else GM.passTend++; }
   if(res.type==='int' || res.type==='fumble'){
     const spotAfter = clamp(GM.spot + res.yards, 1, 99);
     logMsg(offName + ' — ' + (res.type==='int' ? 'INTERCEPTED! ' : 'FUMBLE! ') + tName(defIdx()) + ' take over.', 'bad');
     if(userOnO()) fieldFlash(res.type==='int' ? 'Intercepted!' : 'Fumble!', 'opp');
     else fieldFlash(res.type==='int' ? 'Interception!' : 'Fumble!', 'td');
+    attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
     startPossession(defIdx(), 100 - spotAfter);
     runoff({type:'to'});
     return;
@@ -2756,14 +2902,17 @@ function applyPlay(res){
     GM.down++;
   } else {
     const newSpot = GM.spot + res.yards;
+    const isTD = newSpot >= 100;
     if(newSpot <= 0){
       addPts(defIdx(), 2);
       logMsg('SAFETY! ' + tName(defIdx()) + ' get 2.', 'bad');
+      attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
       runoff(res);
       startPossession(defIdx(), 35);
       updateGameUI(); return;
     }
-    if(newSpot >= 100){ GM.spot = 99; touchdown(res); return; }
+    if(isTD){ GM.spot = 99; attributePlay(res, offIdxAtSnap, dIdxAtSnap, true); touchdown(res); return; }
+    attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
     GM.spot = newSpot;
     GM.dist -= res.yards;
     if(res.type==='sack'){ if(userOnO()) fieldFlash('Sacked!','opp'); else fieldFlash('Sack!','fd'); }
@@ -2788,7 +2937,11 @@ function touchdown(res){
     const diff = GM.poss===GM.home ? GM.hs-GM.as : GM.as-GM.hs;
     const goTwo = (diff === -2 || diff === -8 || diff === 5 || diff === -5) && GM.q >= 4;
     doTry(goTwo ? '2pt' : 'xp');
-  } else updateGameUI();
+  } else if(coachSimActive){
+    coachSimStep();
+  } else {
+    updateGameUI();
+  }
 }
 function doTry(kind){
   GM.pending = null;
@@ -2813,6 +2966,9 @@ function doFG(){
   GM.clock -= 6;
   if(Math.random() < p){
     addPts(GM.poss, 3);
+    const kLu = lineupFor(offT(), offFormOf(offT()), offFormKeyOf(offT()));
+    const kSlot = kLu.find(s => s.spot==='K' && s.p);
+    if(kSlot) creditLive(GM.poss, kSlot.p, { fgm: 1 });
     logMsg(dist + '-yd field goal is GOOD. ' + G.teams[GM.poss].abbr + ' +3.', 'big');
     fieldFlash('Kick is Good','fd');
     startPossession(GM.poss===GM.home?GM.away:GM.home, 25);
@@ -2823,7 +2979,7 @@ function doFG(){
   }
   if(GM.clock<=0) endQuarter();
   checkAITurn(); updateGameUI();
-  if(coachSimPausedFor4th){ coachSimPausedFor4th = false; coachSimStep(); }
+  if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
 }
 function doPunt(){
   const net = RI(35,48);
@@ -2834,7 +2990,7 @@ function doPunt(){
   startPossession(defIdx(), oppSpot);
   if(GM.clock<=0) endQuarter();
   checkAITurn(); updateGameUI();
-  if(coachSimPausedFor4th){ coachSimPausedFor4th = false; coachSimStep(); }
+  if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
 }
 function doKneel(){
   GM.clock -= 40; GM.down++;
@@ -2864,7 +3020,7 @@ function userCall(code){
     if(GM.q >= 5 && GM.ot && GM.hs !== GM.as){ finishGame(); return; }
     checkAITurn();
     updateGameUI();
-    if(coachSimPausedFor4th){ coachSimPausedFor4th = false; coachSimStep(); }
+    if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
   });
 }
 function checkAITurn(){
@@ -2903,13 +3059,24 @@ function coachSimStep(){
     updateGameUI(); // buildCallsheet shows the normal Go/Punt/FG choice; resolving it resumes coach sim
     return;
   }
-  if(G.mode === 'player' && userOnO() && !GM.pending && playerLiveMechanic() === 'qb'){
+  if(G.mode === 'player' && userOnO() && !GM.pending && playerLiveMechanic() !== 'auto'){
     coachSimPausedForPlayer = true;
     logMsg('⏸ Sim to Player — you\'re on the field. Take the snap.', 'q');
     updateGameUI(); // buildCallsheet falls through to renderPlayerOffenseCallsheet()'s live QB minigame
     return;
   }
-  if(GM.pending){ busy = true; doTry(Math.random() < .88 ? 'xp' : '2pt'); busy = false; coachSimStep(); return; }
+  if(GM.pending){
+    if(G.mode === 'player' && userOnO()){
+      const myP = mePlayer();
+      if(myP && myP.pos === 'K'){
+        coachSimPausedForPlayer = true;
+        logMsg('⏸ Sim to Player — extra point. Take your kick.', 'q');
+        updateGameUI();
+        return;
+      }
+    }
+    busy = true; doTry(Math.random() < .88 ? 'xp' : '2pt'); busy = false; coachSimStep(); return;
+  }
   if(GM.down === 4 && !userOnO()){
     const choice = aiFourthDown();
     if(choice==='punt'){ doPunt(); coachSimStep(); return; }
@@ -3713,6 +3880,7 @@ function teamDetailHTML(idx){
   const activeCt = activeCount(t);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(t.city+' '+t.name)+(t.idx===G.userTeam?' <span class="tag w">YOU</span>':'')+'</div>' +
     '<p class="sub">'+CONF_NAMES[t.conf]+' · '+DIV_NAMES[t.div]+' Division · '+t.w+'-'+t.l+' · PF '+t.pf+' · PA '+t.pa+'</p>' +
+    '<div style="margin-top:8px">'+capBarHTML(t)+'</div>' +
     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px">' +
     '<span class="countpill'+(activeCt>limit?' over':'')+'">Roster <b>'+activeCt+'</b> / '+limit+'</span>' +
     '<span class="sub">Tap a column header to sort · tap a name for the full profile</span></div></div>';
@@ -4155,7 +4323,7 @@ function requestRelease(){
   const me = meT();
   me.roster = me.roster.filter(p => p.id !== myP.id);
   G.playerFreeAgent = myP;
-  const others = G.teams.filter(t => t.idx !== me.idx).sort(() => Math.random()-.5).slice(0,3);
+  const others = pickFAOfferTeams(me.idx, userPrice(myP,1));
   G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.68,0.92) * 10) / 10 }));
   logEv(myP, 'move', 'Requested and received release from '+me.city, 0);
   save(); render();
@@ -4635,7 +4803,7 @@ function resolvePlayerContract(accept){
     const me = meT();
     me.roster = me.roster.filter(p => p.id !== myP.id);
     G.playerFreeAgent = myP;
-    const others = G.teams.filter(t => t.idx !== me.idx).sort(() => Math.random()-.5).slice(0,3);
+    const others = pickFAOfferTeams(me.idx, userPrice(myP,1));
     G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.88,1.18) * 10) / 10 }));
     G.playerPendingContract = null;
   }
@@ -4691,7 +4859,7 @@ function playerAdvance(){
     case 'offseason': playerHandleOffseason(); break;
     default: break;
   }
-  save(); render();
+  if(G.phase !== 'game'){ save(); render(); }
 }
 function playForMeButtonHTML(hasBlockingDecision){
   if(hasBlockingDecision) return '';
@@ -4742,7 +4910,7 @@ function playerDashboardHTML(){
     if(lost){
       G.fa = G.fa.filter(p => p.id !== G.playerId);
       G.playerFreeAgent = lost;
-      const others = G.teams.sort(() => Math.random()-.5).slice(0,3);
+      const others = pickFAOfferTeams(-1, userPrice(lost,1));
       G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(lost,1) * R(0.85,1.2) * 10) / 10 }));
       save();
       myP = mePlayer();
@@ -4902,6 +5070,27 @@ function playerGridDashboardHTML(myP, t){
       }
       s += '<tr><td class="sub">Wk '+(w+1)+'</td><td>'+(home?'vs':'@')+' '+esc(opp.abbr)+'</td><td>'+scoreText+'</td><td>'+lineText+'</td></tr>';
     }
+    if(G.playoffs){
+      const P = G.playoffs;
+      const rounds = [['Semifinal', P.r1], ['Conf. Champ.', P.r2], ['Apex Bowl', P.r3]];
+      rounds.forEach(([label, games]) => {
+        const g = (games||[]).find(x => x.a===G.userTeam || x.b===G.userTeam);
+        if(!g) return;
+        const home = g.a === G.userTeam;
+        const opp = G.teams[home ? g.b : g.a];
+        let scoreText = '<span class="sub">—</span>', lineText = '<span class="sub">—</span>';
+        if(g.done){
+          const myScore = home ? g.as : g.bs, oppScore = home ? g.bs : g.as;
+          scoreText = '<b style="color:'+(myScore>oppScore?'var(--green)':'var(--red)')+'">'+myScore+'–'+oppScore+'</b>';
+          if(g.report && g.report.teams){
+            const myTeamReport = g.report.teams[G.userTeam];
+            const line = myTeamReport && myTeamReport.lines.find(l => l.id === myP.id);
+            lineText = line ? gameLineText(line) : '<span class="sub">Did not play</span>';
+          }
+        }
+        s += '<tr><td class="sub">'+esc(label)+'</td><td>'+(home?'vs':'@')+' '+esc(opp.abbr)+'</td><td>'+scoreText+'</td><td>'+lineText+'</td></tr>';
+      });
+    }
     s += '</table></div>';
   }
   s += '</div>';
@@ -5031,10 +5220,10 @@ function ownerHandleDraft(){
 function ownerHandlePreseason(){
   simPre(); simPre(); simPre();
   doAutoCut();
-  if(!meetsMinimums(meT())) fillMinimums();
+  enforceCapCompliance(meT()); // shed what cap room can honestly be shed first
+  if(!meetsMinimums(meT()) || meT().roster.length < LIMIT_REG) fillMinimums(); // then guarantee a legal roster size — runs last so it can't be undone
   if(meT().roster.length > LIMIT_REG) doAutoCut();
-  enforceCapCompliance(meT());
-  confirmCutdown();
+  confirmCutdown(true);
   logOwnerMove('Roster set for Week 1.');
 }
 function ownerHandleWeek(){
@@ -5059,10 +5248,24 @@ function ownerHandleWeek(){
     resolveIncomingOffer(offer.id, 'accept');
     logOwnerMove('Accepted trade with '+them.city+'.');
   }
+  if(G.mode === 'player'){
+    startGame({ game: userGame() });
+    coachSimActive = true;
+    coachSimLastQ = GM.q;
+    coachSimStep();
+    return;
+  }
   simWeek();
 }
 function ownerHandlePlayoffs(){
   const pg = playoffUserGame();
+  if(pg && G.mode === 'player'){
+    startGame({ game: pg, playoff: true });
+    coachSimActive = true;
+    coachSimLastQ = GM.q;
+    coachSimStep();
+    return;
+  }
   if(pg) simPlayoffUser(); else simPlayoffRound();
 }
 function ownerHandleOffseason(){
@@ -6563,6 +6766,7 @@ function gameHTML(){
     '<div class="situation" id="situation"></div>' +
     '<div id="fieldwrap">'+fieldSVG()+'<div id="playbanner"></div></div>' +
     '<div class="callsheet"><div class="cs-hd"><span id="cs-title">Call Sheet</span><span id="cs-side"></span></div><div class="playgrid" id="playgrid"></div></div>' +
+    '<div class="panel" id="statbox" style="margin-top:10px"></div>' +
     '<div class="gamectl">' +
     '<button class="btn" id="hurryBtn" onclick="toggleHurry()">Hurry-Up: OFF</button>' +
     '<button class="btn" onclick="simQuarter()">⏭ Sim Quarter</button>' +
@@ -6600,8 +6804,39 @@ function updateGameUI(){
   else sit.innerHTML = '<b>'+ordinal(GM.down)+' & '+(GM.spot+GM.dist>=100?'Goal':GM.dist)+'</b><span>Ball on '+spotText()+'</span><span>'+esc(G.teams[GM.poss].abbr)+' ball</span>'+(GM.preseason?'<span style="color:var(--gold)">PRESEASON</span>':'');
   buildCallsheet();
   drawFormation();
+  renderStatBox();
   const csb = el('coachSimBtn');
   if(csb) csb.textContent = coachSimLabel(coachSimActive);
+}
+function renderStatBox(){
+  const el = document.getElementById('statbox');
+  if(!el || !GM || !GM.liveBox) return;
+  function topLines(teamIdx){
+    const box = GM.liveBox[teamIdx] || {};
+    return Object.values(box).filter(p => p.gp).sort((a,b) => lineScore(b)-lineScore(a)).slice(0,3);
+  }
+  function fmtLine(p){
+    const parts = [];
+    if(p.py) parts.push(p.py+' pass yds'+(p.ptd?', '+p.ptd+' TD':''));
+    if(p.ry) parts.push(p.ry+' rush yds'+(p.rtd?', '+p.rtd+' TD':''));
+    if(p.cy) parts.push(p.cy+' rec yds'+(p.ctd?', '+p.ctd+' TD':''));
+    if(p.tk) parts.push(p.tk+' tkl');
+    if(p.sk) parts.push(p.sk+' sack'+(p.sk!==1?'s':''));
+    if(p.int) parts.push(p.int+' INT');
+    if(p.fgm) parts.push(p.fgm+' FG');
+    return '<div class="statbox-line"><b>'+esc(p.name)+'</b> <span class="sub">('+p.pos+')</span><span class="sub">'+parts.join(', ')+'</span></div>';
+  }
+  const H = G.teams[GM.home], A = G.teams[GM.away];
+  let s = '<div class="hd disp" style="font-size:13px">Live Stats</div><div class="statbox-cols">';
+  [[GM.home,H],[GM.away,A]].forEach(([idx,t]) => {
+    const lines = topLines(idx);
+    s += '<div class="statbox-team"><div class="statbox-team-name">'+esc(t.abbr)+'</div>';
+    if(!lines.length) s += '<p class="sub">No stats yet</p>';
+    else lines.forEach(p => { s += fmtLine(p); });
+    s += '</div>';
+  });
+  s += '</div>';
+  el.innerHTML = s;
 }
 function coachSimLabel(isOn){
   return G.mode === 'player' ? '🎯 Sim to Player: '+(isOn?'ON':'OFF') : '🎯 Coach Sim: '+(isOn?'ON':'OFF');
@@ -6631,9 +6866,22 @@ function buildCallsheet(){
   }
   if(GM.pending==='try'){
     if(userOnO()){
-      title.textContent = 'Point After';
-      side.textContent = 'your call';
-      grid.innerHTML = playBtn('xp','st','Kick the XP','+1 · ~90%','doTry') + playBtn('2pt','shot','Go for Two','+2 · higher risk','doTry');
+      if(G.mode === 'player'){
+        const kind = Math.random() < .88 ? 'xp' : '2pt';
+        const myP = mePlayer();
+        if(kind === 'xp' && myP && myP.pos === 'K'){
+          title.textContent = 'Extra Point'; side.textContent = 'your kick';
+          livePlayState = buildKickState('xp');
+          grid.innerHTML = kickPreSnapHTML();
+        } else {
+          title.textContent = 'Point After'; side.textContent = 'coach calls it';
+          grid.innerHTML = '<button class="play st" onclick="doTry(\''+kind+'\')">▶ '+(kind==='xp'?'Kick the XP':'Go for Two')+'</button>';
+        }
+      } else {
+        title.textContent = 'Point After';
+        side.textContent = 'your call';
+        grid.innerHTML = playBtn('xp','st','Kick the XP','+1 · ~90%','doTry') + playBtn('2pt','shot','Go for Two','+2 · higher risk','doTry');
+      }
     } else grid.innerHTML='';
     return;
   }
@@ -6671,10 +6919,13 @@ function playerLiveMechanic(){
   if(G.mode !== 'player' || !G.playerId) return 'auto';
   const myP = mePlayer();
   if(!myP || !userOnO()) return 'auto';
-  if(myP.pos !== 'QB') return 'auto'; // WR/RB/K land in follow-up work
+  if(!['QB','RB','WR','TE'].includes(myP.pos)) return 'auto';
   const lu = lineupFor(offT(), offFormOf(offT()), offFormKeyOf(offT()));
   const onField = lu.some(s => s.p && s.p.id === myP.id);
-  return onField ? 'qb' : 'auto';
+  if(!onField) return 'auto';
+  if(myP.pos === 'QB') return 'qb';
+  if(myP.pos === 'RB') return 'rb';
+  return 'wr'; // WR or TE
 }
 function playerAutoPlay(){
   if(busy || !GM || GM.over) return;
@@ -6683,15 +6934,50 @@ function playerAutoPlay(){
   const res = resolvePlay(oc, dc);
   animatePlay(res, () => {
     applyPlay(res); busy = false; checkAITurn(); updateGameUI();
-    if(coachSimPausedFor4th){ coachSimPausedFor4th = false; coachSimStep(); }
+    if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
   });
+}
+function playerAutoPunt(){
+  if(busy || !GM || GM.over) return;
+  doPunt();
+}
+function playerAutoFG(){
+  if(busy || !GM || GM.over) return;
+  doFG();
 }
 function renderPlayerOffenseCallsheet(){
   const grid = document.getElementById('playgrid');
   const title = document.getElementById('cs-title');
   const side = document.getElementById('cs-side');
+  const myP = mePlayer();
+
+  if(GM.down === 4){
+    const choice = aiFourthDown();
+    if(choice === 'punt'){
+      title.textContent = 'Coach Calls: Punt';
+      side.textContent = 'flip the field';
+      grid.innerHTML = '<button class="play st" onclick="playerAutoPunt()">▶ Punt It Away<small>coach\'s call</small></button>';
+      return;
+    }
+    if(choice === 'fg'){
+      const dist = (100-GM.spot)+17;
+      if(myP && myP.pos === 'K'){
+        title.textContent = dist+'-Yard Field Goal Attempt';
+        side.textContent = 'your kick';
+        livePlayState = buildKickState('fg');
+        grid.innerHTML = kickPreSnapHTML();
+      } else {
+        title.textContent = 'Coach Calls: Field Goal ('+dist+' yds)';
+        side.textContent = 'not your moment';
+        grid.innerHTML = '<button class="play st" onclick="playerAutoFG()">▶ Attempt the Kick<small>your kicker\'s call</small></button>';
+      }
+      return;
+    }
+    // choice === 'go' falls through to the normal mechanic below
+  }
+
   const mech = playerLiveMechanic();
-  if(mech !== 'qb'){
+  if(mech === 'auto'){
     title.textContent = 'Your Team Has the Ball';
     side.textContent = 'coach calls it';
     grid.innerHTML = '<button class="play st" onclick="playerAutoPlay()">▶ Run the Play<small>let the coach call it</small></button>';
@@ -6699,16 +6985,35 @@ function renderPlayerOffenseCallsheet(){
   }
   const oc = aiOffCall();
   if(OFF_PLAYS[oc].fam === 'run'){
+    if(mech === 'rb'){
+      const dc = aiDefCall();
+      livePlayState = buildRBPlayState(oc, dc);
+      title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
+      side.textContent = 'your read';
+      grid.innerHTML = '<div class="qblive"><button class="play st" onclick="takeHandoff()">🏈 Take the Handoff<small>read the hole, then pick a lane</small></button></div>';
+      return;
+    }
     title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
     side.textContent = 'handoff';
     grid.innerHTML = '<button class="play st" onclick="playerRunHandoff(\''+oc+'\')">▶ Snap It<small>hand it off</small></button>';
     return;
   }
   const dc = aiDefCall();
-  livePlayState = buildQBPlayState(oc, dc);
-  title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
-  side.textContent = 'your read';
-  grid.innerHTML = '<div class="qblive"><button class="play st" onclick="snapTheBall()">🏈 Snap the Ball<small>read it, then throw when you like the window</small></button></div>';
+  if(mech === 'qb'){
+    livePlayState = buildQBPlayState(oc, dc);
+    title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
+    side.textContent = 'your read';
+    grid.innerHTML = '<div class="qblive"><button class="play st" onclick="snapTheBall()">🏈 Snap the Ball<small>read it, then throw when you like the window</small></button></div>';
+    return;
+  }
+  if(mech === 'wr'){
+    livePlayState = buildWRPlayState(oc, dc);
+    title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
+    side.textContent = 'get open';
+    grid.innerHTML = '<div class="qblive"><button class="play st" onclick="runYourRoute()">🏈 Run Your Route<small>signal when you\'re open</small></button></div>';
+    return;
+  }
+  playerAutoPlay();
 }
 function playerRunHandoff(oc){
   if(busy || !GM || GM.over) return;
@@ -6814,7 +7119,7 @@ function qbThrow(idx){
   let res;
   if(roll < compProb){
     const yac = Math.round(3 + captured/10 + Math.random()*8 + (t.key==='w2'?10:0));
-    res = { oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.15 };
+    res = { oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.15, target: t.p };
   } else if(captured < 35 && roll < compProb + (100-compProb)*0.3){
     res = { oc, dc: st.dc, type:'int', yards: Math.round(R(2,14)) };
   } else {
@@ -6833,12 +7138,215 @@ function qbScramble(){
   if(!st || !st.snapped) return;
   clearInterval(st.tickHandle);
   const yards = Math.round(2 + (st.qbRating-60)/8 + Math.random()*9);
-  finishPlayerPlay({ oc:'ir', dc: st.dc, type:'run', yards });
+  finishPlayerPlay({ oc:'ir', dc: st.dc, type:'run', yards, carrier: mePlayer() });
 }
 function qbSacked(){
   const st = livePlayState;
   if(!st) return;
   finishPlayerPlay({ oc: st.oc, dc: st.dc, type:'sack', yards: -RI(4,9) });
+}
+/* ---------- RB: short lane read after the handoff ---------- */
+function buildRBPlayState(oc, dc){
+  const off = offT(), def = defT();
+  const defAvg = defRush(def);
+  const myP = mePlayer();
+  const rbRating = myP ? myP.rating : 70;
+  function laneQuality(bias){ return clamp(50 + (rbRating - defAvg)*0.5 + bias, 8, 92); }
+  return {
+    kind:'rb', oc, dc, elapsed:0, totalWindow:1.8, tickHandle:null, taken:false,
+    lanes: [
+      { key:'inside', label:'Trust the Line', vol:8,  openness: laneQuality(6) },
+      { key:'outside', label:'Bounce Outside', vol:22, openness: laneQuality(-6) }
+    ],
+    rbRating
+  };
+}
+function takeHandoff(){
+  const st = livePlayState;
+  if(!st || st.kind!=='rb' || st.taken) return;
+  st.taken = true;
+  const grid = document.getElementById('playgrid');
+  let s = '<div class="qblive"><div class="qbclock mono" id="rbclock">1.8s</div><div class="qbclockbar"><i id="rbclockfill" style="width:100%"></i></div>';
+  st.lanes.forEach((l,i) => {
+    s += '<div class="qbtarget" onclick="rbPickLane('+i+')"><div class="qbtarget-name">'+esc(l.label)+'</div>' +
+      '<div class="qbopenbar"><i id="rblane'+i+'" style="width:'+l.openness+'%"></i><span class="qbopenpct" id="rblanepct'+i+'">'+Math.round(l.openness)+'%</span></div></div>';
+  });
+  s += '</div>';
+  grid.innerHTML = s;
+  st.tickHandle = setInterval(rbTick, 100);
+}
+function rbTick(){
+  const st = livePlayState;
+  if(!st || st.kind!=='rb') return;
+  st.elapsed += 0.1;
+  const remaining = Math.max(0, st.totalWindow - st.elapsed);
+  const clockEl = document.getElementById('rbclock');
+  if(clockEl) clockEl.textContent = remaining.toFixed(1)+'s';
+  const fillEl = document.getElementById('rbclockfill');
+  if(fillEl) fillEl.style.width = (remaining/st.totalWindow*100)+'%';
+  st.lanes.forEach((l,i) => {
+    l.openness = clamp(l.openness + (Math.random()-0.5)*l.vol, 4, 96);
+    const openEl = document.getElementById('rblane'+i);
+    const pctEl = document.getElementById('rblanepct'+i);
+    if(openEl){ openEl.style.width = l.openness+'%'; openEl.style.background = l.openness>=65?'var(--green)':l.openness>=35?'var(--gold)':'var(--red)'; }
+    if(pctEl) pctEl.textContent = Math.round(l.openness)+'%';
+  });
+  if(st.elapsed >= st.totalWindow){
+    clearInterval(st.tickHandle);
+    rbPickLane(0); // ran out of time — defaults to trusting the line
+  }
+}
+function rbPickLane(idx){
+  const st = livePlayState;
+  if(!st || st.kind!=='rb') return;
+  clearInterval(st.tickHandle);
+  const l = st.lanes[idx];
+  if(!l) return;
+  const quality = l.openness;
+  let yards;
+  if(quality >= 75) yards = Math.round(8 + (quality-75)/3 + Math.random()*14);
+  else if(quality >= 45) yards = Math.round(2 + (quality-45)/8 + Math.random()*5);
+  else yards = Math.round(Math.random()*2 - (45-quality)/10);
+  finishPlayerPlay({ oc: st.oc, dc: st.dc, type:'run', yards: Math.round(yards), carrier: mePlayer() });
+}
+
+/* ---------- WR/TE: get open, signal for the ball, matches the QB's timing feel ---------- */
+function buildWRPlayState(oc, dc){
+  const off = offT(), def = defT();
+  const defAvg = defPass(def);
+  const myP = mePlayer();
+  const wrRating = myP ? myP.rating : 70;
+  const depthVol = myP && myP.pos==='TE' ? 12 : 17;
+  return {
+    kind:'wr', oc, dc, elapsed:0, totalWindow:4.0, tickHandle:null, signaled:false,
+    openness: clamp(50 + (wrRating - defAvg)*0.55, 8, 90), vol: depthVol, wrRating
+  };
+}
+function runYourRoute(){
+  const st = livePlayState;
+  if(!st || st.kind!=='wr' || st.signaled) return;
+  const grid = document.getElementById('playgrid');
+  let s = '<div class="qblive"><div class="qbclock mono" id="wrclock">4.0s</div><div class="qbclockbar"><i id="wrclockfill" style="width:100%"></i></div>' +
+    '<div class="qbtarget" onclick="wrSignalOpen()"><div class="qbtarget-name">Your separation<small>tap when you like the window</small></div>' +
+    '<div class="qbopenbar"><i id="wropen" style="width:'+st.openness+'%"></i><span class="qbopenpct" id="wropenpct">'+Math.round(st.openness)+'%</span></div></div></div>';
+  grid.innerHTML = s;
+  st.tickHandle = setInterval(wrTick, 100);
+}
+function wrTick(){
+  const st = livePlayState;
+  if(!st || st.kind!=='wr') return;
+  st.elapsed += 0.1;
+  const remaining = Math.max(0, st.totalWindow - st.elapsed);
+  const clockEl = document.getElementById('wrclock');
+  if(clockEl) clockEl.textContent = remaining.toFixed(1)+'s';
+  const fillEl = document.getElementById('wrclockfill');
+  if(fillEl) fillEl.style.width = (remaining/st.totalWindow*100)+'%';
+  st.openness = clamp(st.openness + (Math.random()-0.5)*st.vol, 4, 96);
+  const openEl = document.getElementById('wropen');
+  const pctEl = document.getElementById('wropenpct');
+  if(openEl){ openEl.style.width = st.openness+'%'; openEl.style.background = st.openness>=65?'var(--green)':st.openness>=35?'var(--gold)':'var(--red)'; }
+  if(pctEl) pctEl.textContent = Math.round(st.openness)+'%';
+  if(st.elapsed >= st.totalWindow){
+    clearInterval(st.tickHandle);
+    wrPlayEnds(false);
+  }
+}
+function wrSignalOpen(){
+  const st = livePlayState;
+  if(!st || st.kind!=='wr' || st.signaled) return;
+  st.signaled = true;
+  clearInterval(st.tickHandle);
+  wrPlayEnds(true);
+}
+function wrPlayEnds(targeted){
+  const st = livePlayState;
+  if(!st) return;
+  if(!targeted){
+    livePlayState = null;
+    busy = true;
+    const res = resolvePlay(st.oc, st.dc);
+    animatePlay(res, () => {
+      applyPlay(res); busy = false; checkAITurn(); updateGameUI();
+      if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
+    });
+    return;
+  }
+  const captured = st.openness;
+  const compProb = clamp(captured + (st.wrRating-70)*0.3, 4, 95);
+  const roll = Math.random()*100;
+  let res;
+  if(roll < compProb){
+    const yac = Math.round(4 + captured/9 + Math.random()*9);
+    res = { oc: st.oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.12, target: mePlayer() };
+  } else if(captured < 35 && roll < compProb + (100-compProb)*0.25){
+    res = { oc: st.oc, dc: st.dc, type:'int', yards: Math.round(R(2,12)) };
+  } else {
+    res = { oc: st.oc, dc: st.dc, type:'inc', yards: 0 };
+  }
+  finishPlayerPlay(res);
+}
+
+/* ---------- K: power/accuracy meter on FGs and XPs ---------- */
+function buildKickState(kind){
+  const dist = kind==='fg' ? (100-GM.spot)+17 : 18;
+  const myP = mePlayer();
+  const kRate = myP ? myP.rating : 70;
+  const zoneWidth = clamp(22 - (dist-30)*0.18 + (kRate-70)*0.25, 6, 30);
+  return { kind:'kick', ftype:kind, dist, kRate, pos:0, dir:1, speed: 4.2, zoneWidth, tickHandle:null, kicked:false };
+}
+function kickPreSnapHTML(){
+  return '<div class="qblive"><button class="play st" onclick="startKickMeter()">🏈 Approach the Ball<small>stop the meter dead center</small></button></div>';
+}
+function startKickMeter(){
+  const st = livePlayState;
+  if(!st || st.kind!=='kick' || st.kicked) return;
+  const grid = document.getElementById('playgrid');
+  const half = st.zoneWidth/2;
+  grid.innerHTML = '<div class="qblive"><div class="kickbar" id="kickbar">' +
+    '<div class="kickzone" style="left:'+(50-half)+'%;width:'+st.zoneWidth+'%"></div>' +
+    '<div class="kickmarker" id="kickmarker" style="left:50%"></div></div>' +
+    '<button class="play st" onclick="lockKick()">⚡ Kick It!</button></div>';
+  st.tickHandle = setInterval(kickTick, 30);
+}
+function kickTick(){
+  const st = livePlayState;
+  if(!st || st.kind!=='kick') return;
+  st.pos += st.dir * st.speed;
+  if(st.pos >= 100){ st.pos = 100; st.dir = -1; }
+  if(st.pos <= 0){ st.pos = 0; st.dir = 1; }
+  const el = document.getElementById('kickmarker');
+  if(el) el.style.left = st.pos+'%';
+}
+function lockKick(){
+  const st = livePlayState;
+  if(!st || st.kind!=='kick' || st.kicked) return;
+  st.kicked = true;
+  clearInterval(st.tickHandle);
+  const distFromCenter = Math.abs(st.pos - 50);
+  const half = st.zoneWidth/2;
+  livePlayState = null;
+  let made;
+  if(distFromCenter <= half) made = Math.random() < clamp(.97 - Math.max(0,st.dist-45)*.006, .55, .99);
+  else made = Math.random() < clamp(.45 - (distFromCenter-half)*.03 - Math.max(0,st.dist-35)*.008, .02, .5);
+  GM.clock -= 6;
+  busy = true;
+  const kicker = mePlayer();
+  if(made){
+    addPts(GM.poss, st.ftype==='fg' ? 3 : 1);
+    if(kicker && st.ftype==='fg') creditLive(GM.poss, kicker, { fgm: 1 });
+    logMsg((st.ftype==='fg' ? st.dist+'-yd field goal' : 'Extra point') + ' is GOOD. ' + G.teams[GM.poss].abbr + ' +' + (st.ftype==='fg'?3:1) + '.', 'big');
+    fieldFlash('Kick is Good','fd');
+    startPossession(GM.poss===GM.home?GM.away:GM.home, 25);
+  } else {
+    logMsg((st.ftype==='fg' ? st.dist+'-yd field goal' : 'Extra point') + ' is NO GOOD.', 'bad');
+    fieldFlash('No Good','opp');
+    if(st.ftype==='fg') startPossession(defIdx(), clamp(100-GM.spot+7, 20, 80));
+    else startPossession(GM.poss===GM.home?GM.away:GM.home, 25);
+  }
+  if(GM.clock<=0) endQuarter();
+  busy = false;
+  checkAITurn(); updateGameUI();
+  if(coachSimPausedFor4th || coachSimPausedForPlayer){ coachSimPausedFor4th = false; coachSimPausedForPlayer = false; coachSimStep(); }
 }
 function showFinal(){
   if(!GM) return;
@@ -6871,13 +7379,14 @@ function afterGame(){
   const wasPlayoff = GM.playoff, wasPre = GM.preseason;
   const meHome = GM.home === G.userTeam;
   const my = meHome ? GM.hs : GM.as, op = meHome ? GM.as : GM.hs;
+  const liveBox = GM.liveBox;
   GM = null; LINEUP = 'full';
   if(wasPre){ afterPreseasonGame(my > op, my, op); return; }
   if(wasPlayoff){
     G.phase = 'playoffs';
-    recordPlayoffUserResult(res);
+    recordPlayoffUserResult(res, liveBox);
   } else {
-    finishWeek(res);
+    finishWeek(res, liveBox);
     if(G.phase !== 'playoffs') G.phase = 'hub';
   }
   save();
