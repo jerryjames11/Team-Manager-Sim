@@ -4247,7 +4247,7 @@ function gmOfficeHTML(){
 function playerGMOfficeHTML(){
   const myP = mePlayer();
   const me = meT();
-  if(!myP) return '<div class="panel"><p class="sub">Between teams right now — nothing to manage here.</p></div>';
+  if(!myP || G.playerFreeAgent) return '<div class="panel"><p class="sub">Between teams right now — nothing to manage here.</p></div>';
   let s = '';
 
   // trade rumors — passive, informational
@@ -4326,6 +4326,7 @@ function requestRelease(){
   const others = pickFAOfferTeams(me.idx, userPrice(myP,1));
   G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.68,0.92) * 10) / 10 }));
   logEv(myP, 'move', 'Requested and received release from '+me.city, 0);
+  G.activePage = null;
   save(); render();
 }
 function fileGrievance(){
@@ -4916,8 +4917,26 @@ function playerDashboardHTML(){
       myP = mePlayer();
     }
   }
-  if(!myP) return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>' +
-    '<div class="panel" style="text-align:center"><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
+  if(!myP){
+    if(G.playerFreeAgent){
+      const fp = G.playerFreeAgent;
+      let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(fp.name)+' — '+fp.spot+'</div>' +
+        '<p class="sub">Currently a free agent · Age '+fp.age+' · <b style="color:var(--gold)">'+fp.rating+'</b> OVR</p></div>';
+      if(G.playerFAOffers && G.playerFAOffers.length){
+        s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Free Agent Offers</div>';
+        G.playerFAOffers.forEach(o => {
+          const ot = G.teams[o.teamIdx];
+          s += '<div class="dash-fixrow"><span>'+esc(ot.city+' '+ot.name)+'</span><b>'+money(o.offer)+'/yr</b> <button class="btn tiny primary" onclick="signWithTeam('+o.teamIdx+')">Sign</button></div>';
+        });
+        s += '</div>';
+      } else {
+        s += '<div class="panel" style="text-align:center"><p class="sub">No offers on the table right now.</p><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
+      }
+      return s;
+    }
+    return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>' +
+      '<div class="panel" style="text-align:center"><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
+  }
   const t = G.teams[G.userTeam];
   const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
@@ -5248,24 +5267,10 @@ function ownerHandleWeek(){
     resolveIncomingOffer(offer.id, 'accept');
     logOwnerMove('Accepted trade with '+them.city+'.');
   }
-  if(G.mode === 'player'){
-    startGame({ game: userGame() });
-    coachSimActive = true;
-    coachSimLastQ = GM.q;
-    coachSimStep();
-    return;
-  }
   simWeek();
 }
 function ownerHandlePlayoffs(){
   const pg = playoffUserGame();
-  if(pg && G.mode === 'player'){
-    startGame({ game: pg, playoff: true });
-    coachSimActive = true;
-    coachSimLastQ = GM.q;
-    coachSimStep();
-    return;
-  }
   if(pg) simPlayoffUser(); else simPlayoffRound();
 }
 function ownerHandleOffseason(){
