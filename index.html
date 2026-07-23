@@ -3264,7 +3264,8 @@ function animatePlay(res, cb){
   const playIsRun = fam === 'run';
   const sackLike = res.type==='sack' || (res.type==='fumble' && !playIsRun);
   const isPassBall = !playIsRun && !sackLike; // the ball actually leaves the QB's hand
-  const depth = {sp:6, sc:4, mp:13, pa:18, dp:27}[res.oc] || 8;
+  const rawDepth = {sp:6, sc:4, mp:13, pa:18, dp:27}[res.oc] || 8;
+  const depth = res.type==='pass' ? Math.min(rawDepth, res.yards) : rawDepth;
   const dpx = depth * PXY;
   const meanAir = PASS_PARAMS[res.oc] ? PASS_PARAMS[res.oc].mean : 8;
   const endYard = clamp(GM.spot + (res.type==='inc' ? Math.round(meanAir) : res.yards), 2, 100);
