@@ -198,6 +198,7 @@ table.tbl tr:last-child td{border-bottom:none}
 .pf-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
 .pf-ovr{font-size:34px;font-weight:700;color:var(--gold);line-height:1}
 .spark{width:100%;max-width:420px;height:64px;display:block;margin:8px 0}
+.finchart{width:100%;height:90px;display:block;margin:8px 0}
 th.sorth{cursor:pointer;user-select:none;white-space:nowrap}
 th.sorth:hover{color:var(--chalk)}
 th.sorth.on{color:var(--gold)}
@@ -444,7 +445,7 @@ function rookieSalaryFor(round){
   return Math.round(R(s.min, s.max) * 10) / 10;
 }
 const LIMIT_OFF = 75, LIMIT_REG = 53, LIMIT_DRESS = 46;
-const CAP = 180; // $M salary cap
+function capNow(){ return G.salaryCap || 180; } // $M salary cap, rises annually
 const POS_MULT = {QB:2.3, RB:.9, WR:1.35, TE:1.0, OL:1.25, DL:1.35, LB:1.1, CB:1.35, S:1.0, K:.45};
 
 /* ---------- specific spots within position groups ---------- */
@@ -930,6 +931,7 @@ function logEv(p, kind, text, delta){
 function findPlayer(pid){
   for(const t of G.teams){ const p = t.roster.find(x => x.id === pid); if(p) return {p, t}; }
   const fp = G.fa.find(x => x.id === pid); if(fp) return {p: fp, t: null};
+  const rp = (G.recentRetirees||[]).find(x => x.id === pid); if(rp) return {p: rp, t: null};
   return null;
 }
 function pn(p){ return '<span class="pname" onclick="openModal(\'player\','+p.id+')">'+esc(p.name)+'</span>'; }
@@ -960,7 +962,7 @@ function makeRoster75(tier){
   });
   // every club starts legal: scale salaries to leave 8–20% cap room
   const pr = roster.reduce((s,p) => s + p.salary, 0);
-  const target = CAP * R(.80, .92);
+  const target = capNow() * R(.80, .92);
   if(pr > target){
     const f = target / pr;
     roster.forEach(p => p.salary = Math.max(0.7, Math.round(p.salary*f*10)/10));
@@ -980,7 +982,7 @@ function buildPreview(){
     const starters = roster.slice().sort((a,b) => b.rating - a.rating).slice(0, 22);
     return { tier, roster,
       ovr: Math.round(starters.reduce((s,p) => s + p.rating, 0) / starters.length),
-      room: Math.round((CAP - pr) * 10) / 10 };
+      room: Math.round((capNow() - pr) * 10) / 10 };
   });
   PREVIEW.nextId = G.nextId;
   G = savedG;
@@ -1091,8 +1093,8 @@ function tagPlayer(pid){
   const p = me.roster.find(x => x.id === pid);
   if(!p || p.years > 0) return;
   const sal = tagSalaryFor(p);
-  if(sal > capRoom(me) + p.salary){ alert('Not enough cap room for the tag ('+money(sal)+' guaranteed).'); return; }
   p.years = 1; p.salary = sal; p.tagged = true; p.resigned = true;
+  p.contractYear = G.year;
   G.tagUsed = true;
   logEv(p, 'ct', 'Franchise tagged by '+me.city+' — '+money(sal)+' gtd', 0);
   bumpRel(p, 'coach', 1);
@@ -1122,14 +1124,14 @@ function runExpiry(){
       const star = t.roster.filter(p => p.years <= 0 && p.rating >= 82).sort((a,b)=>b.rating-a.rating)[0];
       if(star && Math.random() < .4){
         const sal = tagSalaryFor(star, t);
-        if(payroll(t) - star.salary + sal <= CAP){ star.years = 1; star.salary = sal; star.tagged = true; }
+        if(payroll(t) - star.salary + sal <= capNow()){ star.years = 1; star.salary = sal; star.tagged = true; }
       }
     }
     const stay = [], go = [];
     t.roster.forEach(p => {
       if(p.years <= 0){
         const mkt = marketFor(p);
-        if(isAI && p.rating >= 78 && Math.random() < .55 && payroll(t) - p.salary + mkt <= CAP){
+        if(isAI && p.rating >= 78 && Math.random() < .55 && payroll(t) - p.salary + mkt <= capNow()){
           p.years = RI(2,3); p.salary = mkt; stay.push(p);
         } else go.push(p);
       } else stay.push(p);
@@ -1191,8 +1193,40 @@ function chargeDeadCap(t, amount){
   if(!G.deadCap) G.deadCap = {};
   G.deadCap[t.idx] = Math.round(((G.deadCap[t.idx]||0) + amount) * 10) / 10;
 }
+function restructureContract(p){
+  const c = contractOf(p);
+  if(p.years <= 1) return 0; // nothing to spread into
+  const currentBase = c.base[0];
+  const convertible = Math.round(currentBase * 0.65 * 10) / 10; // convert up to 65% of this year's base into a signing-bonus-style proration
+  if(convertible < 0.5) return 0;
+  const newProration = Math.round((convertible / p.years) * 10) / 10;
+  const savings = Math.round((convertible - newProration) * 10) / 10;
+  if(savings <= 0) return 0;
+  c.base[0] = Math.round((currentBase - convertible) * 10) / 10;
+  c.bonusProration = Math.round(((c.bonusProration||0) + newProration) * 10) / 10;
+  c.bonusYearsLeft = p.years;
+  c.totalBonus = Math.round(((c.totalBonus||0) + convertible) * 10) / 10;
+  p.salary = Math.round((p.salary - savings) * 10) / 10;
+  return savings;
+}
 function enforceCapCompliance(t){
-  // release lowest value-per-dollar players (respecting minimums where possible) until the team is cap-compliant
+  // first: try restructuring existing multi-year deals to free up room without losing the player
+  let rguard = 15;
+  const restructured = new Set();
+  while(capRoom(t) < 0 && rguard-- > 0){
+    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3);
+    if(!candidates.length) break;
+    candidates.sort((a,b) => b.salary - a.salary);
+    const p = candidates[0];
+    const saved = restructureContract(p);
+    restructured.add(p.id);
+    if(saved > 0 && t.idx === G.userTeam){
+      logEv(p, 'ct', 'Restructured to free up '+money(saved)+' in cap room', 0);
+      logOwnerMove('Restructured '+p.name+' ('+p.spot+') — freed up '+money(saved)+' in cap room.');
+    }
+    if(saved <= 0) break;
+  }
+  // then: release lowest value-per-dollar players (respecting minimums where possible) if still over
   let guard = 30;
   while(capRoom(t) < 0 && guard-- > 0){
     const cuttable = t.roster.filter(p => posCount(t, p.pos) > MIN53[p.pos]);
@@ -1205,7 +1239,10 @@ function enforceCapCompliance(t){
     t.roster = t.roster.filter(x => x.id !== p.id);
     if(dead > 0) chargeDeadCap(t, dead);
     p.years = 0;
-    if(t.idx === G.userTeam) logEv(p, 'ct', 'Released to get under the cap before the season opener', 0);
+    if(t.idx === G.userTeam){
+      logEv(p, 'ct', 'Released to get under the cap before the season opener', 0);
+      logOwnerMove('Released '+p.name+' ('+p.spot+') to get under the cap'+(dead>0?' — '+money(dead)+' dead cap':'')+'.');
+    }
     G.fa.push(p);
   }
   G.fa.sort((a,b) => b.rating - a.rating);
@@ -1232,17 +1269,25 @@ function buildContractSchedule(totalValue, years, bonusPct, escalating){
   return { base, bonusProration, bonusYearsLeft: bonusYears, totalBonus: bonusTotal };
 }
 function scheduleSalary(sched, yearIdx){ return (sched.base[yearIdx] || 0) + (yearIdx < sched.bonusYearsLeft ? sched.bonusProration : 0); }
-function contractVerdict(offeredTotal, marketTotal, bonusPct){
+function contractVerdict(offeredTotal, marketTotal, bonusPct, rating){
   if(marketTotal <= 0) return {tier:'accept', ratio:1, effectiveMarket:0};
   const guaranteedDiscount = bonusPct * 0.15; // more guaranteed money (bonus) is worth a small premium to a player
   const effectiveMarket = marketTotal * (1 - guaranteedDiscount);
   const ratio = offeredTotal / effectiveMarket;
+  // stars want real guaranteed money, not just a big total propped up by an escalating base — a light bonus
+  // caps how good a verdict they'll give regardless of total value
+  const minBonusForRating = rating >= 88 ? 0.35 : rating >= 80 ? 0.20 : 0;
+  if(minBonusForRating > 0 && bonusPct < minBonusForRating){
+    const shortfall = minBonusForRating - bonusPct;
+    const tier = (ratio >= 1 && shortfall <= 0.15) ? 'counter' : 'reject';
+    return {tier, ratio, effectiveMarket, gap: Math.round((effectiveMarket-offeredTotal)*10)/10, lowBonus:true};
+  }
   if(ratio >= 1) return {tier:'accept', ratio, effectiveMarket};
   if(ratio >= 0.88) return {tier:'counter', ratio, effectiveMarket, gap: Math.round((effectiveMarket-offeredTotal)*10)/10};
   return {tier:'reject', ratio, effectiveMarket};
 }
 function payroll(t){ return t.roster.reduce((s,p) => s + p.salary, 0) + deadCapFor(t); }
-function capRoom(t){ return CAP - payroll(t); }
+function capRoom(t){ return capNow() - payroll(t); }
 function posCount(t, pos){ return t.roster.filter(p => p.pos === pos && !p.ir).length; }
 function activeCount(t){ return t.roster.filter(p => !p.ir).length; }
 function rosterLimit(){ return (G.phase==='hub' || G.phase==='game' || G.phase==='playoffs') ? LIMIT_REG : LIMIT_OFF; }
@@ -1287,7 +1332,6 @@ function submitFAOffer(pid, salary, years){
   if(activeCount(me) >= rosterLimit()) return { kind:'blocked', msg:'Roster is full ('+rosterLimit()+' max right now) — cut someone first.' };
   salary = clamp(Math.round(salary*10)/10, 0.5, 40);
   years = clamp(Math.round(years), 1, 5);
-  if(salary > capRoom(me)) return { kind:'blocked', msg:'Not enough cap room. You have '+money(capRoom(me))+'.' };
   const needed = neededValueFor(p, me);
   const total = salary * (1 + (years-1) * .05);
   if(total >= needed){
@@ -1319,9 +1363,8 @@ function signFA(pid){
   if(rosterFrozen()){ alert('Roster moves are frozen during the playoffs.'); return; }
   if(activeCount(me) >= rosterLimit()){ alert('Roster is full ('+rosterLimit()+' max right now).'); return; }
   p.salary = userPrice(p);
-  if(p.salary > capRoom(me)){ alert('Not enough cap room. You have '+money(capRoom(me))+'.'); return; }
   p.years = p.askYears || RI(1,3);
-  p.injWeeks = 0; p.dressed = true;
+  p.injWeeks = 0; p.dressed = true; p.contractYear = G.year;
   logEv(p, 'ct', 'Signed with '+me.city+' — '+money(p.salary)+'/yr × '+p.years, 0);
   bumpRel(p, 'coach', 2);
   bumpFan(p.rating >= 85 ? 5 : p.rating >= 75 ? 2 : 0);
@@ -1344,6 +1387,7 @@ function cutPlayer(pid){
   }
   bumpRel(p, 'coach', -8);
   bumpFan(p.rating >= 85 ? -5 : p.rating >= 75 ? -2 : 0);
+  logOwnerMove('Released '+p.name+' ('+p.spot+')'+(dead>0?' — '+money(dead)+' dead cap':'')+'.');
   p.years = 0;
   G.fa.push(p);
   G.fa.sort((a,b) => b.rating - a.rating);
@@ -1836,7 +1880,7 @@ function finishWeek(userRes, liveBox){
   const me = meT();
   const won = (userRes.a === G.userTeam) ? userRes.as > userRes.bs : userRes.bs > userRes.as;
   if(G.mode !== 'player'){
-    G.trainPts += won ? 3 : 1;
+    grantTrainPts(won ? 3 : 1);
     G.confidence = clamp(G.confidence + (won ? 4 : -4), 0, 100);
     bumpFan(won ? 1 : -1);
   } else if(!G.playerGamePlayed){
@@ -1902,7 +1946,9 @@ function finishWeek(userRes, liveBox){
   }
   if(G.lastGameReport) G.lastGameReport.injury = G.lastInjury;
   G.week++;
+  if(G.schedule && [4,8,12].includes(G.week-1)) accrueMonthlyFinance('Wk '+(G.week-4)+'-'+(G.week-1));
   if(G.week > 15) buildPlayoffs();
+  if(G.week > 15 && G.schedule) accrueMonthlyFinance('Wk 13-15');
   save();
 }
 
@@ -1970,7 +2016,7 @@ function recordPlayoffUserResult(res, liveBox){
   const won = g.winner === G.userTeam;
   const isChamp = P.round === 3; // Apex Bowl
   if(G.mode !== 'player'){
-    G.trainPts += won ? (isChamp ? 7 : 5) : (isChamp ? 3 : 2);
+    grantTrainPts(won ? (isChamp ? 7 : 5) : (isChamp ? 3 : 2));
     G.confidence = clamp(G.confidence + (won ? 6 : -3), 0, 100);
   } else if(!G.playerGamePlayed){
     G.confidence = clamp(G.confidence + (won ? 3 : -3), 0, 100);
@@ -2021,10 +2067,9 @@ function resignPlayer(pid){
   const p = me.roster.find(x => x.id === pid);
   if(!p || p.years > 1 || p.resigned) return;
   const newSalary = userPrice(p, 1);
-  if(newSalary > capRoom(me) + p.salary){ alert('Not enough cap room for '+money(newSalary)+'.'); return; }
   p.years = RI(2,3);
   p.salary = newSalary;
-  p.resigned = true;
+  p.resigned = true; p.contractYear = G.year;
   p.contract = { base: Array(p.years).fill(newSalary), bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0 };
   logEv(p, 'ct', 'Re-signed with '+me.city+' — '+money(newSalary)+'/yr × '+p.years, 0);
   bumpRel(p, 'coach', 3);
@@ -2070,10 +2115,11 @@ function extendPreviewFor(pid){
   for(let i=0;i<p.years;i++) remainingCurrentValue += scheduleSalary(c, i);
   const marketNow = userPrice(p, 1);
   const marketTotal = remainingCurrentValue + marketNow*d.addYears;
-  const offeredTotal = Math.round(marketTotal * (d.valuePct/100) * 10) / 10;
+  const baseOffered = Math.round(marketTotal * (d.valuePct/100) * 10) / 10;
+  const offeredTotal = Math.round(baseOffered * (1 + (d.bonusPct/100) * 0.15) * 10) / 10; // a bigger bonus sweetens the total ask, not just reshuffles it
   const newYears = p.years + d.addYears;
   const sched = buildContractSchedule(offeredTotal, newYears, d.bonusPct/100, d.escalating);
-  const verdict = contractVerdict(offeredTotal, marketTotal, d.bonusPct/100);
+  const verdict = contractVerdict(offeredTotal, marketTotal, d.bonusPct/100, p.rating);
   return { p, d, sched, marketTotal, offeredTotal, newYears, verdict };
 }
 function proposeExtension(pid){
@@ -2081,22 +2127,27 @@ function proposeExtension(pid){
   if(!preview) return;
   const { p, sched, offeredTotal, newYears, verdict } = preview;
   const me = meT();
+  if(p.contractYear && (G.year - p.contractYear) < 1){
+    alert(esc(p.name)+' just signed a deal — his camp wants at least a year before revisiting terms.');
+    return;
+  }
   const y1 = scheduleSalary(sched, 0);
-  const room = capRoom(me) + p.salary; // his current hit is already backed out
-  if(y1 > room){ alert('Not enough cap room. Year one of this deal needs '+money(y1)+' — you have '+money(room)+' once his current deal is backed out.'); return; }
-  if(verdict.tier === 'reject'){
+  const lowersCurrentHit = y1 < p.salary;
+  if(!lowersCurrentHit && verdict.tier === 'reject'){
     alert(esc(p.name)+'\'s camp turned this down flat — that\'s well under what they consider fair value. Try raising the total or the guaranteed share.');
     return;
   }
-  if(verdict.tier === 'counter'){
+  if(!lowersCurrentHit && verdict.tier === 'counter'){
     alert(esc(p.name)+'\'s camp says they are close but want about '+money(verdict.gap)+' more in total value — bump the value slider or add more guaranteed money and try again.');
     return;
   }
   p.contract = sched;
   p.years = newYears;
   p.salary = scheduleSalary(sched, 0);
+  p.contractYear = G.year;
   p.resigned = true; // don't double-decrement at the next March expiry pass
   logEv(p, 'ct', 'Extended +'+preview.d.addYears+' yr'+(preview.d.addYears>1?'s':'')+' — '+money(offeredTotal)+' total, '+money(sched.bonusProration)+'/yr bonus proration × '+sched.bonusYearsLeft+' yrs', 0);
+  logOwnerMove('Extended '+p.name+' ('+p.spot+') — '+money(offeredTotal)+' total over '+newYears+' yrs.');
   bumpRel(p, 'coach', 4 + (preview.d.bonusPct >= 40 ? 1 : 0));
   bumpFan(p.rating >= 85 ? 5 : p.rating >= 75 ? 2 : 0);
   extendDraft = null;
@@ -2220,10 +2271,52 @@ function extendHTML(pid){
   s += '</table><p class="sub" style="margin-top:6px">Total value: <b style="color:var(--gold)">'+money(offeredTotal)+'</b> over '+newYears+' yrs. If cut or traded before the bonus is fully amortized, whatever\'s left accelerates onto your cap as dead money — right now that\'s up to <b style="color:var(--red)">'+money(sched.bonusProration*sched.bonusYearsLeft)+'</b>.</p></div>';
 
   const vc = verdict.tier==='accept' ? 'var(--green)' : verdict.tier==='counter' ? 'var(--gold)' : 'var(--red)';
-  const vt = verdict.tier==='accept' ? 'His camp likes this — ready to sign.' : verdict.tier==='counter' ? 'Close, but they want a bit more (about '+money(verdict.gap)+' in total value).' : 'Too light — well under what they consider fair.';
+  const vt = verdict.lowBonus
+    ? (verdict.tier==='counter' ? 'Total value is close, but at his level he wants real guaranteed money up front — raise the signing bonus.' : 'A player his caliber isn\'t signing off a big total value alone — he wants a real signing bonus, not just an escalating base.')
+    : (verdict.tier==='accept' ? 'His camp likes this — ready to sign.' : verdict.tier==='counter' ? 'Close, but they want a bit more (about '+money(verdict.gap)+' in total value).' : 'Too light — well under what they consider fair.');
   s += '<div class="panel"><p class="sub" style="color:'+vc+';font-weight:700;margin-bottom:8px">'+vt+'</p>' +
-    '<button class="btn primary" '+(afford?'':'disabled')+' onclick="proposeExtension('+p.id+')">'+(afford?'Propose Extension':'Not Enough Cap Room')+'</button></div>';
+    '<button class="btn primary" onclick="proposeExtension('+p.id+')">Propose Extension</button></div>';
   return s;
+}
+function accrueMonthlyFinance(monthLabel){
+  const me = meT();
+  const market = me.market || 3;
+  const winPct = (me.w + me.l) > 0 ? me.w/(me.w+me.l) : 0.5;
+  const pr = G.pricing || (G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false});
+  const stadiumMult = (STADIUM_TIERS[G.stadiumLevel||0]||STADIUM_TIERS[0]).gateMult;
+  const bundleBoost = pr.bundles ? 1.08 : 1;
+  const tickets = market * (2.2 + (G.fanApproval/100)*2.4 + winPct*1.2) * stadiumMult * pr.tickets * bundleBoost;
+  const parking = market * 0.5 * pr.parking * bundleBoost;
+  const concessions = market * 0.4 * pr.concessions * bundleBoost;
+  const merch = market * 0.3 * (G.fanApproval/100) * pr.merch;
+  const suites = market * 0.6 * pr.suites;
+  const gate = tickets + parking + concessions + suites;
+  const sponsAndDeals = market * (0.6 + (G.fanApproval/100)*0.8) + dealRevenue();
+  const sponsorship = sponsAndDeals + merch;
+  const loyaltyCost = G.loyaltyProgram ? market*0.3 : 0;
+  const q = x => Math.round((x/4)*10)/10;
+  const revenue = Math.round(((gate + sponsorship)/4) * 10) / 10;
+  const staffCost = Math.round((staffPayroll()/4) * 10) / 10;
+  const opsCost = Math.round(((market*0.8 + loyaltyCost)/4) * 10) / 10;
+  const net = Math.round((revenue - staffCost - opsCost) * 10) / 10;
+  if(G.cash == null) G.cash = market * 8;
+  G.cash = Math.round((G.cash + net) * 10) / 10;
+  if(!G.financeLog) G.financeLog = [];
+  G.financeLog.push({ season:G.season, year:G.year, month:monthLabel, revenue, staffCost, opsCost, net, cash:G.cash,
+    income: { tickets:q(tickets), parking:q(parking), concessions:q(concessions), suites:q(suites), sponsorship:q(sponsAndDeals), merch:q(merch) },
+    expense: { staff:staffCost, ops:Math.round((market*0.8/4)*10)/10, loyalty:q(loyaltyCost) } });
+  if(G.financeLog.length > 24) G.financeLog.shift();
+}
+function seasonEndFanEffects(){
+  const me = meT();
+  const pr = G.pricing || (G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false});
+  const bundleDrag = pr.bundles ? 3 : 0;
+  const priceDrag = ((pr.tickets-1)+(pr.parking-1)+(pr.concessions-1)+(pr.merch-1)+(pr.suites-1)) * 4 + bundleDrag;
+  bumpFan(-priceDrag);
+  bumpFan(concourseFanBoost());
+  if(G.loyaltyProgram) bumpFan(1);
+  tickDeals();
+  maybeOfferDeals();
 }
 function advanceToTag(){
   // archive the season that just finished — schedule, results, playoffs, and final standings —
@@ -2235,22 +2328,12 @@ function advanceToTag(){
       preSchedule: G.preSchedule, schedule: G.schedule, results: G.results, playoffs: G.playoffs,
       standings: G.teams.map(t => ({ idx:t.idx, city:t.city, name:t.name, abbr:t.abbr, w:t.w, l:t.l, pf:t.pf, pa:t.pa }))
     });
-    // club finances — gate + sponsorship revenue (driven by market size and fan approval) minus staff payroll and basic ops
-    const me = meT();
-    const market = me.market || 3;
-    const winPct = (me.w + me.l) > 0 ? me.w/(me.w+me.l) : 0.5;
-    const stadiumMult = (STADIUM_TIERS[G.stadiumLevel||0]||STADIUM_TIERS[0]).gateMult;
-    const gate = market * (2.2 + (G.fanApproval/100)*2.4 + winPct*1.2) * stadiumMult;
-    const sponsorship = market * (0.6 + (G.fanApproval/100)*0.8);
-    const revenue = Math.round((gate + sponsorship) * 10) / 10;
-    const staffCost = Math.round(staffPayroll() * 10) / 10;
-    const opsCost = Math.round(market * 0.8 * 10) / 10;
-    const net = Math.round((revenue - staffCost - opsCost) * 10) / 10;
-    if(G.cash == null) G.cash = market * 8;
-    G.cash = Math.round((G.cash + net) * 10) / 10;
-    if(!G.financeLog) G.financeLog = [];
-    G.financeLog.push({ season:G.season, year:G.year, revenue, staffCost, opsCost, net, cash:G.cash });
-    if(G.financeLog.length > 10) G.financeLog.shift();
+    // finances now accrue monthly during the season (see accrueMonthlyFinance, called from finishWeek) —
+    // this final checkpoint just closes out fan-approval effects and business deals for the year
+    seasonEndFanEffects();
+    const capPct = (G.season % 10 === 0) ? 0 : R(0.02, 0.07);
+    G.salaryCap = Math.round((capNow() * (1 + capPct)) * 10) / 10;
+    logOwnerMove('League salary cap '+(capPct>0?'rises '+(Math.round(capPct*1000)/10)+'% to':'holds flat at')+' '+money(G.salaryCap)+'.');
   }
   // league-wide aging, progression, retirement
   const develop = p => {
@@ -2343,7 +2426,7 @@ function advanceToTag(){
   // roll the tradeable-picks window forward so every club always has a picture 3 draft classes out
   G.teams.forEach(t => { for(let r=1; r<=DRAFT_ROUNDS; r++) G.draftPicks.push({ id: G.nextId++, year: G.year+2, round: r, team: t.idx, orig: t.idx }); });
   G.results = []; G.playoffs = null; G.preResults = [];
-  G.trainPts += 3;
+  grantTrainPts(3);
   G.tagUsed = false; G.otaWeek = 0; G.preReport = null;
   if(G.mode !== 'owner' && G.mode !== 'player' && G.confidence <= 0){ G.phase = 'fired'; save(); render(); return; }
   G.phase = 'tag';
@@ -2377,7 +2460,7 @@ function makeProspect(tier){
   const pos = pick(positions);
   const trueRating = clamp(RI(tier.min, tier.max), 50, 99);
   const riskRoll = Math.random();
-  const spread = riskRoll < .3 ? RI(2,4) : riskRoll < .7 ? RI(5,8) : RI(9,14); // safe / average / boom-bust scouting
+  const spread = Math.max(1, Math.round((riskRoll < .3 ? RI(2,4) : riskRoll < .7 ? RI(5,8) : RI(9,14)) * scoutingSpreadMult())); // safe / average / boom-bust scouting
   const scoutMid = clamp(trueRating + RI(-3,3), 50, 99); // scouts aren't perfectly calibrated
   const bio = makeProspectBio(pos);
   return {
@@ -2513,7 +2596,7 @@ function runOTA(focus){
 function simOTAs(){ while(G.phase==='ota') runOTA('team'); }
 function runCamp(){
   // late-July padded practices: extra training points + a couple of camp risers
-  G.trainPts += 4;
+  grantTrainPts(4);
   const me = meT();
   const risers = me.roster.filter(p => p.rating < 95).sort(() => Math.random()-.5).slice(0, 2);
   G.campReport = risers.map(p => { p.rating = clamp(p.rating+1,50,99); logEv(p,'dev','Training camp riser',1); return {name:p.name, pos:p.spot, delta:1}; });
@@ -3573,6 +3656,7 @@ function statsHTML(){
 
 /* ---------- league hub (schedule / standings / stats) ---------- */
 let leagueTab = 'schedule';
+let frontTab = 'summary';
 function setLeagueTab(t){ leagueTab = t; render(); }
 function leagueHTML(){
   let s = '<div class="filterbar" style="margin-bottom:12px">';
@@ -4124,9 +4208,9 @@ function rosterTable(t, actionFn){
 }
 function capBarHTML(t){
   const pr = payroll(t);
-  const pct = clamp(pr/CAP*100, 0, 100);
+  const pct = clamp(pr/capNow()*100, 0, 100);
   const dead = deadCapFor(t);
-  return '<div class="sub" style="margin-bottom:4px">Payroll <b style="color:var(--chalk)">'+money(pr)+'</b> of '+money(CAP)+' cap · room <b style="color:'+(capRoom(t)>10?'var(--green)':'var(--red)')+'">'+money(capRoom(t))+'</b>'+(dead>0?' · dead cap <b style="color:var(--red)">'+money(dead)+'</b>':'')+'</div>' +
+  return '<div class="sub" style="margin-bottom:4px">Payroll <b style="color:var(--chalk)">'+money(pr)+'</b> of '+money(capNow())+' cap · room <b style="color:'+(capRoom(t)>10?'var(--green)':'var(--red)')+'">'+money(capRoom(t))+'</b>'+(dead>0?' · dead cap <b style="color:var(--red)">'+money(dead)+'</b>':'')+'</div>' +
     '<div class="capbar"><i style="width:'+pct+'%;background:'+(pct>92?'var(--red)':'var(--gold)')+'"></i></div>';
 }
 
@@ -4185,7 +4269,7 @@ function faPoolRowsHTML(pool, me, limit){
       if(faOpenId === p.id) s += faOfferRowHTML(p, me);
     } else {
       action = x.isFA
-        ? '<button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="signFA('+p.id+')">Sign</button>'
+        ? '<button class="btn tiny primary" onclick="signFA('+p.id+')">Sign</button>'
         : (x.teamIdx === G.userTeam ? '<span class="sub">Your roster</span>' : '<span class="sub">—</span>');
       s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+teamCell+'</td><td>'+p.age+'</td>' +
         '<td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+'</td><td>'+years+'yr</td><td>'+schemeCell(p)+'</td>' +
@@ -4848,6 +4932,16 @@ function playContinue(){
   advanceToTag();
   save(); render();
 }
+function retryCutdown(){
+  enforceCapCompliance(meT());
+  if(capRoom(meT()) < 0){
+    logOwnerMove('Still over the cap by '+money(-capRoom(meT()))+' — keep restructuring or releasing players from Front Office.');
+    save(); render();
+    return;
+  }
+  confirmCutdown(true);
+  logOwnerMove('Roster set for Week 1.');
+}
 function playerAdvance(){
   if(G.playerRetired || G.playerDraftReveal || G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision) return;
   switch(G.phase){
@@ -4855,6 +4949,7 @@ function playerAdvance(){
     case 'fa': ownerHandleFA(); break;
     case 'draft': simulateRestOfDraft(); finishDraft(); simOTAs(); runCamp(); break;
     case 'preseason': ownerHandlePreseason(); break;
+    case 'cutdown': retryCutdown(); break;
     case 'hub': ownerHandleWeek(); break;
     case 'playoffs': ownerHandlePlayoffs(); break;
     case 'offseason': playerHandleOffseason(); break;
@@ -5116,6 +5211,95 @@ function playerGridDashboardHTML(myP, t){
   return s;
 }
 /* ================= OWNER MODE ================= */
+const DEAL_TYPES = {
+  sponsor: {label:'Sponsorship Deal', base:0.8},
+  naming: {label:'Naming Rights Deal', base:1.4},
+  broadcast: {label:'Local Broadcast Deal', base:1.0}
+};
+function maybeOfferDeals(){
+  if(!G.deals) G.deals = {};
+  if(!G.dealOffers) G.dealOffers = {};
+  const market = meT().market || 3;
+  Object.keys(DEAL_TYPES).forEach(key => {
+    const active = G.deals[key];
+    if(active && active.yearsLeft > 0) return;
+    if(G.dealOffers[key]) return;
+    if(Math.random() < 0.6){
+      const type = DEAL_TYPES[key];
+      const years = RI(2,4);
+      const annual = Math.round(market * type.base * R(0.85,1.25) * 10) / 10;
+      G.dealOffers[key] = { years, annual };
+    }
+  });
+}
+function acceptDeal(key){
+  if(!G.dealOffers || !G.dealOffers[key]) return;
+  const offer = G.dealOffers[key];
+  if(!G.deals) G.deals = {};
+  G.deals[key] = { yearsLeft: offer.years, annual: offer.annual };
+  delete G.dealOffers[key];
+  save(); render();
+}
+function declineDeal(key){
+  if(G.dealOffers) delete G.dealOffers[key];
+  save(); render();
+}
+function dealRevenue(){
+  if(!G.deals) return 0;
+  return Object.values(G.deals).reduce((sum,d) => sum + (d.yearsLeft>0 ? d.annual : 0), 0);
+}
+function tickDeals(){
+  if(!G.deals) return;
+  Object.values(G.deals).forEach(d => { if(d.yearsLeft>0) d.yearsLeft--; });
+}
+function dealsHTML(){
+  if(!G.deals) G.deals = {};
+  if(!G.dealOffers) G.dealOffers = {};
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Business Deals</div>';
+  Object.keys(DEAL_TYPES).forEach(key => {
+    const type = DEAL_TYPES[key];
+    const active = G.deals[key];
+    const offer = G.dealOffers[key];
+    s += '<div style="margin-bottom:8px"><div class="sub"><b style="color:var(--chalk)">'+type.label+'</b>: ';
+    if(active && active.yearsLeft > 0) s += money(active.annual)+'/yr, '+active.yearsLeft+' yr'+(active.yearsLeft!==1?'s':'')+' left</div>';
+    else {
+      s += 'None</div>';
+      if(offer) s += '<div style="display:flex;align-items:center;gap:8px"><span class="sub">Offer: '+money(offer.annual)+'/yr × '+offer.years+' yrs</span>' +
+        '<button class="btn tiny primary" onclick="acceptDeal(\''+key+'\')">Accept</button>' +
+        '<button class="btn tiny" onclick="declineDeal(\''+key+'\')">Decline</button></div>';
+      else s += '<span class="sub">No offer on the table right now.</span>';
+    }
+    s += '</div>';
+  });
+  return s + '</div>';
+}
+function doOutreachEvent(){
+  const market = meT().market || 3;
+  const cost = Math.round(market * 1.5 * 10) / 10;
+  if((G.cash||0) < cost) return;
+  if(G.outreachYear === G.year) return;
+  G.cash = Math.round(((G.cash||0)-cost)*10)/10;
+  G.outreachYear = G.year;
+  logCashEvent('Community Outreach', -cost);
+  bumpFan(4);
+  save(); render();
+}
+function toggleLoyaltyProgram(){
+  G.loyaltyProgram = !G.loyaltyProgram;
+  save(); render();
+}
+function fanRelationsHTML(){
+  const market = meT().market || 3;
+  const outreachCost = Math.round(market * 1.5 * 10) / 10;
+  const usedThisYear = G.outreachYear === G.year;
+  const afford = (G.cash||0) >= outreachCost;
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Fan Relations</div>' +
+    '<div style="margin-bottom:8px"><div class="sub"><b style="color:var(--chalk)">Community Outreach Event</b>: one-time +4 fan approval, '+money(outreachCost)+'</div>' +
+    '<button class="btn tiny" '+(afford&&!usedThisYear?'':'disabled')+' onclick="doOutreachEvent()">'+(usedThisYear?'Already hosted this year':'Host Event')+'</button></div>' +
+    '<div><div class="sub"><b style="color:var(--chalk)">Loyalty / Rewards Program</b>: +1 fan approval/season while active, ongoing small cost</div>' +
+    '<button class="btn'+(G.loyaltyProgram?' primary':'')+' tiny" onclick="toggleLoyaltyProgram()">'+(G.loyaltyProgram?'✓ Active':'Launch Program')+'</button></div></div>';
+  return s;
+}
 function makeGMCandidate(){
   return {
     id: G.nextId++,
@@ -5125,6 +5309,57 @@ function makeGMCandidate(){
     spending: RI(20,90),     // higher = uses more of the cap, less conservative on offers
     salary: Math.round(R(2,6)*10)/10
   };
+}
+const FACILITY_TIERS = {
+  practice: [{name:'Standard Facility', mult:1.0, cost:0}, {name:'Upgraded Weight Room', mult:1.15, cost:6}, {name:'Modern Training Center', mult:1.3, cost:12}, {name:'Elite Performance Center', mult:1.5, cost:20}],
+  scouting: [{name:'Standard Scouting', spreadMult:1.0, cost:0}, {name:'Expanded Scouting', spreadMult:0.75, cost:6}, {name:'Regional Networks', spreadMult:0.5, cost:12}, {name:'Full Analytics Scouting', spreadMult:0.3, cost:20}],
+  concourse: [{name:'Standard Concourse', fanBoost:0, cost:0}, {name:'Renovated Concourse', fanBoost:1, cost:5}, {name:'Modern Fan Zones', fanBoost:2, cost:10}, {name:'Premium Fan Experience', fanBoost:3, cost:18}]
+};
+function facilityLevel(key){ return (G.facilities && G.facilities[key]) || 0; }
+function facilityCost(key, tierIdx, market){ const t=FACILITY_TIERS[key][tierIdx]; return t ? Math.round(t.cost*market*10)/10 : 0; }
+function logCashEvent(label, delta){
+  if(!G.financeLog) G.financeLog = [];
+  G.financeLog.push({ season:G.season, year:G.year, month:label, revenue:delta>0?delta:0, staffCost:0, opsCost:delta<0?-delta:0, net:delta, cash:G.cash });
+  if(G.financeLog.length > 24) G.financeLog.shift();
+}
+function upgradeFacility(key){
+  if(!G.facilities) G.facilities = {practice:0, scouting:0, concourse:0};
+  const level = G.facilities[key]||0, next = level+1;
+  if(next >= FACILITY_TIERS[key].length) return;
+  const market = meT().market || 3;
+  const cost = facilityCost(key, next, market);
+  if((G.cash||0) < cost) return;
+  G.cash = Math.round(((G.cash||0)-cost)*10)/10;
+  G.facilities[key] = next;
+  logCashEvent(FACILITY_TIERS[key][next].name, -cost);
+  save(); render();
+}
+function practiceMult(){ return FACILITY_TIERS.practice[facilityLevel('practice')].mult; }
+function scoutingSpreadMult(){ return FACILITY_TIERS.scouting[facilityLevel('scouting')].spreadMult; }
+function concourseFanBoost(){ return FACILITY_TIERS.concourse[facilityLevel('concourse')].fanBoost; }
+function grantTrainPts(n){ G.trainPts = Math.round(((G.trainPts||0) + n*practiceMult())*10)/10; }
+function facilitiesHTML(){
+  const market = meT().market || 3;
+  const labels = {practice:'Practice Facility', scouting:'Scouting Department', concourse:'Concourse & Fan Experience'};
+  const effects = {
+    practice: t => '×'+t.mult.toFixed(2)+' training pts',
+    scouting: t => (t.spreadMult<1 ? Math.round((1-t.spreadMult)*100)+'% tighter scouting reports' : 'baseline scouting reports'),
+    concourse: t => t.fanBoost>0 ? '+'+t.fanBoost+' fan approval/season' : 'no ongoing boost'
+  };
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Facilities</div>';
+  ['practice','scouting','concourse'].forEach(key => {
+    const level = facilityLevel(key);
+    const tier = FACILITY_TIERS[key][level];
+    s += '<div style="margin-bottom:8px"><div class="sub"><b style="color:var(--chalk)">'+labels[key]+'</b>: '+esc(tier.name)+' — '+effects[key](tier)+'</div>';
+    if(level+1 < FACILITY_TIERS[key].length){
+      const nt = FACILITY_TIERS[key][level+1];
+      const cost = facilityCost(key, level+1, market);
+      const afford = (G.cash||0) >= cost;
+      s += '<button class="btn tiny" '+(afford?'':'disabled')+' onclick="upgradeFacility(\''+key+'\')">Upgrade to '+esc(nt.name)+' — '+money(cost)+'</button>';
+    } else s += '<span class="sub">Max tier</span>';
+    s += '</div>';
+  });
+  return s + '</div>';
 }
 function makeGMPool(){ const pool=[]; for(let i=0;i<5;i++) pool.push(makeGMCandidate()); return pool.sort((a,b)=>b.rating-a.rating); }
 function hireGM(id){
@@ -5137,9 +5372,15 @@ function hireGM(id){
   logOwnerMove('Hired '+cand.name+' as GM.');
   save(); render();
 }
+function currentMonthLabel(){
+  if(G.phase === 'hub' && G.schedule) return weekDate(G.year, G.week||1).toLocaleDateString('en-US',{month:'short'});
+  if(G.phase === 'playoffs') return 'Jan';
+  const phaseMonths = { tag:'Feb', fa:'Mar', draft:'Apr', ota:'May', camp:'Jul', preseason:'Aug', cutdown:'Aug', offseason:'Jan' };
+  return phaseMonths[G.phase] || '';
+}
 function logOwnerMove(text){
   if(!G.ownerLog) G.ownerLog = [];
-  G.ownerLog.unshift({ y:G.year, t:text });
+  G.ownerLog.unshift({ y:G.year, m: currentMonthLabel(), t:text });
   if(G.ownerLog.length > 15) G.ownerLog.length = 15;
 }
 function setMandate(m){ G.mandate = m; save(); render(); }
@@ -5240,8 +5481,14 @@ function ownerHandlePreseason(){
   simPre(); simPre(); simPre();
   doAutoCut();
   enforceCapCompliance(meT()); // shed what cap room can honestly be shed first
-  if(!meetsMinimums(meT()) || meT().roster.length < LIMIT_REG) fillMinimums(); // then guarantee a legal roster size — runs last so it can't be undone
+  if(!meetsMinimums(meT()) || meT().roster.length < LIMIT_REG) fillMinimums(); // then guarantee a legal roster size
   if(meT().roster.length > LIMIT_REG) doAutoCut();
+  enforceCapCompliance(meT()); // re-check — filling minimums can add payroll back
+  if(capRoom(meT()) < 0){
+    logOwnerMove('Still over the salary cap by '+money(-capRoom(meT()))+' — restructure or release players from Front Office before the season can open.');
+    save(); render();
+    return;
+  }
   confirmCutdown(true);
   logOwnerMove('Roster set for Week 1.');
 }
@@ -5342,6 +5589,7 @@ function ownerAdvance(){
     case 'fa': ownerHandleFA(); break;
     case 'draft': ownerHandleDraft(); break;
     case 'preseason': ownerHandlePreseason(); break;
+    case 'cutdown': retryCutdown(); break;
     case 'hub': ownerHandleWeek(); break;
     case 'playoffs': ownerHandlePlayoffs(); break;
     case 'offseason': ownerHandleOffseason(); break;
@@ -5365,7 +5613,7 @@ function ownerDashboardHTML(){
   if(!G.owner) G.owner = { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: G.year };
   const tenure = G.career.seasons || 0;
   const canStep = canStepDown();
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(me.city+' '+me.name)+' — Ownership</div>' +
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="display:flex;justify-content:space-between;align-items:center"><span>'+esc(me.city+' '+me.name)+' — Ownership</span><button class="btn primary" onclick="ownerAdvance()">Advance →</button></div>' +
     '<p class="sub">GM: <b style="color:var(--chalk)">'+esc(G.gm.name)+'</b> · Record '+me.w+'-'+me.l+' · '+phaseLabelFor(G.phase)+'</p>' +
     '<p class="sub" style="margin-top:2px">Owner: <b style="color:var(--chalk)">'+esc(G.owner.name)+'</b>, age '+G.owner.age+' · '+tenure+' season'+(tenure!==1?'s':'')+' in charge (since '+G.owner.tookOverYear+')</p>' +
     '<div class="sub" style="margin:6px 0 2px">GM Confidence</div><div class="capbar"><i style="width:'+(G.gmConfidence||60)+'%;background:'+((G.gmConfidence||60)>=50?'var(--green)':'var(--red)')+'"></i></div>' +
@@ -5386,43 +5634,50 @@ function ownerDashboardHTML(){
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Ring of Honor Nominations</div>' +
       '<p class="sub" style="margin-bottom:8px">These veterans hung it up this offseason. Induct any of them into the Ring of Honor?</p>';
     G.recentRetirees.forEach(p => {
-      s += '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
+      s += '<div class="dash-fixrow"><span>'+pn(p)+' <span class="sub">('+p.pos+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
         '<span style="display:flex;gap:6px"><button class="btn tiny primary" onclick="inductRingOfHonor('+p.id+')">🏵️ Induct</button><button class="btn tiny" onclick="dismissRetiree('+p.id+')">Let it go</button></span></div>';
     });
     s += '</div>';
   }
-
-  s += financesHTML();
-
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Mandate</div>' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
-    ['compete','rebuild','stay'].map(m => '<button class="btn'+(G.mandate===m?' primary':'')+'" onclick="setMandate(\''+m+'\')">'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[m]+'</button>').join('') +
-    '</div></div>';
-
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Approval Threshold</div>' +
-    '<p class="sub">Moves worth '+money(G.approvalThreshold)+'+ pause for your sign-off. Everything smaller just happens.</p>' +
-    '<input type="range" min="3" max="40" step="1" value="'+G.approvalThreshold+'" style="width:100%" onchange="setApprovalThreshold(this.value)"></div>';
 
   if(G.pendingApproval){
     const a = G.pendingApproval;
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp" style="color:var(--gold)">Needs Your Sign-Off</div>' +
       '<p style="margin:6px 0"><b>'+a.summary+'</b></p><p class="sub">'+a.reasoning+'</p>' +
       '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="resolveApproval(true)">Approve</button><button class="btn danger" onclick="resolveApproval(false)">Reject</button></div></div>';
-  } else if(G.phase === 'offseason' && G.ownerReviewShown){
+  }
+
+  if(G.results && G.results.length) s += seasonSoFarHTML(true);
+
+  if(G.ownerLog && G.ownerLog.length){
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Recent Moves</div>' +
+      '<div style="max-height:135px;overflow-y:auto">';
+    G.ownerLog.forEach(e => { s += '<div class="dash-fixrow"><span>'+(e.m?e.m+' ':'')+e.y+'</span><span>'+esc(e.t)+'</span></div>'; });
+    s += '</div></div>';
+  }
+
+
+  s += dealsHTML();
+
+  s += budgetsHTML();
+
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Approval Threshold</div>' +
+    '<p class="sub">Moves worth '+money(G.approvalThreshold)+'+ pause for your sign-off. Everything smaller just happens.</p>' +
+    '<input type="range" min="3" max="40" step="1" value="'+G.approvalThreshold+'" style="width:100%" onchange="setApprovalThreshold(this.value)"></div>';
+
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Mandate</div>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+    ['compete','rebuild','stay'].map(m => '<button class="btn'+(G.mandate===m?' primary':'')+'" onclick="setMandate(\''+m+'\')">'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[m]+'</button>').join('') +
+    '</div></div>';
+
+  if(G.phase === 'offseason' && G.ownerReviewShown){
     const met = mandateMet();
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Season Review</div>' +
       '<p>Finished '+me.w+'-'+me.l+'. Mandate was <b>'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[G.mandate]+'</b> — '+(met?'<span style="color:var(--green)">met.</span>':'<span style="color:var(--red)">not met.</span>')+'</p>' +
       '<p class="sub" style="margin-top:6px">GM confidence is now '+Math.round(G.gmConfidence)+'/100.</p>' +
       '<button class="btn primary" style="margin-top:8px" onclick="ownerAdvance()">Continue to Next Season →</button></div>';
-  } else {
-    s += '<div class="panel" style="margin-bottom:12px;text-align:center"><button class="btn primary big" onclick="ownerAdvance()">Advance →</button></div>';
   }
 
-  if(G.ownerLog && G.ownerLog.length){
-    s += '<div class="panel"><div class="hd disp">Recent Moves</div>';
-    G.ownerLog.forEach(e => { s += '<div class="dash-fixrow"><span>'+e.y+'</span><span>'+esc(e.t)+'</span></div>'; });
-    s += '</div>';
-  }
   s += franchiseLegacyHTML();
   return s;
 }
@@ -5727,18 +5982,30 @@ function scheduleHTML(){
   } else if(G.phase !== 'hub'){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Season Complete</div><p class="sub">Nothing on the schedule right now — check back once the new league year kicks off.</p></div>';
   }
-  if(G.results.length){
-    s += '<div class="panel"><div class="hd disp">Your Season So Far</div><table class="tbl"><tr><th>Wk</th><th>Date</th><th>Opponent</th><th>Result</th></tr>';
-    G.results.forEach((wk,i) => {
-      const r = wk.find(x => x.a===G.userTeam || x.b===G.userTeam);
-      if(!r) return;
-      const meHome = r.a===G.userTeam;
-      const myS = meHome? r.as : r.bs, opS = meHome? r.bs : r.as;
-      const o = G.teams[meHome? r.b : r.a];
-      s += '<tr><td>'+(i+1)+'</td><td class="sub">'+fmtDate(weekDate(G.year,i+1))+'</td><td>'+(meHome?'vs':'@')+' '+esc(o.city+' '+o.name)+'</td><td><span class="tag '+(myS>opS?'w':'l')+'">'+(myS>opS?'W':'L')+' '+myS+'–'+opS+'</span></td></tr>';
+  if(G.results.length) s += seasonSoFarHTML(false);
+  return s;
+}
+function seasonSoFarHTML(scrollable){
+  let s = '';
+  const rows = [];
+  G.results.forEach((wk,i) => {
+    const r = wk.find(x => x.a===G.userTeam || x.b===G.userTeam);
+    if(r) rows.push(gameRowHTML('reg', i, r, 'Wk '+(i+1), 'current'));
+  });
+  if(G.playoffs){
+    const rounds = [['r1','Semifinal'],['r2','Conf. Champ.'],['r3','Apex Bowl']];
+    rounds.forEach(([key,label],ri) => {
+      const games = G.playoffs[key];
+      const g = games && games.find(x => x.a===G.userTeam || x.b===G.userTeam);
+      if(g) rows.push(gameRowHTML('po', ri+1, g, label, 'current'));
     });
-    s += '</table></div>';
   }
+  if(!rows.length) return '';
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Your Season So Far</div>' +
+    (scrollable ? '<div style="max-height:170px;overflow-y:auto">' : '') +
+    '<table class="tbl"><tr><th>Wk</th><th></th><th></th><th></th><th style="text-align:right">Score</th></tr>' +
+    rows.slice().reverse().join('') + '</table>' +
+    (scrollable ? '</div>' : '') + '</div>';
   return s;
 }
 function standingsHTML(){
@@ -5883,6 +6150,7 @@ function startStadiumUpgrade(){
   if((G.cash||0) < cost) return;
   G.cash = Math.round(((G.cash||0) - cost) * 10) / 10;
   G.stadiumPending = { level: next, cost };
+  logCashEvent('Stadium: '+STADIUM_TIERS[next].name, -cost);
   save(); render();
 }
 function stadiumHTML(){
@@ -5906,24 +6174,111 @@ function stadiumHTML(){
   }
   return s + '</div>';
 }
+function projectedNetThisPeriod(){
+  const me = meT();
+  const market = me.market || 3;
+  const winPct = (me.w + me.l) > 0 ? me.w/(me.w+me.l) : 0.5;
+  const pr = G.pricing || {tickets:1,parking:1,concessions:1,merch:1,suites:1,bundles:false};
+  const stadiumMult = (STADIUM_TIERS[G.stadiumLevel||0]||STADIUM_TIERS[0]).gateMult;
+  const bundleBoost = pr.bundles ? 1.08 : 1;
+  const tickets = market * (2.2 + (G.fanApproval/100)*2.4 + winPct*1.2) * stadiumMult * pr.tickets * bundleBoost;
+  const parking = market * 0.5 * pr.parking * bundleBoost;
+  const concessions = market * 0.4 * pr.concessions * bundleBoost;
+  const merch = market * 0.3 * (G.fanApproval/100) * pr.merch;
+  const suites = market * 0.6 * pr.suites;
+  const gate = tickets + parking + concessions + suites;
+  const sponsorship = market * (0.6 + (G.fanApproval/100)*0.8) + merch + dealRevenue();
+  const loyaltyCost = G.loyaltyProgram ? market*0.3 : 0;
+  const revenue = Math.round(((gate + sponsorship)/4) * 10) / 10;
+  const staffCost = Math.round((staffPayroll()/4) * 10) / 10;
+  const opsCost = Math.round(((market*0.8 + loyaltyCost)/4) * 10) / 10;
+  return Math.round((revenue - staffCost - opsCost) * 10) / 10;
+}
+function periodsRemainingThisSeason(){
+  const wk = G.schedule ? Math.min(G.week||1, 16) : 16;
+  const elapsed = Math.floor((wk-1)/4);
+  return Math.max(0, 4 - elapsed);
+}
+function budgetsHTML(){
+  const me = meT();
+  const room = capRoom(me);
+  const liveNet = projectedNetThisPeriod();
+  const projected = Math.round(((G.cash||0) + liveNet*periodsRemainingThisSeason())*10)/10;
+  return '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Budgets</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+    '<div><div class="sub">Cash on Hand</div><div style="font-size:22px;font-weight:700;color:'+((G.cash||0)>=0?'var(--green)':'var(--red)')+'">'+money(G.cash||0)+'</div></div>' +
+    '<div><div class="sub">Cap Room</div><div style="font-size:22px;font-weight:700;color:'+(room>=0?'var(--green)':'var(--red)')+'">'+money(room)+'</div></div>' +
+    '<div><div class="sub">Net This Period (live)</div><div style="font-size:18px;font-weight:700;color:'+(liveNet>=0?'var(--green)':'var(--red)')+'">'+(liveNet>=0?'+':'')+money(liveNet)+'</div></div>' +
+    '<div><div class="sub">Projected Cash, Season End</div><div style="font-size:18px;font-weight:700;color:'+(projected>=0?'var(--green)':'var(--red)')+'">'+money(projected)+'</div></div>' +
+    '</div></div>';
+}
 function financesHTML(){
   const me = meT();
   const market = me.market || 3;
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Team Finances</div>' +
-    '<p class="sub">'+esc(me.city)+' is a <b style="color:var(--gold)">'+'★'.repeat(market)+'</b> market (out of 5). Ticket and sponsorship revenue scale with market size and fan approval — see the Fan Approval meter for what moves it.</p>' +
-    '<div class="sub" style="margin-top:8px">Cash on Hand</div>' +
-    '<div style="font-size:22px;font-weight:700;color:'+((G.cash||0)>=0?'var(--green)':'var(--red)')+'">'+money(G.cash||0)+'</div>';
+    '<p class="sub">'+esc(me.city)+' is a <b style="color:var(--gold)">'+'★'.repeat(market)+'</b> market (out of 5). Ticket and sponsorship revenue scale with market size and fan approval — see the Fan Approval meter for what moves it.</p>';
   const last = (G.financeLog||[])[G.financeLog.length-1];
   if(last){
-    s += '<table class="tbl" style="margin-top:8px"><tr><th>Season '+last.season+' (' +last.year+ ')</th><th style="text-align:right">Amount</th></tr>' +
-      '<tr><td>Gate + Sponsorship Revenue</td><td style="text-align:right;color:var(--green)">+'+money(last.revenue)+'</td></tr>' +
-      '<tr><td>Staff Payroll</td><td style="text-align:right;color:var(--red)">−'+money(last.staffCost)+'</td></tr>' +
-      '<tr><td>Facility &amp; Operations</td><td style="text-align:right;color:var(--red)">−'+money(last.opsCost)+'</td></tr>' +
-      '<tr><td style="font-weight:700">Net</td><td style="text-align:right;font-weight:700;color:'+(last.net>=0?'var(--green)':'var(--red)')+'">'+(last.net>=0?'+':'')+money(last.net)+'</td></tr></table>';
+    s += '<table class="tbl" style="margin-top:8px"><tr><th>'+(last.month?'This Period':'Season '+last.season)+'</th><th style="text-align:right">Period</th><th style="text-align:right">Annual</th></tr>' +
+      '<tr><td>Gate + Sponsorship Revenue</td><td style="text-align:right;color:var(--green)">+'+money(last.revenue)+'</td><td style="text-align:right;color:var(--green)">+'+money(last.revenue*4)+'</td></tr>' +
+      '<tr><td>Staff Payroll</td><td style="text-align:right;color:var(--red)">−'+money(last.staffCost)+'</td><td style="text-align:right;color:var(--red)">−'+money(last.staffCost*4)+'</td></tr>' +
+      '<tr><td>Facility &amp; Operations</td><td style="text-align:right;color:var(--red)">−'+money(last.opsCost)+'</td><td style="text-align:right;color:var(--red)">−'+money(last.opsCost*4)+'</td></tr>' +
+      '<tr><td style="font-weight:700">Net</td><td style="text-align:right;font-weight:700;color:'+(last.net>=0?'var(--green)':'var(--red)')+'">'+(last.net>=0?'+':'')+money(last.net)+'</td><td style="text-align:right;font-weight:700;color:'+(last.net>=0?'var(--green)':'var(--red)')+'">'+(last.net>=0?'+':'')+money(last.net*4)+'</td></tr></table>';
+    if(last.income){
+      s += '<div class="sub" style="margin-top:10px">Income Breakdown</div><table class="tbl" style="margin-top:2px"><tr><th></th><th style="text-align:right">Period</th><th style="text-align:right">Annual</th></tr>' +
+        '<tr><td>Tickets</td><td style="text-align:right">'+money(last.income.tickets)+'</td><td style="text-align:right">'+money(last.income.tickets*4)+'</td></tr>' +
+        '<tr><td>Parking</td><td style="text-align:right">'+money(last.income.parking)+'</td><td style="text-align:right">'+money(last.income.parking*4)+'</td></tr>' +
+        '<tr><td>Concessions</td><td style="text-align:right">'+money(last.income.concessions)+'</td><td style="text-align:right">'+money(last.income.concessions*4)+'</td></tr>' +
+        '<tr><td>Suites</td><td style="text-align:right">'+money(last.income.suites)+'</td><td style="text-align:right">'+money(last.income.suites*4)+'</td></tr>' +
+        '<tr><td>Sponsorship &amp; Deals</td><td style="text-align:right">'+money(last.income.sponsorship)+'</td><td style="text-align:right">'+money(last.income.sponsorship*4)+'</td></tr>' +
+        '<tr><td>Merchandise</td><td style="text-align:right">'+money(last.income.merch)+'</td><td style="text-align:right">'+money(last.income.merch*4)+'</td></tr></table>';
+      s += '<div class="sub" style="margin-top:10px">Expenditure Breakdown</div><table class="tbl" style="margin-top:2px"><tr><th></th><th style="text-align:right">Period</th><th style="text-align:right">Annual</th></tr>' +
+        '<tr><td>Staff Payroll</td><td style="text-align:right">'+money(last.expense.staff)+'</td><td style="text-align:right">'+money(last.expense.staff*4)+'</td></tr>' +
+        '<tr><td>Operations</td><td style="text-align:right">'+money(last.expense.ops)+'</td><td style="text-align:right">'+money(last.expense.ops*4)+'</td></tr>' +
+        '<tr><td>Loyalty Program</td><td style="text-align:right">'+money(last.expense.loyalty)+'</td><td style="text-align:right">'+money(last.expense.loyalty*4)+'</td></tr></table>';
+    }
   } else {
     s += '<p class="sub" style="margin-top:8px">No season has closed yet — the books settle up each year at the Franchise Tag window.</p>';
   }
-  return s + '</div>' + stadiumHTML();
+  const log = G.financeLog || [];
+  if(log.length){
+    s += '<div class="sub" style="margin-top:12px">Balance Sheet</div><table class="tbl" style="margin-top:4px"><tr><th>Period</th><th style="text-align:right">Revenue</th><th style="text-align:right">Net</th><th style="text-align:right">Cash on Hand</th></tr>';
+    log.slice().reverse().forEach(l => {
+      const label = l.month ? 'S'+l.season+' — '+l.month : l.season+' ('+l.year+')';
+      s += '<tr><td>'+label+'</td><td style="text-align:right;color:var(--green)">'+money(l.revenue)+'</td>' +
+        '<td style="text-align:right;color:'+(l.net>=0?'var(--green)':'var(--red)')+'">'+(l.net>=0?'+':'')+money(l.net)+'</td>' +
+        '<td style="text-align:right;font-weight:700">'+money(l.cash)+'</td></tr>';
+    });
+    s += '</table>';
+  }
+  return s + '</div>' + pricingHTML() + facilitiesHTML() + fanRelationsHTML() + stadiumHTML();
+}
+function setPricing(key, val){
+  if(!G.pricing) G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false};
+  if(key === 'bundles'){ G.pricing.bundles = !G.pricing.bundles; }
+  else G.pricing[key] = clamp(Math.round(val*20)/20, 0.5, 2.0);
+  save(); render();
+}
+function pricingHTML(){
+  const pr = G.pricing || (G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false});
+  const rows = [
+    ['tickets','Ticket Prices'], ['parking','Parking Prices'], ['concessions','Concessions Prices'],
+    ['merch','Merchandise Markup'], ['suites','Suite / Luxury Box Pricing']
+  ];
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Pricing</div>' +
+    '<p class="sub" style="margin-bottom:8px">Set prices above market and you\'ll pull in more per fan — but push too hard and the fanbase notices. Price below market to buy goodwill instead.</p>';
+  rows.forEach(([key,label]) => {
+    const v = pr[key];
+    const pct = Math.round(v*100);
+    s += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="sub" style="width:170px">'+label+'</span>' +
+      '<button class="btn tiny" onclick="setPricing(\''+key+'\','+(v-0.05)+')" '+(v<=0.5?'disabled':'')+'>−</button>' +
+      '<b style="width:48px;text-align:center;color:'+(v>1?'var(--gold)':v<1?'var(--green)':'var(--chalk)')+'">'+pct+'%</b>' +
+      '<button class="btn tiny" onclick="setPricing(\''+key+'\','+(v+0.05)+')" '+(v>=2?'disabled':'')+'>+</button></div>';
+  });
+  s += '<div style="margin-top:8px;display:flex;align-items:center;gap:8px">' +
+    '<button class="btn'+(pr.bundles?' primary':'')+'" onclick="setPricing(\'bundles\')">'+(pr.bundles?'✓ ':'')+'Season Ticket Bundles</button>' +
+    '<span class="sub">'+(pr.bundles?'+8% ticket/parking/concessions revenue, small ongoing fan drag':'Off — turn on for a revenue bump at the cost of some fan goodwill')+'</span></div></div>';
+  return s;
 }
 function staffHTML(){
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
@@ -6261,8 +6616,8 @@ function proposeTrade(){
   if(!getP.length && !getPk.length){ alert('Add at least one player or pick to request.'); return; }
   const giveSal = giveP.reduce((s,p) => s + p.salary, 0);
   const getSal = getP.reduce((s,p) => s + p.salary, 0);
-  if(payroll(me) - giveSal + getSal > CAP){ alert('That swap puts you over the cap.'); return; }
-  if(payroll(them) - getSal + giveSal > CAP){ alert(esc(them.city)+' can\'t fit that under their cap.'); return; }
+  if(payroll(me) - giveSal + getSal > capNow()){ alert('That swap puts you over the cap.'); return; }
+  if(payroll(them) - getSal + giveSal > capNow()){ alert(esc(them.city)+' can\'t fit that under their cap.'); return; }
   const {giveVal, getVal} = tradeSideValue(giveP, givePk, getP, getPk);
   const need = teamNeed(them);
   const needBonus = giveP.filter(p => p.pos === need).length * 3;
@@ -6275,6 +6630,7 @@ function proposeTrade(){
     const summary = (giveP.length||givePk.length ? (giveP.map(p=>p.name).concat(givePk.map(pickLabel)).join(', ')) : 'nothing') +
       ' for ' + (getP.length||getPk.length ? (getP.map(p=>p.name).concat(getPk.map(pickLabel)).join(', ')) : 'nothing');
     G.tradeCarts[tradeTeam] = {give:[], givePicks:[], get:[], getPicks:[]};
+    logOwnerMove('Traded with '+them.city+': '+summary+'.');
     clearTradeCounter(tradeTeam);
     alert('Trade accepted! You send '+esc(summary)+'.');
     save(); render();
@@ -6401,13 +6757,14 @@ function resolveIncomingOffer(offerId, action){
     const getPk = G.draftPicks.filter(pk => off.theirAskPicks.includes(pk.id) && pk.team === me.idx);
     if(!giveP.length && !givePk.length){ G.incomingOffers = G.incomingOffers.filter(o=>o.id!==offerId); save(); render(); return; }
     const giveSal = giveP.reduce((s,p)=>s+p.salary,0), getSal = getP.reduce((s,p)=>s+p.salary,0);
-    if(payroll(them) - giveSal + getSal > CAP || payroll(me) - getSal + giveSal > CAP){
+    if(payroll(them) - giveSal + getSal > capNow() || payroll(me) - getSal + giveSal > capNow()){
       alert('That trade no longer fits under the cap — declining it for you.');
       G.incomingOffers = G.incomingOffers.filter(o => o.id!==offerId);
       save(); render(); return;
     }
     executeTrade(me, them, getP, getPk, giveP, givePk);
     G.incomingOffers = G.incomingOffers.filter(o => o.id!==offerId);
+    logOwnerMove('Accepted trade offer from '+them.city+'.');
     alert('Trade accepted with '+esc(them.city)+'!');
     save(); render();
   }
@@ -6598,12 +6955,12 @@ function tagHTML(){
       const worthTagging = isPremiumFA(p) || interestedTeams(p).length > 0;
       if(worthTagging){
         const sal = tagSalaryFor(p);
-        const afford = !G.tagUsed && sal <= capRoom(me) + p.salary;
+        const afford = !G.tagUsed;
         s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+' <span class="sub">gtd</span></td>' +
           '<td><button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="tagPlayer('+p.id+')" title="Franchise tag — 1yr guaranteed">Tag</button></td></tr>';
       } else {
         const sal = userPrice(p, 1);
-        const afford = sal <= capRoom(me) + p.salary;
+        const afford = true;
         s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+' <span class="sub">/yr</span></td>' +
           '<td><button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="resignPlayer('+p.id+')" title="Re-sign at market rate">Re-sign</button></td></tr>';
       }
@@ -6736,7 +7093,11 @@ function careerHTML(){
   const confDetail = G.mode === 'player'
     ? G.confidence+'/100 · +6 for an excellent individual game, +1 for a normal one you were part of'
     : G.confidence+'/100 · +4 per win, −4 per loss, big swings for playoffs and titles';
-  return financesHTML() + '<div class="panel"><div class="hd disp">Front Office</div>' +
+  let s = '<div class="filterbar" style="margin-bottom:12px">' +
+    '<button class="fbtn'+(frontTab==='summary'?' on':'')+'" onclick="setFrontTab(\'summary\')">Summary</button>' +
+    '<button class="fbtn'+(frontTab==='finances'?' on':'')+'" onclick="setFrontTab(\'finances\')">Finances</button></div>';
+  if(frontTab === 'finances') return s + financesSummaryHTML();
+  return s + '<div class="panel"><div class="hd disp">Front Office</div>' +
     '<p class="sub" style="margin-bottom:6px">'+confDesc+'</p>' +
     '<div class="conf-meter"><i style="width:'+G.confidence+'%;background:'+confColor()+'"></i></div>' +
     '<p class="sub" style="margin-top:4px">'+confDetail+'</p>' +
@@ -6751,13 +7112,60 @@ function careerHTML(){
     '<button class="btn danger" style="margin-left:auto" onclick="if(confirm(\'Abandon this career and start over?\')){store.clear();G=null;render();}">Resign / New Career</button></div>' +
     '<p class="sub" style="margin-top:8px">Progress auto-saves in this browser. Export a save file to back it up or move it to another device/browser.</p></div>';
 }
+function setFrontTab(t){ frontTab = t; save(); render(); }
+function financeChartSVG(values, color, W, H){
+  W = W || 560; H = H || 90;
+  if(values.length < 2) return '<p class="sub">Not enough history yet — check back after a few periods.</p>';
+  const min = Math.min(...values, 0), max = Math.max(...values, 0);
+  const range = (max-min) || 1;
+  const pts = values.map((v,i) => [ (i/(values.length-1)*W).toFixed(1), (H-((v-min)/range)*H*0.85 - H*0.05).toFixed(1) ]);
+  const line = pts.map(p=>p.join(',')).join(' ');
+  const area = '0,'+H+' '+line+' '+W+','+H;
+  const zeroY = (H-((0-min)/range)*H*0.85 - H*0.05).toFixed(1);
+  return '<svg class="finchart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">' +
+    '<polygon points="'+area+'" fill="'+color+'" fill-opacity="0.22"/>' +
+    (min<0 && max>0 ? '<line x1="0" y1="'+zeroY+'" x2="'+W+'" y2="'+zeroY+'" stroke="var(--line)" stroke-width="1" stroke-dasharray="3,3"/>' : '') +
+    '<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
+}
+function financesSummaryHTML(){
+  const log = G.financeLog || [];
+  const last = log[log.length-1];
+  const prev = log[log.length-2];
+  const seasonEntries = last ? log.filter(l => l.season === last.season) : [];
+  const lastSeasonEntries = last ? log.filter(l => l.season === last.season-1) : [];
+  const sum = arr => arr.reduce((a,l)=>a+l.net,0);
+  const thisSeasonNet = Math.round(sum(seasonEntries)*10)/10;
+  const lastSeasonNet = Math.round(sum(lastSeasonEntries)*10)/10;
+  const cashSeries = log.map(l=>l.cash);
+  const netSeries = log.map(l=>l.net);
+  const incSeries = log.map(l=>l.revenue);
+  const expSeries = log.map(l=>l.staffCost+l.opsCost);
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Overall Balance</div>' +
+    '<div style="font-size:26px;font-weight:700;color:'+((G.cash||0)>=0?'var(--green)':'var(--red)')+'">'+money(G.cash||0)+'</div>' +
+    financeChartSVG(cashSeries, '#B266FF') +
+    '<p class="sub">Trend across the last '+Math.min(log.length,24)+' periods on record.</p></div>';
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Profit / Loss</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">' +
+    '<div><div class="sub">This Period</div><div style="font-size:16px;font-weight:700;color:'+(last&&last.net>=0?'var(--green)':'var(--red)')+'">'+(last?(last.net>=0?'+':'')+money(last.net):'—')+'</div></div>' +
+    '<div><div class="sub">This Season</div><div style="font-size:16px;font-weight:700;color:'+(thisSeasonNet>=0?'var(--green)':'var(--red)')+'">'+(seasonEntries.length?(thisSeasonNet>=0?'+':'')+money(thisSeasonNet):'—')+'</div></div>' +
+    '<div><div class="sub">Last Season</div><div style="font-size:16px;font-weight:700;color:'+(lastSeasonNet>=0?'var(--green)':'var(--red)')+'">'+(lastSeasonEntries.length?(lastSeasonNet>=0?'+':'')+money(lastSeasonNet):'—')+'</div></div>' +
+    '</div>' + financeChartSVG(netSeries, '#6C7BFF') + '</div>';
+  s += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
+    '<div class="panel"><div class="hd disp">Income This Period</div>' +
+    '<div style="font-size:18px;font-weight:700;color:var(--green)">'+(last?money(last.revenue):'—')+'</div>' +
+    financeChartSVG(incSeries, '#E0C13A') + '</div>' +
+    '<div class="panel"><div class="hd disp">Expenditure This Period</div>' +
+    '<div style="font-size:18px;font-weight:700;color:var(--red)">'+(last?money(last.staffCost+last.opsCost):'—')+'</div>' +
+    financeChartSVG(expSeries, '#E05A5A') + '</div></div>';
+  return s + budgetsHTML() + financesHTML();
+}
 function playWeek(){ startGame({game: userGame()}); }
 function simWeek(){
   const g = userGame();
   finishWeek(quickSim(g.a, g.b));
   if(G.phase !== 'playoffs') G.phase = 'hub';
   save();
-  openModal('gamereport');
+  if(G.mode !== 'owner') openModal('gamereport');
 }
 
 /* ---------- game day ---------- */
@@ -7443,7 +7851,7 @@ function simPlayoffUser(){
   const g = playoffUserGame();
   recordPlayoffUserResult(quickSim(g.a, g.b));
   save();
-  openModal('gamereport');
+  if(G.mode !== 'owner') openModal('gamereport');
 }
 
 /* ---------- offseason summary (re-sign window) ---------- */
