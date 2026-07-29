@@ -1290,6 +1290,11 @@ function payroll(t){ return t.roster.reduce((s,p) => s + p.salary, 0) + deadCapF
 function capRoom(t){ return capNow() - payroll(t); }
 function posCount(t, pos){ return t.roster.filter(p => p.pos === pos && !p.ir).length; }
 function activeCount(t){ return t.roster.filter(p => !p.ir).length; }
+function teamOverall(t){
+  const active = t.roster.filter(p => !p.ir);
+  if(!active.length) return 0;
+  return Math.round(active.reduce((s,p)=>s+p.rating,0) / active.length);
+}
 function rosterLimit(){ return (G.phase==='hub' || G.phase==='game' || G.phase==='playoffs') ? LIMIT_REG : LIMIT_OFF; }
 function rosterFrozen(){ return G.phase === 'playoffs'; }
 
@@ -2340,7 +2345,7 @@ function advanceToTag(){
     logOwnerMove('League salary cap '+(capPct>0?'rises '+(Math.round(capPct*1000)/10)+'% to':'holds flat at')+' '+money(G.salaryCap)+'.');
   }
   // league-wide aging, progression, retirement
-  const develop = p => {
+  const develop = (p, t) => {
     const endRating = p.rating, endAge = p.age; // rating/age as the season that just ended
     p.age++;
     if(endRating > 95 && endAge > 25){
@@ -2361,7 +2366,13 @@ function advanceToTag(){
     if(d > 0) logEv(p, 'dev', 'Offseason development (age '+p.age+')', d);
     else if(d < 0) logEv(p, 'dev', 'Age decline (age '+p.age+')', d);
     p.trained = 0; p.injWeeks = 0; p.dressed = true; p.ir = false;
-    if(p.st){ if(!p.cst) p.cst = blankStats(); Object.keys(p.st).forEach(k => p.cst[k] += p.st[k]); }
+    if(p.st){
+      if(!p.cst) p.cst = blankStats();
+      Object.keys(p.st).forEach(k => p.cst[k] += p.st[k]);
+      if(!p.seasonLog) p.seasonLog = [];
+      p.seasonLog.push({ year: G.year, team: t.abbr, pos: p.pos, st: Object.assign({}, p.st) });
+      if(p.seasonLog.length > 25) p.seasonLog.shift();
+    }
     p.lastScore = statScore(p); p.st = null; p.devPts = 0; p.statDev = 0;
   };
   if(G.mode === 'player' && G.playerId){
@@ -2374,7 +2385,7 @@ function advanceToTag(){
     G.playerRaiseRequestUsed = false;
   }
   G.teams.forEach(t => {
-    t.roster.forEach(develop);
+    t.roster.forEach(p => develop(p, t));
     const retiring = t.roster.filter(p => (p.age >= 33 && Math.random() < (p.age-32)*.25) || (p.rating <= 54 && Math.random() < .4));
     if(G.mode === 'owner' && t.idx === G.userTeam && retiring.length){
       if(!G.recentRetirees) G.recentRetirees = [];
@@ -3865,7 +3876,14 @@ function profileHTML(pid){
     const car = p.cst ? Object.assign(blankStats(), p.cst) : null;
     if(car && p.st) Object.keys(p.st).forEach(k => car[k] += p.st[k]);
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">This Season</div><p class="sub" style="margin-top:4px">'+statLine(p.st, p.pos)+'</p></div>';
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Career</div><p class="sub" style="margin-top:4px">'+statLine(car || p.st, p.pos)+'</p></div>';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Career Totals</div><p class="sub" style="margin-top:4px">'+statLine(car || p.st, p.pos)+'</p></div>';
+    const log = p.seasonLog || [];
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Career By Season</div><table class="tbl">';
+    if(!log.length) s += '<tr><td class="sub">No completed seasons on file yet.</td></tr>';
+    log.slice().reverse().forEach(yr => {
+      s += '<tr><td class="sub" style="white-space:nowrap">'+yr.year+'</td><td class="sub" style="white-space:nowrap">'+esc(yr.team)+'</td><td>'+statLine(yr.st, yr.pos)+'</td></tr>';
+    });
+    s += '</table></div>';
   } else if(profileTab === 'contract'){
     const disc = hometownDisc(meT(), p);
     const pc = p.contract;
@@ -5397,7 +5415,7 @@ function currentMonthLabel(){
 function logOwnerMove(text){
   if(!G.ownerLog) G.ownerLog = [];
   G.ownerLog.unshift({ y:G.year, m: currentMonthLabel(), t:text });
-  if(G.ownerLog.length > 15) G.ownerLog.length = 15;
+  G.ownerLog = G.ownerLog.filter(e => G.year - e.y <= 2);
 }
 function setMandate(m){ G.mandate = m; save(); render(); }
 function setApprovalThreshold(v){ G.approvalThreshold = clamp(parseInt(v)||10, 3, 40); save(); render(); }
@@ -5429,7 +5447,7 @@ function resolveApproval(accept){
       G.budgetAskYear = G.year;
       logOwnerMove('Approved: +'+money(a.amount)+' staff budget.');
     }
-    G.gmConfidence = clamp((G.gmConfidence||60) + 2, 0, 100);
+    G.gmConfidence = clamp((G.gmConfidence||60) + (a.type==='tag' ? -30 : 2), 0, 100);
   } else {
     if(!G.gmRejected) G.gmRejected = [];
     if(a.type === 'signing') G.gmRejected.push(a.playerId);
@@ -5456,6 +5474,8 @@ function ownerHandleTag(){
         summary: 'Franchise tag '+target.name+' ('+target.pos+', '+target.rating+' OVR) — '+money(sal)+' guaranteed',
         reasoning: 'His deal is up and he\'s worth keeping. '+(interest ? interest+' other club'+(interest>1?'s are':' is')+' already circling — letting him hit the market risks losing him for nothing.' : 'Tagging locks him in for a year at a set price while we sort out a longer deal.')
       });
+      G.gmConfidence = clamp((G.gmConfidence||60) - 5, 0, 100);
+      logOwnerMove('GM asked to franchise tag '+target.name+' — the tag should be a last resort, not the first call.');
       return;
     }
   }
@@ -5594,13 +5614,22 @@ function stepDownAsOwner(){
   save(); render();
 }
 function acknowledgeSuccession(){ G.succession = null; save(); render(); }
+function teamContribution(p, teamAbbr){
+  const seasons = (p.seasonLog||[]).filter(yr => yr.team === teamAbbr);
+  const years = seasons.length;
+  const games = seasons.reduce((s,yr)=>s+(yr.st.gp||0), 0);
+  const totals = blankStats();
+  seasons.forEach(yr => Object.keys(yr.st).forEach(k => totals[k] += yr.st[k]));
+  return { years, games, totals, pos: seasons.length ? seasons[seasons.length-1].pos : p.pos };
+}
 function inductRingOfHonor(pid){
   if(!G.recentRetirees) return;
   const idx = G.recentRetirees.findIndex(p => p.id === pid);
   if(idx < 0) return;
   const p = G.recentRetirees[idx];
+  const tc = teamContribution(p, meT().abbr);
   if(!G.franchiseHistory) G.franchiseHistory = { banners:[], ringOfHonor:[], ownershipLog:[] };
-  G.franchiseHistory.ringOfHonor.push({ id:p.id, name:p.name, pos:p.pos, tenure: p.joinYear+'–'+p.retiredYear, finalRating:p.rating, inductedYear:G.year });
+  G.franchiseHistory.ringOfHonor.push({ id:p.id, name:p.name, pos:p.pos, tenure: p.joinYear+'–'+p.retiredYear, finalRating:p.rating, inductedYear:G.year, years:tc.years, games:tc.games, stats:tc.totals });
   G.recentRetirees.splice(idx,1);
   save(); render();
 }
@@ -5671,16 +5700,31 @@ function ownerDashboardHTML(){
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Ring of Honor Nominations</div>' +
       '<p class="sub" style="margin-bottom:8px">These veterans hung it up this offseason. Induct any of them into the Ring of Honor?</p>';
     G.recentRetirees.forEach(p => {
+      const tc = teamContribution(p, meT().abbr);
       s += '<div class="dash-fixrow"><span>'+pn(p)+' <span class="sub">('+p.pos+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
-        '<span style="display:flex;gap:6px"><button class="btn tiny primary" onclick="inductRingOfHonor('+p.id+')">🏵️ Induct</button><button class="btn tiny" onclick="dismissRetiree('+p.id+')">Let it go</button></span></div>';
+        '<span style="display:flex;gap:6px"><button class="btn tiny primary" onclick="inductRingOfHonor('+p.id+')">🏵️ Induct</button><button class="btn tiny" onclick="dismissRetiree('+p.id+')">Let it go</button></span></div>' +
+        '<p class="sub" style="margin:-2px 0 6px 0">'+tc.years+' season'+(tc.years!==1?'s':'')+', '+tc.games+' game'+(tc.games!==1?'s':'')+' with '+meT().city+' — '+statLine(tc.totals, tc.pos)+'</p>';
     });
     s += '</div>';
   }
 
   if(G.pendingApproval){
     const a = G.pendingApproval;
+    let playersLine = '';
+    if(a.type === 'signing' || a.type === 'tag'){
+      const p = a.type === 'signing' ? G.fa.find(x=>x.id===a.playerId) : meT().roster.find(x=>x.id===a.playerId);
+      if(p) playersLine = '<p class="sub" style="margin-top:4px">'+pn(p)+'</p>';
+    } else if(a.type === 'trade'){
+      const them = G.teams[a.teamIdx];
+      const giveP = meT().roster.filter(p => a.giveIds.includes(p.id));
+      const getP = them ? them.roster.filter(p => a.getIds.includes(p.id)) : [];
+      const parts = [];
+      if(giveP.length) parts.push('Give: '+giveP.map(pn).join(', '));
+      if(getP.length) parts.push('Get: '+getP.map(pn).join(', '));
+      if(parts.length) playersLine = '<p class="sub" style="margin-top:4px">'+parts.join(' · ')+'</p>';
+    }
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp" style="color:var(--gold)">Needs Your Sign-Off</div>' +
-      '<p style="margin:6px 0"><b>'+a.summary+'</b></p><p class="sub">'+a.reasoning+'</p>' +
+      '<p style="margin:6px 0"><b>'+a.summary+'</b></p><p class="sub">'+a.reasoning+'</p>' + playersLine +
       '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="resolveApproval(true)">Approve</button><button class="btn danger" onclick="resolveApproval(false)">Reject</button></div></div>';
   }
 
@@ -5719,7 +5763,8 @@ function franchiseLegacyHTML(){
   else s += fh.banners.slice().reverse().map(b => '<div class="dash-fixrow"><span>'+b.year+'</span><span style="color:var(--gold)">Apex Bowl Champions'+(b.owner?' — owner '+esc(b.owner):'')+'</span></div>').join('');
   s += '<div class="sub" style="margin-top:10px">🏵️ Ring of Honor</div>';
   if(!fh.ringOfHonor.length) s += '<p class="sub">Nobody inducted yet.</p>';
-  else s += fh.ringOfHonor.slice().reverse().map(p => '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+')</span></span><span class="sub">'+p.tenure+' · '+p.finalRating+' OVR final</span></div>').join('');
+  else s += fh.ringOfHonor.slice().reverse().map(p => '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+')</span></span><span class="sub">'+p.tenure+' · '+p.finalRating+' OVR final</span></div>' +
+    (p.stats ? '<p class="sub" style="margin:-2px 0 6px 0">'+(p.years||0)+' season'+(p.years!==1?'s':'')+', '+(p.games||0)+' game'+(p.games!==1?'s':'')+' — '+statLine(p.stats, p.pos)+'</p>' : '')).join('');
   s += '<div class="sub" style="margin-top:10px">📜 Ownership History</div>';
   if(!fh.ownershipLog.length) s += '<p class="sub">You\'re the first owner on record.</p>';
   else s += '<table class="tbl" style="margin-top:4px"><tr><th>Owner</th><th>Years</th><th>Record</th><th>Titles</th></tr>' +
@@ -6043,9 +6088,9 @@ function standingsHTML(){
   [0,1].forEach(conf => {
     s += '<div class="grow panel"><div class="hd disp">'+CONF_NAMES[conf]+' Conference</div>';
     [0,1].forEach(div => {
-      s += '<table class="tbl" style="margin-bottom:10px"><tr><th>'+DIV_NAMES[div]+'</th><th>W</th><th>L</th><th>PF</th><th>PA</th></tr>';
+      s += '<table class="tbl" style="margin-bottom:10px"><tr><th>'+DIV_NAMES[div]+'</th><th>OVR</th><th>W</th><th>L</th><th>PF</th><th>PA</th></tr>';
       sortStand(G.teams.filter(t => t.conf===conf && t.div===div)).forEach(t => {
-        s += '<tr'+(t.idx===G.userTeam?' class="me"':'')+'><td>'+teamLink(t)+'</td><td>'+t.w+'</td><td>'+t.l+'</td><td>'+t.pf+'</td><td>'+t.pa+'</td></tr>';
+        s += '<tr'+(t.idx===G.userTeam?' class="me"':'')+'><td>'+teamLink(t)+'</td><td style="color:var(--gold);font-weight:700">'+teamOverall(t)+'</td><td>'+t.w+'</td><td>'+t.l+'</td><td>'+t.pf+'</td><td>'+t.pa+'</td></tr>';
       });
       s += '</table>';
     });
@@ -6281,7 +6326,7 @@ function financesHTML(){
     });
     s += '</table>';
   }
-  return s + '</div>' + pricingHTML() + facilitiesHTML() + fanRelationsHTML() + stadiumHTML();
+  return s + '</div>' + pricingHTML();
 }
 function setPricing(key, val){
   if(!G.pricing) G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false};
@@ -7144,7 +7189,8 @@ function careerHTML(){
     '<button class="btn" onclick="triggerImport()">⬆️ Import Save</button>' +
     '<button class="btn" onclick="quitToMenu()">🚪 Quit to Menu</button>' +
     '<button class="btn danger" style="margin-left:auto" onclick="if(confirm(\'Abandon this career and start over?\')){store.clear();G=null;render();}">Resign / New Career</button></div>' +
-    '<p class="sub" style="margin-top:8px">Progress auto-saves in this browser. Export a save file to back it up or move it to another device/browser.</p></div>';
+    '<p class="sub" style="margin-top:8px">Progress auto-saves in this browser. Export a save file to back it up or move it to another device/browser.</p></div>' +
+    facilitiesHTML() + fanRelationsHTML() + stadiumHTML();
 }
 function setFrontTab(t){ frontTab = t; save(); render(); }
 function financeChartSVG(values, color, W, H){
