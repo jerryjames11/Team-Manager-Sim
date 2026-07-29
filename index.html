@@ -1379,8 +1379,12 @@ function cutPlayer(pid){
   if(rosterFrozen()){ alert('Roster moves are frozen during the playoffs.'); return; }
   const i = me.roster.findIndex(p => p.id === pid);
   if(i < 0) return;
-  const p = me.roster.splice(i,1)[0];
+  const p = me.roster[i];
   const dead = deadCapCharge(p);
+  if(dead > 0){
+    if(!confirm('Releasing '+p.name+' will charge '+money(dead)+' to your cap as dead money'+(isPostJune1()?' (his salary is guaranteed at this point in the year)':' (unamortized signing bonus)')+'. Continue?')) return;
+  }
+  me.roster.splice(i,1);
   if(dead > 0){
     chargeDeadCap(me, dead);
     logEv(p, 'ct', 'Released — '+money(dead)+' in unamortized bonus hits '+me.city+'\'s cap as dead money', 0);
@@ -2374,7 +2378,7 @@ function advanceToTag(){
     const retiring = t.roster.filter(p => (p.age >= 33 && Math.random() < (p.age-32)*.25) || (p.rating <= 54 && Math.random() < .4));
     if(G.mode === 'owner' && t.idx === G.userTeam && retiring.length){
       if(!G.recentRetirees) G.recentRetirees = [];
-      retiring.forEach(p => G.recentRetirees.push({ id:p.id, name:p.name, pos:p.spot||p.pos, rating:p.rating, joinYear: joinYear(p), retiredYear: G.year }));
+      retiring.forEach(p => G.recentRetirees.push(Object.assign({}, p, { joinYear: joinYear(p), retiredYear: G.year })));
     }
     t.roster = t.roster.filter(p => !retiring.includes(p));
     t.roster.forEach(p => {
@@ -4320,7 +4324,19 @@ function gmFreeAgentsHTML(){
 }
 function gmOfficeHTML(){
   if(G.mode === 'player') return playerGMOfficeHTML();
-  let s = '<div class="filterbar" style="margin-bottom:12px">';
+  let s = '';
+  if(G.mode === 'owner' && G.gm){
+    const tenure = G.year - (G.gm.hiredYear||G.year);
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(G.gm.name)+'</div>' +
+      '<p class="sub">General Manager · '+G.gm.rating+' OVR eval · '+money(G.gm.salary)+'/yr · '+tenure+' season'+(tenure!==1?'s':'')+' on the job (hired '+G.gm.hiredYear+')</p>' +
+      '<div class="sub" style="margin:8px 0 2px">Confidence</div><div class="capbar"><i style="width:'+(G.gmConfidence||60)+'%;background:'+((G.gmConfidence||60)>=50?'var(--green)':'var(--red)')+'"></i></div>' +
+      '<p class="sub" style="margin-top:2px">'+Math.round(G.gmConfidence||60)+'/100</p>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">' +
+      '<div><div class="sub">Aggression</div><div class="capbar"><i style="width:'+G.gm.aggression+'%;background:var(--gold)"></i></div><p class="sub" style="margin-top:2px">'+G.gm.aggression+'/100 — how hard he chases big trades and signings</p></div>' +
+      '<div><div class="sub">Spending</div><div class="capbar"><i style="width:'+G.gm.spending+'%;background:var(--gold)"></i></div><p class="sub" style="margin-top:2px">'+G.gm.spending+'/100 — how much of the cap he is willing to use</p></div>' +
+      '</div><button class="btn danger" style="margin-top:10px" onclick="fireGM()">Fire GM</button></div>';
+  }
+  s += '<div class="filterbar" style="margin-bottom:12px">';
   [['fa','Free Agents'],['trades','Trades']].forEach(t => {
     s += '<button class="fbtn'+(gmTab===t[0]?' on':'')+'" onclick="setGMTab(\''+t[0]+'\')">'+t[1]+'</button>';
   });
@@ -5405,6 +5421,9 @@ function resolveApproval(accept){
       const getPk = G.draftPicks.filter(pk => a.getPickIds.includes(pk.id));
       executeTrade(me, them, giveP, givePk, getP, getPk);
       logOwnerMove('Approved: trade with '+them.city+'.');
+    } else if(a.type === 'tag'){
+      const p = me.roster.find(x => x.id === a.playerId);
+      if(p){ tagPlayer(p.id); logOwnerMove('Approved: tagged '+p.name+' ('+p.pos+') — '+money(p.salary)+' gtd.'); }
     } else if(a.type === 'budget'){
       G.staffCapBonus = (G.staffCapBonus||0) + a.amount;
       G.budgetAskYear = G.year;
@@ -5415,6 +5434,7 @@ function resolveApproval(accept){
     if(!G.gmRejected) G.gmRejected = [];
     if(a.type === 'signing') G.gmRejected.push(a.playerId);
     if(a.type === 'trade') G.gmRejected.push('trade:'+a.teamIdx);
+    if(a.type === 'tag') G.gmRejected.push('tag:'+a.playerId);
     logOwnerMove('Rejected: '+a.summary);
     G.gmConfidence = clamp((G.gmConfidence||60) - 1, 0, 100);
   }
@@ -5425,11 +5445,19 @@ function resolveApproval(accept){
 function ownerHandleTag(){
   const me = meT();
   const pending = pendingUFAs(me);
-  const worthTagging = pending.filter(p => isPremiumFA(p) || interestedTeams(p).length > 0).sort((a,b)=>b.rating-a.rating);
+  const worthTagging = pending.filter(p => (isPremiumFA(p) || interestedTeams(p).length > 0) && !(G.gmRejected||[]).includes('tag:'+p.id)).sort((a,b)=>b.rating-a.rating);
   if(!G.tagUsed && worthTagging.length){
     const target = worthTagging[0];
     const sal = tagSalaryFor(target);
-    if(sal <= capRoom(me) + target.salary){ tagPlayer(target.id); logOwnerMove('Tagged '+target.name+' ('+target.pos+') — '+money(sal)+' gtd.'); }
+    if(sal <= capRoom(me) + target.salary){
+      const interest = interestedTeams(target).length;
+      requestApproval({
+        type:'tag', playerId: target.id,
+        summary: 'Franchise tag '+target.name+' ('+target.pos+', '+target.rating+' OVR) — '+money(sal)+' guaranteed',
+        reasoning: 'His deal is up and he\'s worth keeping. '+(interest ? interest+' other club'+(interest>1?'s are':' is')+' already circling — letting him hit the market risks losing him for nothing.' : 'Tagging locks him in for a year at a set price while we sort out a longer deal.')
+      });
+      return;
+    }
   }
   pending.forEach(p => {
     if(p.tagged || p.years > 0 || p.rating < 60) return;
@@ -5485,6 +5513,7 @@ function ownerHandlePreseason(){
   if(meT().roster.length > LIMIT_REG) doAutoCut();
   enforceCapCompliance(meT()); // re-check — filling minimums can add payroll back
   if(capRoom(meT()) < 0){
+    G.gmConfidence = 5;
     logOwnerMove('Still over the salary cap by '+money(-capRoom(meT()))+' — restructure or release players from Front Office before the season can open.');
     save(); render();
     return;
@@ -5613,7 +5642,15 @@ function ownerDashboardHTML(){
   if(!G.owner) G.owner = { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: G.year };
   const tenure = G.career.seasons || 0;
   const canStep = canStepDown();
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="display:flex;justify-content:space-between;align-items:center"><span>'+esc(me.city+' '+me.name)+' — Ownership</span><button class="btn primary" onclick="ownerAdvance()">Advance →</button></div>' +
+  let s = '';
+  if(G.phase === 'offseason' && G.ownerReviewShown){
+    const met = mandateMet();
+    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Season Review</div>' +
+      '<p>Finished '+me.w+'-'+me.l+'. Mandate was <b>'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[G.mandate]+'</b> — '+(met?'<span style="color:var(--green)">met.</span>':'<span style="color:var(--red)">not met.</span>')+'</p>' +
+      '<p class="sub" style="margin-top:6px">GM confidence is now '+Math.round(G.gmConfidence)+'/100.</p>' +
+      '<button class="btn primary" style="margin-top:8px" onclick="ownerAdvance()">Continue to Next Season →</button></div>';
+  }
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="display:flex;justify-content:space-between;align-items:center"><span>'+esc(me.city+' '+me.name)+' — Ownership</span><button class="btn primary" onclick="ownerAdvance()">Advance →</button></div>' +
     '<p class="sub">GM: <b style="color:var(--chalk)">'+esc(G.gm.name)+'</b> · Record '+me.w+'-'+me.l+' · '+phaseLabelFor(G.phase)+'</p>' +
     '<p class="sub" style="margin-top:2px">Owner: <b style="color:var(--chalk)">'+esc(G.owner.name)+'</b>, age '+G.owner.age+' · '+tenure+' season'+(tenure!==1?'s':'')+' in charge (since '+G.owner.tookOverYear+')</p>' +
     '<div class="sub" style="margin:6px 0 2px">GM Confidence</div><div class="capbar"><i style="width:'+(G.gmConfidence||60)+'%;background:'+((G.gmConfidence||60)>=50?'var(--green)':'var(--red)')+'"></i></div>' +
@@ -5670,13 +5707,6 @@ function ownerDashboardHTML(){
     ['compete','rebuild','stay'].map(m => '<button class="btn'+(G.mandate===m?' primary':'')+'" onclick="setMandate(\''+m+'\')">'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[m]+'</button>').join('') +
     '</div></div>';
 
-  if(G.phase === 'offseason' && G.ownerReviewShown){
-    const met = mandateMet();
-    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Season Review</div>' +
-      '<p>Finished '+me.w+'-'+me.l+'. Mandate was <b>'+({compete:'Compete Now',rebuild:'Rebuild',stay:'Stay the Course'})[G.mandate]+'</b> — '+(met?'<span style="color:var(--green)">met.</span>':'<span style="color:var(--red)">not met.</span>')+'</p>' +
-      '<p class="sub" style="margin-top:6px">GM confidence is now '+Math.round(G.gmConfidence)+'/100.</p>' +
-      '<button class="btn primary" style="margin-top:8px" onclick="ownerAdvance()">Continue to Next Season →</button></div>';
-  }
 
   s += franchiseLegacyHTML();
   return s;
@@ -6623,6 +6653,8 @@ function proposeTrade(){
   const needBonus = giveP.filter(p => p.pos === need).length * 3;
   const verdict = tradeVerdict(giveVal, getVal, needBonus);
   if(verdict.tier === 'accept'){
+    const tradeDead = giveP.reduce((s,p) => s + deadCapCharge(p), 0);
+    if(tradeDead > 0 && !confirm('Trading away '+giveP.map(p=>p.name).join(', ')+' will charge '+money(tradeDead)+' to your cap as dead money. Continue?')) return;
     executeTrade(me, them, giveP, givePk, getP, getPk);
     const bestGet = getP.reduce((m,p) => Math.max(m, p.rating), 0);
     const totalAssets = giveP.length + givePk.length + getP.length + getPk.length;
@@ -6762,6 +6794,8 @@ function resolveIncomingOffer(offerId, action){
       G.incomingOffers = G.incomingOffers.filter(o => o.id!==offerId);
       save(); render(); return;
     }
+    const tradeDead = getP.reduce((s,p) => s + deadCapCharge(p), 0);
+    if(tradeDead > 0 && !confirm('Sending out '+getP.map(p=>p.name).join(', ')+' will charge '+money(tradeDead)+' to your cap as dead money. Continue?')) return;
     executeTrade(me, them, getP, getPk, giveP, givePk);
     G.incomingOffers = G.incomingOffers.filter(o => o.id!==offerId);
     logOwnerMove('Accepted trade offer from '+them.city+'.');
