@@ -1194,6 +1194,7 @@ function chargeDeadCap(t, amount){
   G.deadCap[t.idx] = Math.round(((G.deadCap[t.idx]||0) + amount) * 10) / 10;
 }
 function restructureContract(p){
+  if(p.contractYear && (G.year - p.contractYear) < 1) return 0; // just signed — his camp won't revisit terms yet
   const c = contractOf(p);
   if(p.years <= 1) return 0; // nothing to spread into
   const currentBase = c.base[0];
@@ -1214,7 +1215,7 @@ function enforceCapCompliance(t){
   let rguard = 15;
   const restructured = new Set();
   while(capRoom(t) < 0 && rguard-- > 0){
-    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3);
+    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1));
     if(!candidates.length) break;
     candidates.sort((a,b) => b.salary - a.salary);
     const p = candidates[0];
@@ -2246,6 +2247,11 @@ function extendHTML(pid){
   const me = meT();
   const p = me.roster.find(x => x.id === pid);
   if(!p) return '<p class="sub">Player no longer on your roster.</p>';
+  if(p.contractYear && (G.year - p.contractYear) < 1){
+    return '<div class="panel"><div class="hd disp">'+esc(p.name)+'</div>' +
+      '<p class="sub">'+p.spot+' · age '+p.age+' · <b style="color:var(--gold)">'+p.rating+'</b> OVR</p>' +
+      '<p class="sub" style="margin-top:8px">He just signed this deal — his camp isn\'t interested in revisiting terms for at least a year.</p></div>';
+  }
   const preview = extendPreviewFor(pid);
   if(!preview) return '<p class="sub">Player no longer on your roster.</p>';
   const { d, sched, marketTotal, offeredTotal, newYears, verdict } = preview;
