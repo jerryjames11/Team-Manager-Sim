@@ -427,7 +427,7 @@ const POS_LABEL = {QB:'Quarterbacks',RB:'Running Backs',WR:'Wide Receivers',TE:'
 const STAFF_CAP = 24; // $M, base staff budget — not part of player payroll
 function staffCapTotal(){ return STAFF_CAP + (G.staffCapBonus || 0); }
 const COACH_POS = POS_ORDER.filter(p => p !== 'K'); // position coaches; STC covers specialists
-const COACH_ROLE_LABEL = {OC:'Offensive Coordinator', DC:'Defensive Coordinator', STC:'Special Teams Coordinator'};
+const COACH_ROLE_LABEL = {OC:'Offensive Coordinator', DC:'Defensive Coordinator', STC:'Special Teams Coordinator', PS:'Pro Scout', CS:'College Scout'};
 const PT75  = {QB:4, RB:6, WR:10, TE:5, OL:13, DL:12, LB:10, CB:8, S:6, K:1};  // offseason template (75)
 const MIN53 = {QB:2, RB:3, WR:5,  TE:3, OL:8,  DL:6,  LB:5,  CB:4, S:3, K:1}; // positional minimums
 
@@ -760,14 +760,14 @@ function coachPointsFor(coach, amt){
 }
 function makeCoachPool(){
   const pool = [];
-  ['OC','DC','STC'].forEach(role => { for(let i=0;i<4;i++) pool.push(makeCoach(role)); });
+  ['OC','DC','STC','PS','CS'].forEach(role => { for(let i=0;i<4;i++) pool.push(makeCoach(role)); });
   COACH_POS.forEach(pos => { for(let i=0;i<2;i++) pool.push(makeCoach('POS', pos)); });
   return pool.sort((a,b) => b.rating - a.rating);
 }
 function staffPayroll(){
   if(!G.staff) return 0;
   let sum = 0;
-  ['OC','DC','STC'].forEach(r => { if(G.staff[r]) sum += G.staff[r].salary; });
+  ['OC','DC','STC','PS','CS'].forEach(r => { if(G.staff[r]) sum += G.staff[r].salary; });
   Object.values(G.staff.pos || {}).forEach(c => { if(c) sum += c.salary; });
   return sum;
 }
@@ -801,7 +801,7 @@ function autoHireCoach(cand, role, pos){
    coaching staff on its own — otherwise those modes would silently never get any coaching bonuses
    (position coaches directly affect player development), since nobody ever visits the Staff screen. */
 function autoManageStaff(){
-  if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
+  if(!G.staff) G.staff = { OC:null, DC:null, STC:null, PS:null, CS:null, pos:{} };
   const fillSlot = (role, pos) => {
     if(currentCoach(role, pos)) return;
     const room = staffCapRoom();
@@ -1001,7 +1001,7 @@ function newCareer(teamIdx, mode){
     playoffs: null, prospects: null,
     phase: 'tag', tagUsed: false, otaWeek: 0, preReport: null,
     offForm: 'single', defForm: 'f43', lineupOverride: {}, activePage: null,
-    staff: { OC:null, DC:null, STC:null, pos:{} },
+    staff: { OC:null, DC:null, STC:null, PS:null, CS:null, pos:{} },
     coachPool: [],
     career: { seasons:0, w:0, l:0, titles:0, berths:0 },
     owner: { name: pick(FN)+' '+pick(LN), age: RI(38,60), tookOverYear: 2026 },
@@ -1141,10 +1141,7 @@ function runExpiry(){
       p.years = 0;
       if(G.mode === 'player' && G.playerId && p.id === G.playerId && !G.playerFreeAgent){
         // this is the human player's own character — give them the proper free-agency spotlight
-        // (immediate offers from interested clubs) instead of dumping them in the anonymous pool
-        G.playerFreeAgent = p;
-        const others = pickFAOfferTeams(t.idx, userPrice(p,1));
-        G.playerFAOffers = others.map(ot => ({ teamIdx: ot.idx, offer: Math.round(userPrice(p,1) * R(0.85,1.2) * 10) / 10 }));
+        beginPlayerFAShopping(p, t.idx);
       } else {
         G.fa.push(p);
       }
@@ -1177,6 +1174,53 @@ function teamCanRealisticallyAfford(t, annualCost){
   const spotsStillNeeded = Math.max(0, (LIMIT_REG||53) - (t.roster.length + 1));
   const reserveNeeded = spotsStillNeeded * 0.9; // rough veteran-minimum cushion per remaining open spot
   return roomAfter >= reserveNeeded;
+}
+function makePlayerFAOffers(p, excludeIdx, discountMult){
+  const teams = pickFAOfferTeams(excludeIdx, userPrice(p,1));
+  const baseline = userPrice(p,1) * (discountMult || 1);
+  return teams.map(t => {
+    const offer = Math.round(baseline * R(0.85,1.2) * 10) / 10;
+    const years = RI(1,3);
+    const daysLeft = offer >= baseline*1.05 ? RI(2,3) : RI(4,6); // stronger offers create urgency, shorter windows
+    return { teamIdx: t.idx, offer, years, daysLeft };
+  });
+}
+function beginPlayerFAShopping(p, excludeIdx, discountMult){
+  G.playerFreeAgent = p;
+  G.playerFAOffers = makePlayerFAOffers(p, excludeIdx, discountMult);
+  G.playerFAShopping = { day: 1, maxDays: 8 };
+}
+function rejectFAOffer(teamIdx){
+  if(!G.playerFAOffers) return;
+  G.playerFAOffers = G.playerFAOffers.filter(o => o.teamIdx !== teamIdx);
+  save(); render();
+}
+function advanceFAShoppingDay(){
+  if(!G.playerFAShopping || !G.playerFreeAgent) return;
+  const myP = G.playerFreeAgent;
+  G.playerFAShopping.day++;
+  G.playerFAOffers = (G.playerFAOffers||[]).map(o => Object.assign({}, o, {daysLeft: o.daysLeft-1})).filter(o => o.daysLeft > 0);
+  aiFAWave(RI(4,8)); // league keeps signing while the player weighs offers — rosters visibly fill in
+  if(Math.random() < 0.35 && G.playerFAOffers.length < 5){
+    const existing = G.playerFAOffers.map(o => o.teamIdx);
+    const candidates = pickFAOfferTeams(-1, userPrice(myP,1)).filter(t => !existing.includes(t.idx));
+    if(candidates.length){
+      const t = pick(candidates);
+      const offer = Math.round(userPrice(myP,1) * R(0.85,1.2) * 10) / 10;
+      G.playerFAOffers.push({ teamIdx: t.idx, offer, years: RI(1,3), daysLeft: RI(2,5) });
+    }
+  }
+  if(G.playerFAShopping.day > G.playerFAShopping.maxDays || !G.playerFAOffers.length){
+    if(!G.playerFAOffers.length){
+      const t = pickFAOfferTeams(-1, userPrice(myP,1))[0];
+      if(t) G.playerFAOffers = [{ teamIdx: t.idx, offer: Math.round(userPrice(myP,1)*0.75*10)/10, years:1, daysLeft:1 }];
+    }
+    const best = G.playerFAOffers.slice().sort((a,b)=>b.offer-a.offer)[0];
+    G.playerFAShopping = null;
+    if(best) signWithTeam(best.teamIdx);
+    return;
+  }
+  save(); render();
 }
 function pickFAOfferTeams(excludeIdx, marketRate){
   const pool = G.teams.filter(t => t.idx !== excludeIdx);
@@ -1881,6 +1925,7 @@ function recordGameStats(ai, bi, as, bs, liveBox){
 }
 function finishWeek(userRes, liveBox){
   revertTempLineups();
+  grantWeeklyScoutPoints();
   const wk = G.schedule[G.week-1];
   const results = [];
   G.weekDevs = [];
@@ -2396,7 +2441,8 @@ function advanceToTag(){
     const myP = mePlayer();
     if(myP){
       if(!G.playerEarnings) G.playerEarnings = [];
-      G.playerEarnings.push({ year: G.year, team: meT().city+' '+meT().name, salary: myP.salary });
+      const bonusThisYear = (myP.contract && myP.contract.bonusYearsLeft > 0) ? myP.contract.bonusProration : 0;
+      G.playerEarnings.push({ year: G.year, team: meT().city+' '+meT().name, salary: myP.salary, bonus: bonusThisYear });
     }
     G.playerGrievanceUsed = false;
     G.playerRaiseRequestUsed = false;
@@ -2436,7 +2482,7 @@ function advanceToTag(){
   G.coachPool = makeCoachPool(); // fresh coaching market each offseason
   if(G.mode === 'owner' || G.mode === 'player'){
     // AI GM/HC ticks down staff contracts and lets expired ones walk, same as it would for any club
-    if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
+    if(!G.staff) G.staff = { OC:null, DC:null, STC:null, PS:null, CS:null, pos:{} };
     ['OC','DC','STC'].forEach(role => {
       const c = G.staff[role];
       if(c){ c.years--; if(c.years <= 0) G.staff[role] = null; }
@@ -4051,7 +4097,7 @@ function render(){
     }
     return;
   }
-  if(!G.staff) G.staff = { OC:null, DC:null, STC:null, pos:{} };
+  if(!G.staff) G.staff = { OC:null, DC:null, STC:null, PS:null, CS:null, pos:{} };
   if(!G.coachPool) G.coachPool = makeCoachPool();
   if(G.tagUsed === undefined) G.tagUsed = false;
   if(G.otaWeek === undefined) G.otaWeek = 0;
@@ -4226,16 +4272,18 @@ function schemeCell(p){
   if(p.pos!=='DL' && p.pos!=='LB') return '<span class="sub">—</span>';
   return '<span class="tag '+(p.scheme==='any'?'up':'w')+'">'+SCHEME_TAG[p.scheme]+'</span>';
 }
-function playerRow(p, actions){
+function playerRow(p, actions, isOpponent){
   const status = p.ir ? '<span class="tag inj">IR</span>' : p.injWeeks > 0 ? '<span class="tag inj">OUT '+p.injWeeks+'wk</span>'
     : (G.phase==='hub' ? (p.dressed !== false ? '<span class="tag w">ACTIVE</span>' : '<span class="tag l">SCRATCH</span>') : '<span class="sub">OK</span>');
+  const ratingCell = isOpponent ? scoutRangeHTML(p, 10) + (p.proScoutLo===p.proScoutHi ? '' : ' <button class="btn tiny" onclick="scoutPlayer('+p.id+')" title="Costs '+proScoutCost(p)+' scouting pts">🔍</button>') : '<span style="color:var(--gold);font-weight:700">'+p.rating+'</span>';
   return '<tr'+(p.dressed===false && G.phase==='hub' ? ' class="dim"':'')+'><td>'+pn(p)+(p.trained?' <span class="tag up">+'+p.trained+'</span>':'')+'</td>' +
     '<td><b>'+p.spot+'</b></td>' +
     '<td>'+schemeCell(p)+'</td>' +
-    '<td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td>' +
+    '<td>'+p.age+'</td><td>'+ratingCell+'</td>' +
     '<td>'+money(p.salary)+'</td><td>'+p.years+'yr</td><td>'+status+'</td><td>'+actions+'</td></tr>';
 }
 function rosterTable(t, actionFn){
+  const isOpponent = t.idx !== G.userTeam;
   const cols = [['name','Player'],['spot','Pos'],['scheme','Scheme'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Years']];
   let s = '<div class="filterbar">' + posFilterPillsHTML(t, rFilter, 'setRFilter');
   s += '</div><table class="tbl"><tr>';
@@ -4253,7 +4301,7 @@ function rosterTable(t, actionFn){
       if(typeof va === 'string') return va.localeCompare(vb) * rSort.dir;
       return ((va - vb) || (b.rating - a.rating)) * rSort.dir;
     });
-  list.forEach(p => s += playerRow(p, actionFn(p)));
+  list.forEach(p => s += playerRow(p, actionFn(p), isOpponent));
   if(!list.length) s += '<tr><td colspan="9" class="sub" style="text-align:center;padding:14px">No players at this position.</td></tr>';
   return s + '</table>';
 }
@@ -4305,6 +4353,9 @@ function faPoolRowsHTML(pool, me, limit){
   let s = '';
   pool.forEach(x => {
     const p = x.p;
+    const isMine = x.teamIdx === G.userTeam;
+    const ratingCell = isMine ? '<span style="color:var(--gold);font-weight:700">'+p.rating+'</span>' : scoutRangeHTML(p, x.isFA ? 5 : 10);
+    const scoutBtn = isMine ? '' : (p.proScoutLo === p.proScoutHi ? '' : ' <button class="btn tiny" onclick="scoutPlayer('+p.id+')" title="Costs '+proScoutCost(p)+' scouting pts, you have '+((G.scoutPoints&&G.scoutPoints.pro)||0)+'">🔍'+proScoutCost(p)+'</button>');
     const sal = x.isFA ? marketFor(p) : p.salary;
     const years = x.isFA ? p.askYears : p.years;
     const teamCell = x.isFA ? '<span class="tag fa">FA</span>' : '<b>'+esc(x.teamLabel)+'</b>';
@@ -4315,7 +4366,7 @@ function faPoolRowsHTML(pool, me, limit){
       const n = interestedTeams(p).length;
       action = '<button class="btn tiny primary" onclick="toggleFAOffer('+p.id+')">'+(faOpenId===p.id?'▲ Negotiating':'Make Offer')+'</button>';
       s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+teamCell+'</td><td>'+p.age+'</td>' +
-        '<td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+(n?' <span class="sub" style="color:var(--gold)">🔥'+n+'</span>':'')+'</td><td>'+years+'yr</td><td>'+schemeCell(p)+'</td>' +
+        '<td>'+ratingCell+scoutBtn+'</td><td>'+money(sal)+(n?' <span class="sub" style="color:var(--gold)">🔥'+n+'</span>':'')+'</td><td>'+years+'yr</td><td>'+schemeCell(p)+'</td>' +
         '<td>'+action+'</td></tr>';
       if(faOpenId === p.id) s += faOfferRowHTML(p, me);
     } else {
@@ -4323,7 +4374,7 @@ function faPoolRowsHTML(pool, me, limit){
         ? '<button class="btn tiny primary" onclick="signFA('+p.id+')">Sign</button>'
         : (x.teamIdx === G.userTeam ? '<span class="sub">Your roster</span>' : '<span class="sub">—</span>');
       s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+teamCell+'</td><td>'+p.age+'</td>' +
-        '<td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+'</td><td>'+years+'yr</td><td>'+schemeCell(p)+'</td>' +
+        '<td>'+ratingCell+scoutBtn+'</td><td>'+money(sal)+'</td><td>'+years+'yr</td><td>'+schemeCell(p)+'</td>' +
         '<td>'+action+'</td></tr>';
     }
   });
@@ -4470,9 +4521,7 @@ function requestRelease(){
   if(!confirm('Ask for your release? You\'ll walk away from what\'s left on your deal and hit free agency immediately, at a discount for leaving early.')) return;
   const me = meT();
   me.roster = me.roster.filter(p => p.id !== myP.id);
-  G.playerFreeAgent = myP;
-  const others = pickFAOfferTeams(me.idx, userPrice(myP,1));
-  G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.68,0.92) * 10) / 10 }));
+  beginPlayerFAShopping(myP, me.idx, 0.8);
   logEv(myP, 'move', 'Requested and received release from '+me.city, 0);
   G.activePage = null;
   save(); render();
@@ -4762,7 +4811,7 @@ function newPlayerCareer(position){
     playoffs: null, prospects: null,
     phase: 'draft', tagUsed: false, otaWeek: 0, preReport: null,
     offForm: 'single', defForm: 'f43', lineupOverride: {}, activePage: null,
-    staff: { OC:null, DC:null, STC:null, pos:{} },
+    staff: { OC:null, DC:null, STC:null, PS:null, CS:null, pos:{} },
     coachPool: [],
     career: { seasons:0, w:0, l:0, titles:0, berths:0 },
     lastInjury: null
@@ -4965,9 +5014,7 @@ function resolvePlayerContract(accept){
   } else {
     const me = meT();
     me.roster = me.roster.filter(p => p.id !== myP.id);
-    G.playerFreeAgent = myP;
-    const others = pickFAOfferTeams(me.idx, userPrice(myP,1));
-    G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(myP,1) * R(0.88,1.18) * 10) / 10 }));
+    beginPlayerFAShopping(myP, me.idx);
     G.playerPendingContract = null;
   }
   save(); render();
@@ -4977,7 +5024,7 @@ function signWithTeam(teamIdx){
   const offerObj = (G.playerFAOffers||[]).find(o => o.teamIdx === teamIdx);
   if(!myP || !offerObj) return;
   const t = G.teams[teamIdx];
-  myP.years = RI(2,3); myP.salary = offerObj.offer; myP.resigned = true; myP.dressed = true; myP.ir = false; myP.injWeeks = 0;
+  myP.years = offerObj.years || RI(2,3); myP.salary = offerObj.offer; myP.resigned = true; myP.dressed = true; myP.ir = false; myP.injWeeks = 0;
   myP.contract = { base: Array(myP.years).fill(offerObj.offer), bonusProration:0, bonusYearsLeft:0, totalBonus:0 };
   logEv(myP, 'move', 'Signed with '+t.city+' as a free agent — '+money(offerObj.offer)+'/yr', 0);
   t.roster.push(myP);
@@ -4985,6 +5032,7 @@ function signWithTeam(teamIdx){
   G.cash = (t.market||3) * 8;
   G.playerFreeAgent = null;
   G.playerFAOffers = null;
+  G.playerFAShopping = null;
   save(); render();
 }
 function playerHandleOffseason(){
@@ -5020,6 +5068,7 @@ function retryCutdown(){
   logOwnerMove('Roster set for Week 1.');
 }
 function playerAdvance(){
+  if(G.playerFAShopping && G.playerFreeAgent){ advanceFAShoppingDay(); return; }
   if(G.playerRetired || G.playerDraftReveal || G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision || G.playerRestructureOffer) return;
   switch(G.phase){
     case 'tag': playerHandleTag(); break;
@@ -5082,28 +5131,31 @@ function playerDashboardHTML(){
     const lost = G.fa.find(p => p.id === G.playerId);
     if(lost){
       G.fa = G.fa.filter(p => p.id !== G.playerId);
-      G.playerFreeAgent = lost;
-      const others = pickFAOfferTeams(-1, userPrice(lost,1));
-      G.playerFAOffers = others.map(t => ({ teamIdx: t.idx, offer: Math.round(userPrice(lost,1) * R(0.85,1.2) * 10) / 10 }));
+      beginPlayerFAShopping(lost, -1);
       save();
       myP = mePlayer();
     }
   }
-  if(!myP){
+  if(!myP || G.playerFreeAgent){
     if(G.playerFreeAgent){
       const fp = G.playerFreeAgent;
       let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(fp.name)+' — '+fp.spot+'</div>' +
-        '<p class="sub">Currently a free agent · Age '+fp.age+' · <b style="color:var(--gold)">'+fp.rating+'</b> OVR</p></div>';
+        '<p class="sub">Currently a free agent · Age '+fp.age+' · <b style="color:var(--gold)">'+fp.rating+'</b> OVR</p>' +
+        (G.playerFAShopping ? '<p class="sub" style="margin-top:4px">Day '+G.playerFAShopping.day+' of '+G.playerFAShopping.maxDays+' — take your time, or advance to let more offers develop.</p>' : '') +
+        '</div>';
       if(G.playerFAOffers && G.playerFAOffers.length){
         s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Free Agent Offers</div>';
-        G.playerFAOffers.forEach(o => {
+        G.playerFAOffers.slice().sort((a,b)=>b.offer-a.offer).forEach(o => {
           const ot = G.teams[o.teamIdx];
-          s += '<div class="dash-fixrow"><span>'+esc(ot.city+' '+ot.name)+'</span><b>'+money(o.offer)+'/yr</b> <button class="btn tiny primary" onclick="signWithTeam('+o.teamIdx+')">Sign</button></div>';
+          s += '<div class="dash-fixrow" style="align-items:center"><span>'+esc(ot.city+' '+ot.name)+' <span class="sub">('+teamOverall(ot)+' OVR roster · '+ot.w+'-'+ot.l+')</span></span>' +
+            '<span style="display:flex;align-items:center;gap:6px"><b>'+money(o.offer)+'/yr</b><span class="sub">× '+o.years+'yr</span>' +
+            '<span class="sub" style="color:'+(o.daysLeft<=2?'var(--red)':'var(--muted)')+'">'+o.daysLeft+' day'+(o.daysLeft!==1?'s':'')+' left</span>' +
+            '<button class="btn tiny primary" onclick="signWithTeam('+o.teamIdx+')">Sign</button>' +
+            '<button class="btn tiny" onclick="rejectFAOffer('+o.teamIdx+')">Pass</button></span></div>';
         });
         s += '</div>';
-      } else {
-        s += '<div class="panel" style="text-align:center"><p class="sub">No offers on the table right now.</p><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
       }
+      s += '<div class="panel" style="text-align:center"><button class="btn primary" onclick="playerAdvance()">Let Another Day Pass →</button></div>';
       return s;
     }
     return '<div class="panel"><p class="sub">Between teams right now — check back after the next Advance.</p></div>' +
@@ -5230,16 +5282,24 @@ function playerGridDashboardHTML(myP, t){
 
   const pc = myP.contract;
   const hasBonus = pc && pc.bonusYearsLeft > 0;
+  const contractLog = myP.seasonLog || [];
   s += '<div class="panel"><div class="hd disp">Contract</div>' +
     '<p class="sub">'+money(myP.salary)+'/yr · '+myP.years+' yr'+(myP.years!==1?'s':'')+' left'+(myP.tagged?' · <span class="tag w">TAGGED</span>':'')+'</p>' +
     (hasBonus ? '<p class="sub" style="margin-top:4px">Bonus: '+money(pc.bonusProration)+'/yr × '+pc.bonusYearsLeft+' yr'+(pc.bonusYearsLeft!==1?'s':'')+'</p>' : '') +
+    (contractLog.length ? '<div class="sub" style="margin-top:8px">Every Year In The League</div><div style="max-height:180px;overflow-y:auto"><table class="tbl">' +
+      contractLog.slice().reverse().map(yr => '<tr><td class="sub" style="white-space:nowrap">'+yr.year+'</td><td class="sub" style="white-space:nowrap">'+esc(yr.team)+'</td><td style="text-align:right">'+money(yr.salary||0)+'</td></tr>').join('') +
+      '</table></div>' : '') +
     '</div>';
 
   const earnings = G.playerEarnings || [];
   s += '<div class="panel"><div class="hd disp">Career Earnings</div>';
   if(!earnings.length) s += '<p class="sub">Nothing banked yet.</p>';
   let total = 0;
-  earnings.slice().reverse().forEach(e => { total += e.salary; s += '<div class="dash-fixrow"><span>'+e.year+'</span><b>'+money(e.salary)+'</b></div>'; });
+  earnings.slice().reverse().forEach(e => {
+    const yearTotal = e.salary + (e.bonus||0);
+    total += yearTotal;
+    s += '<div class="dash-fixrow"><span>'+e.year+(e.bonus ? ' <span class="sub">(incl. '+money(e.bonus)+' bonus)</span>' : '')+'</span><b>'+money(yearTotal)+'</b></div>';
+  });
   if(earnings.length) s += '<div class="dash-fixrow" style="border-top:2px solid var(--line);margin-top:4px;padding-top:6px"><span><b>Total</b></span><b style="color:var(--gold)">'+money(total)+'</b></div>';
   s += '</div>';
 
@@ -5419,6 +5479,44 @@ function upgradeFacility(key){
 }
 function practiceMult(){ return FACILITY_TIERS.practice[facilityLevel('practice')].mult; }
 function scoutingSpreadMult(){ return FACILITY_TIERS.scouting[facilityLevel('scouting')].spreadMult; }
+function weeklyScoutPoints(role){
+  const coach = G.staff ? G.staff[role] : null;
+  const coachFactor = coach ? (coach.rating/60) : 0.4; // no scout hired — still a baseline scouting department ticking along
+  const facilityBonus = 1 + (1 - scoutingSpreadMult()); // better facility tier = more points too
+  return Math.round(coachFactor * facilityBonus * 3 * 10) / 10;
+}
+function grantWeeklyScoutPoints(){
+  if(!G.scoutPoints) G.scoutPoints = { pro: 0, college: 0 };
+  G.scoutPoints.pro = Math.round((G.scoutPoints.pro + weeklyScoutPoints('PS')) * 10) / 10;
+  G.scoutPoints.college = Math.round((G.scoutPoints.college + weeklyScoutPoints('CS')) * 10) / 10;
+}
+function ensureProScout(p, baseSpread){
+  if(p.proScoutLo != null && p.proScoutTrue === p.rating) return;
+  const spread = Math.max(1, Math.round(baseSpread * scoutingSpreadMult()));
+  const mid = clamp(p.rating + RI(-2,2), 50, 99);
+  p.proScoutLo = clamp(mid - spread, 50, 99);
+  p.proScoutHi = clamp(mid + spread, 50, 99);
+  p.proScoutTrue = p.rating;
+}
+function proScoutCost(p){
+  ensureProScout(p, 8);
+  return Math.max(1, Math.round((p.proScoutHi - p.proScoutLo) * 0.8));
+}
+function scoutPlayer(pid, pool){
+  const p = (pool || G.fa.concat(...G.teams.filter(t=>t.idx!==G.userTeam).map(t=>t.roster))).find(x => x.id === pid);
+  if(!p) return;
+  if(!G.scoutPoints) G.scoutPoints = { pro: 0, college: 0 };
+  const cost = proScoutCost(p);
+  if(G.scoutPoints.pro < cost) return;
+  G.scoutPoints.pro = Math.round((G.scoutPoints.pro - cost) * 10) / 10;
+  p.proScoutLo = p.rating; p.proScoutHi = p.rating; p.proScoutTrue = p.rating;
+  save(); render();
+}
+function scoutRangeHTML(p, baseSpread){
+  ensureProScout(p, baseSpread);
+  if(p.proScoutLo === p.proScoutHi) return '<span style="color:var(--gold);font-weight:700">'+p.rating+'</span>';
+  return '<span style="color:var(--muted)">'+p.proScoutLo+'\u2013'+p.proScoutHi+'</span>';
+}
 function concourseFanBoost(){ return FACILITY_TIERS.concourse[facilityLevel('concourse')].fanBoost; }
 function grantTrainPts(n){ G.trainPts = Math.round(((G.trainPts||0) + n*practiceMult())*10)/10; }
 function facilitiesHTML(){
@@ -6419,6 +6517,15 @@ function staffHTML(){
   s += coachCardHTML('OC', null, 'Offensive Coordinator', ocBoost() ? (ocBoost()>0?'+':'')+ocBoost().toFixed(1)+' Pass O / Run O' : null);
   s += coachCardHTML('DC', null, 'Defensive Coordinator', dcBoost() ? (dcBoost()>0?'+':'')+dcBoost().toFixed(1)+' Pass D / Run D' : null);
   s += coachCardHTML('STC', null, 'Special Teams Coordinator', stcBoost() ? (stcBoost()>0?'+':'')+stcBoost().toFixed(1)+' Kicking' : null);
+  s += '</div>';
+  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="margin-bottom:6px">Scouting Department</div>' +
+    '<p class="sub" style="margin-bottom:8px">Pro Scouts narrow the OVR range on opponent rosters and free agents. College Scouts do the same for draft prospects. Better facility tier speeds up points for both.</p>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">' +
+    '<div><div class="sub">Pro Scouting Points</div><div style="font-size:18px;font-weight:700;color:var(--gold)">'+((G.scoutPoints&&G.scoutPoints.pro)||0)+'</div></div>' +
+    '<div><div class="sub">College Scouting Points</div><div style="font-size:18px;font-weight:700;color:var(--gold)">'+((G.scoutPoints&&G.scoutPoints.college)||0)+'</div></div>' +
+    '</div>';
+  s += coachCardHTML('PS', null, 'Pro Scout', currentCoach('PS') ? weeklyScoutPoints('PS')+' pts/wk' : null);
+  s += coachCardHTML('CS', null, 'College Scout', currentCoach('CS') ? weeklyScoutPoints('CS')+' pts/wk' : null);
   s += '</div>';
   s += '<div class="panel"><div class="hd disp" style="margin-bottom:6px">Position Coaches</div>';
   COACH_POS.forEach(pos => {
