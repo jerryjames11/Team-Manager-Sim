@@ -926,7 +926,7 @@ function hometownDisc(t, p){
 function logEv(p, kind, text, delta){
   if(!p.history) p.history = [];
   p.history.push({y: G ? G.year : 0, k: kind, t: text, d: delta || 0});
-  if(p.history.length > 80) p.history.shift();
+  if(p.history.length > 400) p.history.shift();
 }
 function findPlayer(pid){
   for(const t of G.teams){ const p = t.roster.find(x => x.id === pid); if(p) return {p, t}; }
@@ -1214,9 +1214,20 @@ function enforceCapCompliance(t){
   // first: try restructuring existing multi-year deals to free up room without losing the player
   let rguard = 15;
   const restructured = new Set();
+  let playerCandidateBlocked = false;
   while(capRoom(t) < 0 && rguard-- > 0){
-    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1));
-    if(!candidates.length) break;
+    const isMe = p => G.mode === 'player' && G.playerId && p.id === G.playerId;
+    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1) && !isMe(p));
+    if(!candidates.length){
+      // if the only remaining lever would be the player's own deal, don't touch it automatically — let them decide
+      const meCandidate = t.roster.find(p => isMe(p) && p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1));
+      if(meCandidate && !G.playerRestructureOffer && !G.playerRestructureDeclined){
+        const wouldSave = Math.round((meCandidate.contract ? Math.min(contractOf(meCandidate).base[0]*0.65, meCandidate.contract.base[0]*0.65) : meCandidate.salary*0.65*0.8) * 10) / 10;
+        G.playerRestructureOffer = { savings: wouldSave, salary: meCandidate.salary, years: meCandidate.years };
+        playerCandidateBlocked = true;
+      }
+      break;
+    }
     candidates.sort((a,b) => b.salary - a.salary);
     const p = candidates[0];
     const saved = restructureContract(p);
@@ -1227,6 +1238,7 @@ function enforceCapCompliance(t){
     }
     if(saved <= 0) break;
   }
+  if(playerCandidateBlocked) return;
   // then: release lowest value-per-dollar players (respecting minimums where possible) if still over
   let guard = 30;
   while(capRoom(t) < 0 && guard-- > 0){
@@ -2376,8 +2388,7 @@ function advanceToTag(){
       if(!p.cst) p.cst = blankStats();
       Object.keys(p.st).forEach(k => p.cst[k] += p.st[k]);
       if(!p.seasonLog) p.seasonLog = [];
-      p.seasonLog.push({ year: G.year, team: t.abbr, pos: p.pos, st: Object.assign({}, p.st) });
-      if(p.seasonLog.length > 25) p.seasonLog.shift();
+      p.seasonLog.push({ year: G.year, team: t.abbr, pos: p.pos, st: Object.assign({}, p.st), salary: p.salary });
     }
     p.lastScore = statScore(p); p.st = null; p.devPts = 0; p.statDev = 0;
   };
@@ -3884,12 +3895,12 @@ function profileHTML(pid){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">This Season</div><p class="sub" style="margin-top:4px">'+statLine(p.st, p.pos)+'</p></div>';
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Career Totals</div><p class="sub" style="margin-top:4px">'+statLine(car || p.st, p.pos)+'</p></div>';
     const log = p.seasonLog || [];
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Career By Season</div><table class="tbl">';
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Career By Season</div><div style="max-height:320px;overflow-y:auto"><table class="tbl">';
     if(!log.length) s += '<tr><td class="sub">No completed seasons on file yet.</td></tr>';
     log.slice().reverse().forEach(yr => {
       s += '<tr><td class="sub" style="white-space:nowrap">'+yr.year+'</td><td class="sub" style="white-space:nowrap">'+esc(yr.team)+'</td><td>'+statLine(yr.st, yr.pos)+'</td></tr>';
     });
-    s += '</table></div>';
+    s += '</table></div></div>';
   } else if(profileTab === 'contract'){
     const disc = hometownDisc(meT(), p);
     const pc = p.contract;
@@ -3901,10 +3912,22 @@ function profileHTML(pid){
       '</p>' +
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + extendBtnHTML(p) + tagBtnHTML(p) + tradeBtnHTML(p, t) + cutBtnHTML(p) + '</div></div>';
     const evs = (p.history||[]).filter(e => e.k==='ct'||e.k==='move');
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Transaction History</div><table class="tbl">';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Transaction History</div>' +
+      '<div style="max-height:280px;overflow-y:auto"><table class="tbl">';
     if(!evs.length) s += '<tr><td class="sub">Nothing on file.</td></tr>';
     evs.slice().reverse().forEach(e => { s += '<tr><td class="sub" style="white-space:nowrap">'+e.y+'</td><td>'+esc(e.t)+'</td></tr>'; });
-    s += '</table></div>';
+    s += '</table></div></div>';
+    const log = p.seasonLog || [];
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Earnings By Year</div>' +
+      '<div style="max-height:280px;overflow-y:auto"><table class="tbl"><tr><th>Year</th><th>Team</th><th style="text-align:right">Salary</th></tr>';
+    if(!log.length) s += '<tr><td class="sub" colspan="3">No completed seasons on file yet.</td></tr>';
+    else {
+      let career = 0;
+      log.forEach(yr => career += (yr.salary||0));
+      log.slice().reverse().forEach(yr => { s += '<tr><td class="sub" style="white-space:nowrap">'+yr.year+'</td><td class="sub" style="white-space:nowrap">'+esc(yr.team)+'</td><td style="text-align:right">'+money(yr.salary||0)+'</td></tr>'; });
+      s += '<tr><td colspan="2" style="font-weight:700">Career Earnings</td><td style="text-align:right;font-weight:700;color:var(--gold)">'+money(career)+'</td></tr>';
+    }
+    s += '</table></div></div>';
   } else if(profileTab === 'prog'){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Rating Over Time</div>'+sparkHTML(p)+
       (meT().roster.includes(p) ? '<div style="margin-top:8px">'+trainBtnHTML(p)+mentorBtnHTML(p)+'<span class="sub">'+(G.mode==='player'?playerTrainCost(p.rating)+' pts = +1 OVR at his current '+p.rating+' OVR (2 pts if mentored by you instead, teammates under 25 or younger than you only). Earn points from your own game stats (yards/TDs/tackles/turnovers), plus camp and the offseason — or spend them on recovery/morale from his profile.':'2 pts = +1 OVR normally, elite position coach cuts the cost or doubles the gain.')+' Max +5/season.</span></div>' : '') +
@@ -4915,6 +4938,20 @@ function playerHandleTag(){
   }
   openFreeAgency();
 }
+function resolvePlayerRestructure(accept){
+  const myP = mePlayer();
+  const off = G.playerRestructureOffer;
+  if(!myP || !off) return;
+  if(accept){
+    const saved = restructureContract(myP);
+    logEv(myP, 'ct', 'Agreed to restructure — freed up '+money(saved)+' in cap room for the club', 0);
+  } else {
+    logEv(myP, 'ct', 'Turned down a restructure request — kept the current deal as written', 0);
+    G.playerRestructureDeclined = true;
+  }
+  G.playerRestructureOffer = null;
+  save(); render();
+}
 function resolvePlayerContract(accept){
   const myP = mePlayer();
   const pc = G.playerPendingContract;
@@ -4983,7 +5020,7 @@ function retryCutdown(){
   logOwnerMove('Roster set for Week 1.');
 }
 function playerAdvance(){
-  if(G.playerRetired || G.playerDraftReveal || G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision) return;
+  if(G.playerRetired || G.playerDraftReveal || G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision || G.playerRestructureOffer) return;
   switch(G.phase){
     case 'tag': playerHandleTag(); break;
     case 'fa': ownerHandleFA(); break;
@@ -5073,7 +5110,7 @@ function playerDashboardHTML(){
       '<div class="panel" style="text-align:center"><button class="btn primary" onclick="playerAdvance()">Advance →</button></div>';
   }
   const t = G.teams[G.userTeam];
-  const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision);
+  const hasBlockingDecision = !!(G.playerPendingContract || G.playerFAOffers || G.playerRetireDecision || G.playerRestructureOffer);
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+esc(myP.name)+' — '+myP.spot+'</div>' +
     '<p class="sub">'+esc(t.city+' '+t.name)+' · Age '+myP.age+' · <b style="color:var(--gold)">'+myP.rating+'</b> OVR · '+money(myP.salary)+'/yr, '+myP.years+' yr'+(myP.years!==1?'s':'')+' left</p>' +
     (playForMeButtonHTML(hasBlockingDecision)) +
@@ -5081,7 +5118,13 @@ function playerDashboardHTML(){
     (hasBlockingDecision ? '' : '<button class="btn primary" onclick="playerAdvance()">Advance →</button>') +
     '</div>' + playerWeekPlanHTML() + '</div>';
 
-  if(G.playerPendingContract){
+  if(G.playerRestructureOffer){
+    const off = G.playerRestructureOffer;
+    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Front Office Wants To Restructure Your Deal</div>' +
+      '<p>The front office is over the cap and wants to convert part of your '+money(off.salary)+'/yr base into a signing bonus, freeing up roughly <b style="color:var(--gold)">'+money(off.savings)+'</b> in cap room this year. Your total money owed doesn\'t change — it just shifts more of it into future years.</p>' +
+      '<div style="display:flex;gap:8px;margin-top:8px"><button class="btn primary" onclick="resolvePlayerRestructure(true)">Agree to Restructure</button><button class="btn danger" onclick="resolvePlayerRestructure(false)">Keep My Deal As Is</button></div>' +
+      '<p class="sub" style="margin-top:6px">If you say no, the club will have to find another way to get under the cap.</p></div>';
+  } else if(G.playerPendingContract){
     const pc = G.playerPendingContract;
     s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Your Contract Is Up</div>' +
       '<p>'+esc(t.city)+' offers <b style="color:var(--gold)">'+money(pc.offer)+'</b>/yr for '+pc.years+' years.</p>' +
@@ -5535,9 +5578,11 @@ function ownerHandlePreseason(){
   simPre(); simPre(); simPre();
   doAutoCut();
   enforceCapCompliance(meT()); // shed what cap room can honestly be shed first
+  if(G.playerRestructureOffer){ save(); render(); return; }
   if(!meetsMinimums(meT()) || meT().roster.length < LIMIT_REG) fillMinimums(); // then guarantee a legal roster size
   if(meT().roster.length > LIMIT_REG) doAutoCut();
   enforceCapCompliance(meT()); // re-check — filling minimums can add payroll back
+  if(G.playerRestructureOffer){ save(); render(); return; }
   if(capRoom(meT()) < 0){
     G.gmConfidence = 5;
     logOwnerMove('Still over the salary cap by '+money(-capRoom(meT()))+' — restructure or release players from Front Office before the season can open.');
@@ -5579,6 +5624,7 @@ function ownerHandleOffseason(){
   if(!G.ownerReviewShown){ G.ownerReviewShown = true; save(); render(); return; }
   G.ownerReviewShown = false;
   G.gmRejected = [];
+  G.playerRestructureDeclined = false;
   advanceToTag();
 }
 function mandateMet(){
