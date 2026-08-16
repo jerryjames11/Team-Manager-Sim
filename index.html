@@ -41,7 +41,7 @@ header.top .meta b{color:var(--chalk)}
 .tl-lbl.done{color:var(--green)}
 .tl-lbl.on{color:var(--gold)}
 
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px;margin-bottom:9px !important;overflow-x:auto}
+.panel{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--team-tint, var(--line));border-radius:10px;padding:11px;margin-bottom:9px !important;overflow-x:auto}
 .hd{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:7px;letter-spacing:.08em}
 .sub{color:var(--muted);font-size:12px}
 .row{display:flex;gap:12px;flex-wrap:wrap}
@@ -170,6 +170,7 @@ table.tbl tr:last-child td{border-bottom:none}
 .dash-calday .box.game{background:var(--gold);color:#14100A}
 .dash-calday .box.practice{background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
 .dash-calday .box.rest{background:rgba(76,175,110,.18);color:var(--green);border:1px solid var(--green)}
+.dash-calday .box.today{border:2px solid var(--gold);color:var(--gold)}
 .dash-fixrow{display:flex;justify-content:space-between;font-size:11.5px;padding:6px 0;border-bottom:1px solid #202A3C}
 .dash-fixrow:last-child{border-bottom:none}
 .dash-standrow{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:6px 0;border-bottom:1px solid #202A3C}
@@ -406,7 +407,7 @@ const TEAM_DEFS = [
   {city:'Nashville', state:'TN',   name:'Rhythm',     abbr:'NSH', conf:1, div:0, c1:'#6B3FA0', c2:'#F2B950', market:3},
   {city:'Orlando', state:'FL',     name:'Comets',     abbr:'ORL', conf:1, div:0, c1:'#2456B0', c2:'#8FD3F0', market:3},
   {city:'Dallas', state:'TX',      name:'Stampede',   abbr:'DAL', conf:1, div:1, c1:'#7A2E1F', c2:'#D9A441', market:5},
-  {city:'Austin', state:'TX',      name:'Armadillos', abbr:'AUS', conf:1, div:1, c1:'#4C6B3C', c2:'#D8CBA8', market:3},
+  {city:'Houston', state:'TX',      name:'Oilers',   abbr:'HOU', conf:1, div:1, c1:'#111111', c2:'#C9A227', market:4},
   {city:'Denver', state:'CO',      name:'Summit',     abbr:'DEN', conf:1, div:1, c1:'#37476B', c2:'#E8E2D4', market:3},
   {city:'Portland', state:'OR',    name:'Pioneers',   abbr:'POR', conf:1, div:1, c1:'#2F6E4F', c2:'#C9B58A', market:3}
 ];
@@ -893,7 +894,8 @@ function practiceLineup(t, side, tier){
   return lineupFor(t, form, formKey, skip);
 }
 function runPracticeSession(offTier, defTier){
-  if(G.practiceUsedThisWeek) return null;
+  if(!G.practiceScene || G.practiceScene.phase !== '11v11') return null;
+  if(G.practiceScene.teamReps.length >= 8) return null;
   const t = meT();
   const offLu = practiceLineup(t, 'o', offTier).filter(x => x.p);
   const defLu = practiceLineup(t, 'd', defTier).filter(x => x.p);
@@ -914,13 +916,15 @@ function runPracticeSession(offTier, defTier){
     const cap = standout.ceiling || 99;
     if(standout.rating < cap){ standout.rating = clamp(standout.rating+1, 50, cap); logEv(standout, 'dev', 'Stood out in practice', 1); standoutDev = true; }
   }
-  G.practiceUsedThisWeek = true;
-  G.lastPracticeResult = { offWins, offTier, defTier, standoutId: standout?standout.id:null, standoutDev, offAvg:Math.round(offAvg), defAvg:Math.round(defAvg), participantIds: participants.map(p=>p.id) };
+  const result = { type:'11v11', offWins, offTier, defTier, standoutId: standout?standout.id:null, standoutDev, offAvg:Math.round(offAvg), defAvg:Math.round(defAvg), participantIds: participants.map(p=>p.id) };
+  G.practiceScene.teamReps.push(result);
+  G.lastPracticeResult = result;
   save(); render();
-  return G.lastPracticeResult;
+  return result;
 }
 function runDrill(pid1, pid2){
-  if((G.drillsUsedThisWeek||0) >= 2) return null;
+  if(!G.practiceScene || G.practiceScene.phase !== 'drills') return null;
+  if(G.practiceScene.drillReps.length >= 5) return null;
   const t = meT();
   const p1 = t.roster.find(p=>p.id===pid1), p2 = t.roster.find(p=>p.id===pid2);
   if(!p1 || !p2 || p1.id === p2.id) return null;
@@ -938,10 +942,11 @@ function runDrill(pid1, pid2){
     logEv(winner, 'dev', 'Won a 1-on-1 drill vs '+loser.name, 1);
     winnerDev = true;
   }
-  G.drillsUsedThisWeek = (G.drillsUsedThisWeek||0) + 1;
-  G.lastDrillResult = { winnerId: winner.id, loserId: loser.id, winnerDev };
+  const result = { type:'drill', winnerId: winner.id, loserId: loser.id, winnerDev };
+  G.practiceScene.drillReps.push(result);
+  G.lastDrillResult = result;
   save(); render();
-  return G.lastDrillResult;
+  return result;
 }
 function giveFeedback(pid, style){
   const t = meT();
@@ -2054,6 +2059,8 @@ function finishWeek(userRes, liveBox){
   }));
   G.practiceUsedThisWeek = false;
   G.drillsUsedThisWeek = 0;
+  G.practiceDay = 0;
+  G.practiceScene = null;
   const wk = G.schedule[G.week-1];
   const results = [];
   G.weekDevs = [];
@@ -3579,7 +3586,7 @@ function animatePlay(res, cb){
 
   /* ---- actors: every player is a dot with keyframed waypoints on one timeline ---- */
   const actors = [];
-  function A(x,y,fill){ const a={x0i:CXf(x), y0i:CYf(y), fill, wp:[]}; a.wp.push({t:0,x:a.x0i,y:a.y0i}); actors.push(a); return a; }
+  function A(x,y,team){ const a={x0i:CXf(x), y0i:CYf(y), c1:team.c1, c2:team.c2, wp:[]}; a.wp.push({t:0,x:a.x0i,y:a.y0i}); actors.push(a); return a; }
   function to(a,t,x,y){ a.wp.push({t, x:CXf(x), y:CYf(y)}); return a; }
   function posAt(a,t){
     const w=a.wp;
@@ -3593,15 +3600,15 @@ function animatePlay(res, cb){
     return w[w.length-1];
   }
 
-  const OL=[]; for(let i=-2;i<=2;i++) OL.push(A(x0-12, mid+i*26, off.c1));
-  const QB=A(x0-42, mid, off.c1);
-  const RB=A(x0-62, mid+22, off.c1);
-  const WRT=A(x0-16, 90, off.c1), WRB=A(x0-16, FH-90, off.c1);
-  const SLOT=A(x0-16, mid-66, off.c1), TEr=A(x0-14, mid+66, off.c1);
-  const DLs=[]; for(let i=-1.5;i<=1.5;i++) DLs.push(A(x0+14, mid+i*30, def.c1));
-  const LBs=[]; for(let i=-1;i<=1;i++) LBs.push(A(x0+48, mid+i*55, def.c1));
-  const CBT=A(x0+22, 95, def.c1), CBB=A(x0+22, FH-95, def.c1);
-  const S1=A(x0+105, mid-45, def.c1), S2=A(x0+105, mid+45, def.c1);
+  const OL=[]; for(let i=-2;i<=2;i++) OL.push(A(x0-12, mid+i*26, off));
+  const QB=A(x0-42, mid, off);
+  const RB=A(x0-62, mid+22, off);
+  const WRT=A(x0-16, 90, off), WRB=A(x0-16, FH-90, off);
+  const SLOT=A(x0-16, mid-66, off), TEr=A(x0-14, mid+66, off);
+  const DLs=[]; for(let i=-1.5;i<=1.5;i++) DLs.push(A(x0+14, mid+i*30, def));
+  const LBs=[]; for(let i=-1;i<=1;i++) LBs.push(A(x0+48, mid+i*55, def));
+  const CBT=A(x0+22, 95, def), CBB=A(x0+22, FH-95, def);
+  const S1=A(x0+105, mid-45, def), S2=A(x0+105, mid+45, def);
 
   /* ---- pick the catch point + target receiver ---- */
   let xAir = CXf(xAt(clamp(GM.spot + depth, 2, 99)));
@@ -3714,14 +3721,20 @@ function animatePlay(res, cb){
       });
   }
 
-  /* ---- render: 22 dots + ball + trail ---- */
+  /* ---- render: 22 split-color dots + ball + trail ---- */
   const NS='http://www.w3.org/2000/svg';
   actors.forEach(a=>{
-    const c=document.createElementNS(NS,'circle');
-    c.setAttribute('r','9'); c.setAttribute('fill',a.fill);
-    c.setAttribute('stroke','rgba(255,255,255,.85)'); c.setAttribute('stroke-width','1.6');
-    c.setAttribute('cx',a.x0i); c.setAttribute('cy',a.y0i);
-    animG.appendChild(c); a.el=c;
+    const g=document.createElementNS(NS,'g');
+    g.setAttribute('transform','translate('+a.x0i+','+a.y0i+')');
+    const half1=document.createElementNS(NS,'path');
+    half1.setAttribute('d','M 0 -9 A 9 9 0 0 1 0 9 Z'); half1.setAttribute('fill',a.c1);
+    const half2=document.createElementNS(NS,'path');
+    half2.setAttribute('d','M 0 -9 A 9 9 0 0 0 0 9 Z'); half2.setAttribute('fill',a.c2);
+    const ring=document.createElementNS(NS,'circle');
+    ring.setAttribute('r','9'); ring.setAttribute('fill','none');
+    ring.setAttribute('stroke','rgba(255,255,255,.85)'); ring.setAttribute('stroke-width','1.6');
+    g.appendChild(half1); g.appendChild(half2); g.appendChild(ring);
+    animG.appendChild(g); a.el=g;
   });
   const bad = res.type==='int'||res.type==='fumble'||res.type==='sack';
   const trail=document.createElementNS(NS,'path');
@@ -3754,7 +3767,7 @@ function animatePlay(res, cb){
   function step(ts){
     if(!start) start=ts;
     const t=Math.min(1,(ts-start)/dur);
-    actors.forEach(a=>{ const p=posAt(a,t); a.el.setAttribute('cx',p.x); a.el.setAttribute('cy',p.y); });
+    actors.forEach(a=>{ const p=posAt(a,t); a.el.setAttribute('transform','translate('+p.x+','+p.y+')'); });
     const bp=ballPos(t);
     ball.setAttribute('cx',bp.x); ball.setAttribute('cy',bp.y);
     trailD += (trailD?' L':'M')+Math.round(bp.x)+' '+Math.round(bp.y);
@@ -3826,7 +3839,6 @@ function pageBodyHTML(v){
   if(v === 'roster') return rosterHTML();
   if(v === 'depth') return depthHTML();
   if(v === 'staff') return staffHTML();
-  if(v === 'practice') return practiceHTML();
   if(v === 'front') return careerHTML();
   if(v === 'gm') return gmOfficeHTML();
   if(v === 'league') return leagueHTML();
@@ -4179,7 +4191,7 @@ function relBarHTML(v){
 }
 function goToHub(){ G.activePage = null; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function navHTML(){
-  const items = [['roster','📋 Roster'],['depth','🏈 Depth Chart'],['practice','🏃 Practice'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','💼 GM\'s Office'],['league','🏆 League']];
+  const items = [['roster','📋 Roster'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','💼 GM\'s Office'],['league','🏆 League']];
   let s = '<div class="navbar"><button class="navbtn'+(!G.activePage?' on':'')+'" onclick="goToHub()">🏠 Hub</button>';
   items.forEach(it => {
     s += '<button class="navbtn'+(G.activePage===it[0]?' on':'')+'" onclick="navTo(\''+it[0]+'\')">'+it[1]+'</button>';
@@ -4224,7 +4236,30 @@ function modalHTML(){
     '<div class="modal-body">'+modalBodyHTML(modalView)+'</div>' +
     '</div></div>';
 }
+function colorLuminance(hex){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substr(0,2),16)/255, g = parseInt(h.substr(2,2),16)/255, b = parseInt(h.substr(4,2),16)/255;
+  return 0.2126*r + 0.7152*g + 0.0722*b;
+}
+function applyTeamTheme(){
+  const root = document.documentElement;
+  if(!root || !root.style || typeof root.style.setProperty !== 'function') return;
+  let t = null;
+  if(G && G.teams){
+    t = G.teams[G.userTeam] || null;
+    if(modalView === 'team' && modalArg != null && G.teams[modalArg] && modalArg !== G.userTeam) t = G.teams[modalArg];
+  }
+  if(!t){
+    if(typeof root.style.removeProperty === 'function'){ root.style.removeProperty('--gold'); root.style.removeProperty('--team-tint'); }
+    return;
+  }
+  const accent = colorLuminance(t.c1) >= colorLuminance(t.c2) ? t.c1 : t.c2;
+  const tint = accent === t.c1 ? t.c2 : t.c1;
+  root.style.setProperty('--gold', accent);
+  root.style.setProperty('--team-tint', tint);
+}
 function render(){
+  applyTeamTheme();
   const app = $('#app');
   if(!G){
     modalView = null; modalArg = null;
@@ -4275,7 +4310,7 @@ function render(){
     else if(G.mode === 'player' && G.phase !== 'fired' && G.phase !== 'game'){
       body = timelineHTML() + '<div class="phase-body">' + playerDashboardHTML() + '</div>';
     }
-    else if(G.phase==='hub') body = timelineHTML() + hubHTML();
+    else if(G.phase==='hub') body = G.practiceScene ? practiceSceneHTML() : (timelineHTML() + hubHTML());
     else if(G.phase==='game') body = gameHTML();
     else if(G.phase==='tag') body = timelineHTML() + '<div class="phase-body">' + tagHTML() + '</div>';
     else if(G.phase==='fa') body = timelineHTML() + '<div class="phase-body">' + faHTML() + '</div>';
@@ -4295,7 +4330,7 @@ function render(){
     body = '<div class="panel" style="border-color:var(--red)"><div class="hd disp" style="color:var(--red)">Something went wrong loading that page</div>' +
       '<p class="sub">No progress was lost — your last save is intact. Try a different page from the nav above, or use Quit to Menu in Front Office.</p></div>';
   }
-  const nav = (G.phase === 'game' || G.userTeam == null) ? '' : navHTML();
+  const nav = (G.phase === 'game' || G.practiceScene || G.userTeam == null) ? '' : navHTML();
   app.innerHTML = headerHTML() + nav + body + modalHTML() + posPopupHTML();
   if(G.phase==='game'){ drawFormation(); renderLog(); updateGameUI(); }
 }
@@ -6142,11 +6177,21 @@ function weekCalendarHTML(){
   const gameDate = weekDate(G.year, G.week);
   const gameDow = (gameDate.getDay()+6)%7; // 0=Mon..6=Sun
   const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today = G.mode === 'coachgm' ? clamp(G.practiceDay||0, 0, gameDow) : -1;
   let s = '<div class="panel"><div class="hd disp" style="font-size:14px">Week '+G.week+'</div><div class="dash-calgrid">';
   labels.forEach((d,i) => {
-    s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box'+(i===gameDow?' game':'')+'">'+(i===gameDow?'GM':'')+'</div></div>';
+    const isGame = i===gameDow;
+    const isPast = G.mode === 'coachgm' && i < today;
+    const isToday = G.mode === 'coachgm' && i === today && !isGame;
+    s += '<div class="dash-calday"><div class="lbl">'+d+'</div><div class="box'+(isGame?' game':'')+(isToday?' today':'')+'">'+(isGame?'GM':isPast?'✓':'')+'</div></div>';
   });
-  s += '</div></div>';
+  s += '</div>';
+  if(G.mode === 'coachgm' && today < gameDow){
+    s += '<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">' +
+      '<button class="btn primary" onclick="enterPracticeScene()">🏃 Go to Practice</button>' +
+      '<button class="btn" onclick="simToNextDay()">Sim to Next Day →</button></div>';
+  }
+  s += '</div>';
   return s;
 }
 function seasonResultsHTML(){
@@ -6816,48 +6861,87 @@ let drillP1 = null, drillP2 = null;
 function setPracticeTier(side, tier){ if(side==='off') practiceOffTier = tier; else practiceDefTier = tier; render(); }
 function setDrillP(slot, pid){ if(slot===1) drillP1 = pid || null; else drillP2 = pid || null; render(); }
 function doRunPracticeSession(){ runPracticeSession(practiceOffTier, practiceDefTier); }
-function doRunDrill(){ if(drillP1 && drillP2) runDrill(parseInt(drillP1), parseInt(drillP2)); }
-function practiceHTML(){
-  if(G.mode === 'player') return '<div class="panel"><p class="sub">Practice planning belongs to the coaching staff — check your Week Plan on the Hub for your own reps instead.</p></div>';
+function doRunDrill(){ if(drillP1 && drillP2){ runDrill(parseInt(drillP1), parseInt(drillP2)); drillP1=null; drillP2=null; } }
+function enterPracticeScene(){
+  if(G.mode !== 'coachgm') return;
+  G.practiceScene = { phase:'drills', drillReps:[], teamReps:[] };
+  save(); render();
+}
+function simToNextDay(){
+  if(G.mode !== 'coachgm') return;
+  meT().roster.forEach(p => { p.fatigue = clamp((p.fatigue||0) - 4, 0, 100); });
+  G.practiceDay = (G.practiceDay||0) + 1;
+  save(); render();
+}
+function advanceToTeamPractice(){
+  if(!G.practiceScene) return;
+  G.practiceScene.phase = '11v11';
+  save(); render();
+}
+function exitPracticeScene(){
+  G.practiceScene = null;
+  G.practiceDay = (G.practiceDay||0) + 1;
+  save(); render();
+}
+function drillRepRowHTML(dr, me){
+  const w = me.roster.find(p=>p.id===dr.winnerId), l = me.roster.find(p=>p.id===dr.loserId);
+  if(!w || !l) return '';
+  return '<div class="dash-fixrow" style="flex-direction:column;align-items:stretch;gap:4px">' +
+    '<div>'+pn(w)+' beat '+pn(l)+(dr.winnerDev?' — <span style="color:var(--green)">development bump</span>':'')+'</div>' +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap"><span class="sub">'+esc(w.name)+': '+feedbackButtonsHTML(w.id)+'</span><span class="sub">'+esc(l.name)+': '+feedbackButtonsHTML(l.id)+'</span></div></div>';
+}
+function teamRepRowHTML(r, me){
+  const standout = r.standoutId ? me.roster.find(p=>p.id===r.standoutId) : null;
+  return '<div class="dash-fixrow" style="flex-direction:column;align-items:stretch;gap:4px">' +
+    '<div>'+(r.offTier===1?'1st':'2nd')+' string O vs '+(r.defTier===1?'1st':'2nd')+' string D — <b style="color:'+(r.offWins?'var(--green)':'var(--red)')+'">'+(r.offWins?'Offense won':'Defense won')+'</b> ('+r.offAvg+' vs '+r.defAvg+')</div>' +
+    (standout ? '<div class="sub">Standout: '+pn(standout)+(r.standoutDev?' — development bump':'')+' — '+feedbackButtonsHTML(standout.id)+'</div>' : '') +
+    '</div>';
+}
+function practiceSceneHTML(){
   const me = meT();
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Practice Session</div>' +
-    '<p class="sub" style="margin-bottom:8px">Run 1st string against 1st or 2nd string, either side of the ball. Winning side gets a shot at a standout performance. Everyone involved gets a little rustier-to-sharper and a little more tired.</p>' +
-    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">' +
-    '<div><div class="sub" style="margin-bottom:4px">Offense</div>' +
-    '<button class="fbtn'+(practiceOffTier===1?' on':'')+'" onclick="setPracticeTier(\'off\',1)">1st String</button> ' +
-    '<button class="fbtn'+(practiceOffTier===2?' on':'')+'" onclick="setPracticeTier(\'off\',2)">2nd String</button></div>' +
-    '<div><div class="sub" style="margin-bottom:4px">Defense</div>' +
-    '<button class="fbtn'+(practiceDefTier===1?' on':'')+'" onclick="setPracticeTier(\'def\',1)">1st String</button> ' +
-    '<button class="fbtn'+(practiceDefTier===2?' on':'')+'" onclick="setPracticeTier(\'def\',2)">2nd String</button></div></div>' +
-    '<button class="btn primary" '+(G.practiceUsedThisWeek?'disabled':'')+' onclick="doRunPracticeSession()">'+(G.practiceUsedThisWeek?'Already Practiced This Week':'Run Practice Session')+'</button></div>';
+  const sc = G.practiceScene;
+  if(!sc) return '';
+  const dayLabels = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="display:flex;justify-content:space-between;align-items:center">' +
+    '<span>'+(dayLabels[G.practiceDay||0]||'Practice')+' Practice</span>' +
+    '<button class="btn" onclick="exitPracticeScene()">Done for the Day →</button></div></div>';
 
-  if(G.lastPracticeResult){
-    const r = G.lastPracticeResult;
-    const standout = r.standoutId ? me.roster.find(p=>p.id===r.standoutId) : null;
-    s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Last Session Result</div>' +
-      '<p>'+(r.offTier===1?'1st':'2nd')+' string offense vs '+(r.defTier===1?'1st':'2nd')+' string defense — <b style="color:'+(r.offWins?'var(--green)':'var(--red)')+'">'+(r.offWins?'Offense won the day':'Defense won the day')+'</b> ('+r.offAvg+' vs '+r.defAvg+' avg eff)</p>' +
-      (standout ? '<p class="sub" style="margin-top:4px">Standout: '+pn(standout)+(r.standoutDev?' — flashed and picked up a development bump':' — had a good day out there')+'</p>' + feedbackButtonsHTML(standout.id) : '') +
-      '</div>';
-  }
-
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Individual Drills</div>' +
-    '<p class="sub" style="margin-bottom:8px">Line two players up 1-on-1. Costs more energy than group practice, but a win is a real chance at development. Up to 2 per week.</p>';
-  const opts = me.roster.filter(p => !p.ir && (p.injWeeks||0)===0).sort((a,b)=>a.pos.localeCompare(b.pos)||b.rating-a.rating);
-  const optHTML = opts.map(p => '<option value="'+p.id+'">'+esc(p.name)+' ('+p.spot+', '+p.rating+')</option>').join('');
-  s += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
-    '<select class="fselect" onchange="setDrillP(1,this.value)"><option value="">Player 1…</option>'+optHTML+'</select>' +
-    '<span class="sub">vs</span>' +
-    '<select class="fselect" onchange="setDrillP(2,this.value)"><option value="">Player 2…</option>'+optHTML+'</select></div>' +
-    '<button class="btn primary" '+((G.drillsUsedThisWeek||0)>=2 || !drillP1 || !drillP2?'disabled':'')+' onclick="doRunDrill()">'+((G.drillsUsedThisWeek||0)>=2?'No Drills Left This Week':'Run Drill')+'</button>' +
-    '<p class="sub" style="margin-top:4px">'+(2-(G.drillsUsedThisWeek||0))+' drill'+((2-(G.drillsUsedThisWeek||0))!==1?'s':'')+' left this week.</p></div>';
-
-  if(G.lastDrillResult){
-    const dr = G.lastDrillResult;
-    const w = me.roster.find(p=>p.id===dr.winnerId), l = me.roster.find(p=>p.id===dr.loserId);
-    if(w && l) s += '<div class="panel" style="margin-bottom:12px;border-color:var(--gold)"><div class="hd disp">Last Drill Result</div>' +
-      '<p>'+pn(w)+' beat '+pn(l)+' head to head'+(dr.winnerDev?' — development bump for the winner':'')+'.</p>' +
-      '<div style="margin-top:6px"><span class="sub">Feedback for '+esc(w.name)+':</span> '+feedbackButtonsHTML(w.id)+'</div>' +
-      '<div style="margin-top:6px"><span class="sub">Feedback for '+esc(l.name)+':</span> '+feedbackButtonsHTML(l.id)+'</div></div>';
+  if(sc.phase === 'drills'){
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Individual Drills</div>' +
+      '<p class="sub" style="margin-bottom:8px">Line two players up 1-on-1. Costs more energy than group practice, but a win is a real chance at development. Up to 5 reps.</p>';
+    const opts = me.roster.filter(p => !p.ir && (p.injWeeks||0)===0).sort((a,b)=>a.pos.localeCompare(b.pos)||b.rating-a.rating);
+    const optHTML = POS_ORDER.map(pos => {
+      const inPos = opts.filter(p => p.pos === pos);
+      if(!inPos.length) return '';
+      return '<optgroup label="'+pos+'">' + inPos.map(p => '<option value="'+p.id+'">'+esc(p.name)+' ('+p.rating+')</option>').join('') + '</optgroup>';
+    }).join('');
+    const repsLeft = 5 - sc.drillReps.length;
+    s += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px">' +
+      '<select class="fselect" onchange="setDrillP(1,this.value)"><option value="">Player 1…</option>'+optHTML+'</select>' +
+      '<span class="sub">vs</span>' +
+      '<select class="fselect" onchange="setDrillP(2,this.value)"><option value="">Player 2…</option>'+optHTML+'</select></div>' +
+      '<button class="btn primary" '+(repsLeft<=0 || !drillP1 || !drillP2?'disabled':'')+' onclick="doRunDrill()">'+(repsLeft<=0?'No Reps Left':'Run Drill')+'</button> ' +
+      '<button class="btn" onclick="advanceToTeamPractice()">Advance to Team Practice →</button>' +
+      '<p class="sub" style="margin-top:4px">'+Math.max(0,repsLeft)+' rep'+(repsLeft!==1?'s':'')+' left.</p></div>';
+    if(sc.drillReps.length){
+      s += '<div class="panel"><div class="hd disp">Results</div>' + sc.drillReps.slice().reverse().map(dr => drillRepRowHTML(dr, me)).join('') + '</div>';
+    }
+  } else {
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Team Practice — 11v11</div>' +
+      '<p class="sub" style="margin-bottom:8px">Run 1st string against 1st or 2nd string, either side of the ball. Up to 8 reps.</p>' +
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px">' +
+      '<div><div class="sub" style="margin-bottom:4px">Offense</div>' +
+      '<button class="fbtn'+(practiceOffTier===1?' on':'')+'" onclick="setPracticeTier(\'off\',1)">1st String</button> ' +
+      '<button class="fbtn'+(practiceOffTier===2?' on':'')+'" onclick="setPracticeTier(\'off\',2)">2nd String</button></div>' +
+      '<div><div class="sub" style="margin-bottom:4px">Defense</div>' +
+      '<button class="fbtn'+(practiceDefTier===1?' on':'')+'" onclick="setPracticeTier(\'def\',1)">1st String</button> ' +
+      '<button class="fbtn'+(practiceDefTier===2?' on':'')+'" onclick="setPracticeTier(\'def\',2)">2nd String</button></div></div>';
+    const teamRepsLeft = 8 - sc.teamReps.length;
+    s += '<button class="btn primary" '+(teamRepsLeft<=0?'disabled':'')+' onclick="doRunPracticeSession()">'+(teamRepsLeft<=0?'No Reps Left':'Run Rep')+'</button>' +
+      '<p class="sub" style="margin-top:4px">'+Math.max(0,teamRepsLeft)+' rep'+(teamRepsLeft!==1?'s':'')+' left.</p></div>';
+    if(sc.teamReps.length){
+      s += '<div class="panel"><div class="hd disp">Results</div>' + sc.teamReps.slice().reverse().map(r => teamRepRowHTML(r, me)).join('') + '</div>';
+    }
   }
 
   s += '<div class="panel"><div class="hd disp">Roster Condition</div><table class="tbl"><tr><th>Player</th><th>Pos</th><th>Fatigue</th><th>Form</th></tr>';
