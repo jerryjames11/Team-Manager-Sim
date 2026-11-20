@@ -412,7 +412,7 @@ th.sorth.on{color:var(--gold)}
 
 /* ===== practice field (pixel) ===== */
 .practice{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--chalk);font-family:Inter,system-ui,sans-serif}
-@media (orientation:portrait){ .practice{width:100vh;height:100vw;transform:rotate(90deg) translateY(-100%);transform-origin:top left} }
+
 .pr-stage{position:relative;overflow:hidden}
 #prCv{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .pr-hs{position:absolute;cursor:pointer;border-radius:.6em;outline:.25em solid transparent;transition:outline-color .12s,box-shadow .12s;-webkit-tap-highlight-color:transparent;z-index:3}
@@ -466,7 +466,7 @@ th.sorth.on{color:var(--gold)}
 
 /* ===== coach office hub ===== */
 .office{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden}
-@media (orientation:portrait){ .office{width:100vh;height:100vw;transform:rotate(90deg) translateY(-100%);transform-origin:top left} }
+
 .of-stage{position:relative;font-family:Inter,system-ui,sans-serif;color:var(--chalk)}
 #officeCv{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .of-ov{position:absolute;pointer-events:none;font-family:'Courier New',monospace;font-weight:700;line-height:1.05;white-space:nowrap;z-index:2}
@@ -626,10 +626,21 @@ th.sorth.on{color:var(--gold)}
 @keyframes pregameLoad{to{width:100%}}
 @media(max-width:560px){.pregame-conditions{grid-template-columns:repeat(2,1fr)}.game-conditions{gap:9px}}
 
+
+/* ===== landscape everywhere: phones held upright get the whole game turned sideways ===== */
+@media (orientation:portrait) and (pointer:coarse){
+  html,body{height:100%;overflow:hidden}
+  #rot{position:fixed;top:0;left:0;width:100vh;height:100vw;transform:rotate(90deg) translateY(-100%);transform-origin:top left;overflow:hidden}
+  #app{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+  .office,.practice{width:100%;height:100%}
+  .popup-panel{max-height:90%}
+  .modal-panel.wide{width:96%!important}
+  .pregame-screen{min-height:80%}
+}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div id="rot"><div id="app"></div></div>
 <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importSave(this)">
 
 <script>
@@ -3994,8 +4005,10 @@ function setGameCamera(mode){
 // Drag to turn, wheel to zoom. Ignored while a play is animating (rebuilding would wipe the live actors).
 let isoDrag=null, isoRaf=0;
 function isoSchedule(){ if(isoRaf) return; isoRaf=requestAnimationFrame(()=>{ isoRaf=0; if(!busy) isoRebuildField(); }); }
-document.addEventListener('pointerdown',e=>{ if(busy||!e.target||!e.target.closest) return; if(!e.target.closest('#fieldwrap')) return; isoDrag={x:e.clientX,a:ISO_ANGLE}; });
-document.addEventListener('pointermove',e=>{ if(!isoDrag||busy) return; ISO_ANGLE=Math.max(.35,Math.min(1.1,isoDrag.a+(e.clientX-isoDrag.x)*0.004)); ISO_CAM='Custom'; isoSchedule(); });
+function landscapeForced(){ return !!(window.matchMedia && matchMedia('(orientation:portrait) and (pointer:coarse)').matches); }
+function dragX(e){ return landscapeForced() ? e.clientY : e.clientX; }
+document.addEventListener('pointerdown',e=>{ if(busy||!e.target||!e.target.closest) return; if(!e.target.closest('#fieldwrap')) return; isoDrag={x:dragX(e),a:ISO_ANGLE}; });
+document.addEventListener('pointermove',e=>{ if(!isoDrag||busy) return; ISO_ANGLE=Math.max(.35,Math.min(1.1,isoDrag.a+(dragX(e)-isoDrag.x)*0.004)); ISO_CAM='Custom'; isoSchedule(); });
 document.addEventListener('pointerup',()=>{ isoDrag=null; });
 document.addEventListener('wheel',e=>{ if(!e.target||!e.target.closest||!e.target.closest('#fieldwrap')||busy) return; e.preventDefault(); ISO_VZ=Math.max(.7,Math.min(2.2,ISO_VZ*(e.deltaY<0?1.1:1/1.1))); ISO_CAM=(ISO_CAM==='TV'&&ISO_VZ===1)?'TV':'Custom'; isoSchedule(); },{passive:false});
 const CONFETTI_COLORS = ['#FFD447','#E25555','#4C8DFF','#3DBE6C','#F2EFE7'];
@@ -5662,7 +5675,7 @@ function officeModalBody(a){
   return '';
 }
 window.addEventListener('resize', () => OFFICE.fit());
-window.addEventListener('orientationchange', () => setTimeout(() => OFFICE.fit(), 250));
+window.addEventListener('orientationchange', () => setTimeout(() => { try{ OFFICE.fit(); }catch(e){} try{ PRACTICE.fit(); }catch(e){} }, 250));
 
 /* ===================== PRACTICE FIELD (pixel, landscape) ===================== */
 function prWeekKey(){ return G.year+':'+G.week; }
@@ -7403,8 +7416,8 @@ function setScoutFocus(id, f){
 let selScoutId = 'lead';
 function selectScout(id){ selScoutId = id; render(); }
 function mapClick(ev){
-  const el = ev.currentTarget, r = el.getBoundingClientRect();
-  const x = Math.floor((ev.clientX - r.left) / r.width * US_MAP.GW), y = Math.floor((ev.clientY - r.top) / r.height * US_MAP.GH);
+  const el = ev.currentTarget;
+  const x = Math.floor(ev.offsetX / el.clientWidth * US_MAP.GW), y = Math.floor(ev.offsetY / el.clientHeight * US_MAP.GH);
   const v = US_GRID[y*US_MAP.GW + x]; if(v == null || v < 0) return;
   setScoutRegion(selScoutId, US_MAP.reg[v]);
 }
