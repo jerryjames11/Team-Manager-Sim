@@ -713,6 +713,96 @@ th.sorth.on{color:var(--gold)}
 .stad-lvs .btn.on{background:var(--blue,#4C8DFF);border-color:var(--blue,#4C8DFF);color:#fff}
 @media (max-height:500px){.s3d-host{height:calc(100vh - 150px);min-height:220px}.stad-cat{max-height:calc(100vh - 110px)}}
 @media (orientation:portrait) and (pointer:coarse){.s3d-host{height:calc(100vw - 150px);min-height:220px}.stad-cat{max-height:calc(100vw - 110px)}}
+.bs-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.bs-team{display:flex;align-items:center;gap:12px}.bs-team b{font:700 30px Oswald,Arial,sans-serif;color:var(--chalk)}.bs-team b.bs-lose{color:var(--muted,#8fa0b8)}
+.bs-logo{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;border:3px solid;color:#fff;font:700 12px Oswald,Arial,sans-serif;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.bs-final{font-size:14px}
+.bs-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.bs-tbl th{font-weight:600;color:var(--muted,#8fa0b8);text-align:right;padding:4px 5px;border-bottom:1px solid var(--line);white-space:nowrap}
+.bs-tbl td{text-align:right;padding:5px;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bs-tbl .bs-pl{text-align:left;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.bs-tbl a{color:var(--chalk);text-decoration:none}
+.bs-num{display:inline-block;min-width:20px;color:var(--muted,#8fa0b8);font-size:11px;margin-right:4px}
+.bs-pos{color:var(--muted,#8fa0b8);font-size:10px}
+.bs-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.bs-totals td{text-align:center;font-weight:600}.bs-totals th{text-align:center}.bs-mid{text-align:center!important;font-weight:400!important}
+.bs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.bs-side{min-width:0;overflow-x:auto}
+.tr-hub{display:flex;flex-direction:column;height:calc(100vh - 230px);min-height:420px}
+.tr-x{display:none}
+@media (max-height:560px){.tr-hub{position:fixed;inset:0;z-index:60;height:auto;min-height:0;background:var(--night);padding:6px 8px}.tr-x{display:inline-block}}
+@media (orientation:portrait) and (pointer:coarse){.tr-hub{position:fixed;inset:0;z-index:60;height:auto;min-height:0;background:var(--night);padding:6px 8px}.tr-x{display:inline-block}}
+.tr-scale>*{flex-shrink:0}
+.tr-top{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin-bottom:8px;white-space:nowrap;overflow-x:auto}
+.tr-tab{background:var(--panel);border:1px solid var(--line);color:var(--chalk);padding:6px 11px;border-radius:7px;cursor:pointer;font:600 12px Inter,system-ui,sans-serif;position:relative}
+.tr-tab.on{background:var(--gold);color:#111;border-color:var(--gold)}
+.tr-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:8px;font-size:9.5px;padding:0 5px;line-height:15px}
+.tr-stat{color:var(--muted);font-size:11.5px}.tr-stat b{color:var(--chalk)}
+.tr-view{flex:1;min-height:0;display:grid;gap:8px}
+.tr-market{grid-template-columns:165px minmax(0,1fr) 250px}
+.tr-deal{grid-template-columns:minmax(0,1fr) 185px minmax(0,1fr) 245px}
+.tr-phone{grid-template-columns:200px minmax(0,1fr) 210px}
+.tr-col{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.tr-hd{flex:0 0 auto;padding:7px 9px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px}
+.tr-hd .disp{font-size:12px;color:var(--gold)}
+.tr-scroll{flex:1;min-height:0;overflow:auto;padding:7px 9px}
+.tr-logo{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;color:#fff;font-family:Oswald,Arial,sans-serif;font-weight:700;border:2px solid rgba(255,255,255,.55);flex:0 0 auto;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.tr-flt label{display:block;font-size:10.5px;color:var(--muted);margin:7px 0 3px}
+.tr-seg{display:flex;flex-wrap:wrap;gap:3px}
+.tr-seg span{padding:2px 7px;border-radius:5px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:11px;cursor:pointer}
+.tr-seg span.on{background:var(--blue,#4C8DFF);border-color:var(--blue,#4C8DFF);color:#fff}
+.tr-sel{padding:3px 6px;font-size:11.5px;width:100%}
+.tr-mt{width:100%;border-collapse:collapse;font-size:12px}
+.tr-mt th{position:sticky;top:0;background:var(--panel);color:var(--muted);font-weight:600;text-align:left;padding:4px 5px;border-bottom:1px solid var(--line);white-space:nowrap;font-size:11px;z-index:1}
+.tr-mt td{padding:5px;border-bottom:1px solid rgba(255,255,255,.05);white-space:nowrap}
+.tr-mt tbody tr{cursor:pointer}.tr-mt tbody tr:hover td{background:rgba(255,255,255,.04)}.tr-mt tr.sel td{background:rgba(76,141,255,.16)}
+.tr-ovr{font:700 14px Oswald,Arial,sans-serif;color:var(--gold);min-width:20px;text-align:center}
+.tr-av{display:inline-flex;gap:2px}.tr-av i{width:7px;height:7px;border-radius:2px;background:#2a3850}.tr-av i.f{background:var(--green)}
+.tr-pv{font:700 12px Oswald,Arial,sans-serif;padding:1px 6px;border-radius:5px;background:rgba(242,193,78,.14);color:var(--gold);white-space:nowrap}
+.tr-pv.get{background:rgba(127,168,224,.16);color:#7FA8E0}
+.tr-pvt{font:700 12px Oswald,Arial,sans-serif;color:var(--chalk)}
+.tr-pkg{background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:8px;padding:7px;margin-bottom:7px}
+.tr-pkg .t{display:flex;justify-content:space-between;font-weight:700;margin-bottom:3px}.tr-pkg .t span{font:700 12px Oswald,Arial}
+.tr-pkg .ln{font-size:11.5px;color:var(--muted);line-height:1.5}.tr-pkg .ln b{color:var(--chalk)}
+.tr-asset{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:8px;padding:5px 7px;margin-bottom:5px}
+.tr-asset .nm{font-weight:600}.tr-asset .meta{color:var(--muted);font-size:10.5px}.tr-asset .tr-pv{margin-left:auto}.tr-asset .x{margin-left:6px;color:var(--muted);cursor:pointer;padding:2px 4px}
+.tr-asset.pick{border-style:dashed}
+.tr-add{border:1px dashed var(--line);border-radius:8px;padding:7px;text-align:center;color:var(--muted);font-size:11.5px;cursor:pointer}
+.tr-tot{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:6px 9px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.tr-tot .v{margin-left:auto;font:700 15px Oswald,Arial}
+.tr-scale{align-items:center;text-align:center;gap:5px;padding:8px}
+.tr-vl{display:flex;justify-content:space-between;width:100%;font:700 11.5px Oswald,Arial}
+.tr-vt{display:flex;width:100%;height:8px;border-radius:4px;overflow:hidden;background:#26344a}.tr-vt i{display:block}
+.tr-meter{position:relative;width:100%;height:9px;border-radius:5px;background:linear-gradient(90deg,var(--red),#c9a74a 45%,var(--green) 55%,#2f9a5f);margin-top:3px}
+.tr-meter i{position:absolute;top:-4px;width:4px;height:17px;background:#fff;border-radius:2px;margin-left:-2px;box-shadow:0 0 6px #000}
+.tr-lb{display:flex;justify-content:space-between;width:100%;font-size:10px;color:var(--muted)}
+.tr-counter{background:rgba(242,193,78,.1);border:1px solid var(--gold);border-radius:8px;padding:5px;font-size:11px;width:100%}
+.tr-pat{display:flex;gap:3px;justify-content:center}.tr-pat i{width:13px;height:6px;border-radius:2px;background:var(--green)}.tr-pat i.e{background:#2a3850}
+.tr-posbar{flex:0 0 auto;display:flex;gap:3px;flex-wrap:wrap;padding:5px 8px;border-bottom:1px solid var(--line)}
+.tr-posbar .btn{padding:2px 6px;font-size:10.5px}
+.tr-top .btn.on,.tr-col .btn.on{background:var(--blue,#4C8DFF);border-color:var(--blue,#4C8DFF);color:#fff}
+.tr-prow{display:flex;align-items:center;gap:7px;background:rgba(0,0,0,.18);border:1px solid var(--line);border-radius:7px;padding:4px 7px;margin-bottom:4px;cursor:pointer}
+.tr-prow.on{border-color:var(--gold);background:rgba(242,193,78,.08)}
+.tr-prow .tr-pv{margin-left:auto}.tr-prow .r{margin-left:4px;min-width:16px;text-align:center}
+.tr-chip{display:inline-block;padding:0 4px;border-radius:4px;font-size:9px;font-weight:700;line-height:14px}
+.tr-chip.need{background:#2a1f0c;color:var(--gold)}.tr-chip.blk{background:#13301f;color:var(--green)}.tr-chip.prot{background:#3a1515;color:#ff8d8d}.tr-chip.gem{background:#1d2a48;color:#9fc1ff}
+.tr-it{display:flex;gap:7px;align-items:center;padding:6px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.18);margin-bottom:5px;cursor:pointer}
+.tr-it.on{border-color:var(--gold)}.tr-it .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);margin-left:auto;flex:0 0 auto}
+.tr-it .tag{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.tr-ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
+.tr-face{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3a4e6e,#1d2a40);display:flex;align-items:center;justify-content:center;font-size:17px;flex:0 0 auto}
+.tr-chat{display:flex;flex-direction:column;gap:6px}
+.tr-msg{max-width:82%;padding:6px 9px;border-radius:10px;line-height:1.4;font-size:12px}
+.tr-msg.them{background:#1c2a40;align-self:flex-start;border-top-left-radius:2px}
+.tr-msg.me{background:#3a2a0e;align-self:flex-end;border-top-right-radius:2px}
+.tr-offer{background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:9px;padding:7px;font-size:12px}
+.tr-offer .cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tr-offer .cols b{display:block;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.tr-replies{flex:0 0 auto;display:flex;gap:4px;flex-wrap:wrap;padding:6px 9px;border-top:1px solid var(--line)}
+.tr-gm p{margin:2px 0 8px;line-height:1.4;font-size:12px}.tr-gm .kv{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+@media (max-width:960px){.tr-market{grid-template-columns:135px minmax(0,1fr) 215px}.tr-deal{grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr) 205px}.tr-phone{grid-template-columns:165px minmax(0,1fr) 170px}.tr-hs{display:none}}
+.desk-bar{display:flex;gap:8px;margin:0 0 8px}
+.qb-ricon{position:absolute;transform:translate(-50%,-50%);z-index:6;min-width:38px;height:38px;padding:0 4px;border-radius:19px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#111;border:2px solid #111;box-shadow:0 2px 8px rgba(0,0,0,.6);cursor:pointer;pointer-events:auto;line-height:1}
+.qb-ricon b{font:800 14px Arial}.qb-ricon small{font:700 9px Arial}
 </style>
 </head>
 <body>
@@ -2370,8 +2460,8 @@ function userGame(){
 }
 /* ---------- player stats, stat-driven development, market value ---------- */
 const ST_STAT_KEYS = ['kr','kry','krtd','pr','pry','prtd','pu','puy','pin'];
-const ALL_STAT_KEYS = ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm','pen','peny'].concat(ST_STAT_KEYS);
-function blankStats(){ return {gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0,pen:0,peny:0,kr:0,kry:0,krtd:0,pr:0,pry:0,prtd:0,pu:0,puy:0,pin:0}; }
+const ALL_STAT_KEYS = ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm','pen','peny','cmp','att','pint','car','rec','tgt','fga','xpm','xpa'].concat(ST_STAT_KEYS);
+function blankStats(){ return {cmp:0,att:0,pint:0,car:0,rec:0,tgt:0,fga:0,xpm:0,xpa:0,gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0,pen:0,peny:0,kr:0,kry:0,krtd:0,pr:0,pry:0,prtd:0,pu:0,puy:0,pin:0}; }
 function stOf(p){ if(!p.st) p.st = blankStats(); return p.st; }
 function statScore(p){
   const s = p.st; if(!s) return 0;
@@ -2423,6 +2513,11 @@ function buildGameReport(ga, gb, asScore, bsScore, snap, myRisers, injury){
     const t = G.teams[ti];
     const lines = [];
     let passYd=0, rushYd=0;
+    const gl = window.__GL && __GL.key === ga+'-'+gb && __GL[ti];
+    if(gl){
+      Object.values(gl).forEach(l => { const d = Object.assign({}, l); delete d.gp; Object.keys(d).forEach(k => { if(d[k] === 0) delete d[k]; }); d.id = l.id; d.name = l.name; d.pos = l.pos;
+        passYd += d.py||0; rushYd += d.ry||0; lines.push(d); });
+    } else
     t.roster.forEach(p => {
       if(!p.st) return;
       const before = snap[p.id] || blankStats();
@@ -2459,7 +2554,10 @@ function recordGameStats(ai, bi, as, bs, liveBox){
   const risers = [];
   let myGamePlayed = false;
   const myGameLine = blankStats(); delete myGameLine.gp;
+  let curTi = null; window.__GL = { key: ai+'-'+bi };
   function trackMe(p, delta){
+    if(curTi != null && p){ const T = (__GL[curTi] = __GL[curTi] || {}); const L = (T[p.id] = T[p.id] || { id:p.id, name:p.name, pos:p.spot||p.pos, gp:1 });
+      Object.keys(delta).forEach(k => { if(k.slice(-2)==='lg') L[k] = Math.max(L[k]||0, delta[k]); else L[k] = (L[k]||0) + delta[k]; }); }
     if(G.mode === 'player' && G.playerId && p.id === G.playerId){
       myGamePlayed = true;
       Object.keys(delta).forEach(k => { myGameLine[k] = (myGameLine[k]||0) + delta[k]; });
@@ -2471,6 +2569,7 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     [ai, bi].forEach(ti => {
       const t = G.teams[ti];
       const box = liveBox[ti] || {};
+      __GL[ti] = {}; Object.values(box).forEach(l => { __GL[ti][l.id] = Object.assign({}, l, { pos: (t.roster.find(x=>x.id===l.id)||{}).spot || l.pos }); });
       Object.values(box).forEach(line => {
         const p = t.roster.find(x => x.id === line.id);
         if(!p) return;
@@ -2500,7 +2599,9 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     }
     return risers;
   }
+  const qbOf = {}, intsBy = {};
   [[ai,as,bi],[bi,bs,ai]].forEach(([ti,pts,oi]) => {
+    curTi = ti;
     const t = G.teams[ti], o = G.teams[oi];
     const olu = lineupFor(t, offFormOf(t), offFormKeyOf(t));
     const dlu = lineupFor(t, defFormOf(t), defFormKeyOf(t));
@@ -2513,7 +2614,8 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     let ptd = 0, rtd = 0;
     for(let i=0;i<tds;i++){ if(Math.random() < passYd/(passYd+rushYd*1.4)) ptd++; else rtd++; }
     const qb = at('QB')[0], rbs = at('RB'), recvs = at('WR').concat(at('TE'));
-    if(qb){ const s=stOf(qb); s.gp++; s.py+=passYd; s.ptd+=ptd; const hot = passYd>=290||ptd>=4; trackMe(qb, {py:passYd, ptd:ptd}); if(bumpDev(qb, hot)) risers.push(qb); }
+    const att = Math.max(12, Math.round(passYd / R(6.2,7.8))), cmp = Math.min(att, Math.round(att*R(.57,.71)));
+    if(qb){ qbOf[ti] = qb; const s=stOf(qb); s.gp++; s.py+=passYd; s.ptd+=ptd; s.att=(s.att||0)+att; s.cmp=(s.cmp||0)+cmp; const hot = passYd>=290||ptd>=4; trackMe(qb, {py:passYd, ptd:ptd, att, cmp}); if(bumpDev(qb, hot)) risers.push(qb); }
     // rushing: RB1 heavy, sprinkle to RB2/QB
     const rushers = rbs.length ? rbs.slice(0,2) : (qb ? [qb] : []);
     if(rushers.length){
@@ -2521,7 +2623,9 @@ function recordGameStats(ai, bi, as, bs, liveBox){
       rushers.forEach((p,i) => {
         const yd = Math.round(rushYd*cuts[i]); const s=stOf(p); if(p!==qb) s.gp++;
         s.ry+=yd; let myTd = 0; for(let k=0;k<rtd;k++) if(Math.random() < (rushers.length===1 ? 1 : (i===0 ? .68 : .32))) myTd++; s.rtd+=myTd;
-        const hot = yd>=115||myTd>=2; trackMe(p, {ry:yd, rtd:myTd});
+        const car = Math.max(1, Math.round(Math.max(0,yd) / R(3.4,4.8))), rlg = Math.max(0, Math.min(yd, Math.max(Math.ceil(yd/car), Math.round(yd/car*R(1.8,3.6)))));
+        s.car=(s.car||0)+car;
+        const hot = yd>=115||myTd>=2; trackMe(p, {ry:yd, rtd:myTd, car, rlg});
         if(bumpDev(p, hot)) risers.push(p);
       });
     }
@@ -2531,7 +2635,9 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     recvs.forEach((p,i) => {
       const yd = Math.round(recYds[i]); const s=stOf(p); s.gp++;
       s.cy+=yd; const myTd = tdOwners.filter(j => j === i).length; s.ctd+=myTd;
-      const hot = yd>=100||myTd>=2; trackMe(p, {cy:yd, ctd:myTd});
+      const rec = yd > 0 ? Math.max(1, Math.round(cmp*yd/Math.max(1,passYd))) : 0, tgt = rec + RI(0, rec ? 3 : 2), clg = rec ? Math.min(yd, Math.max(Math.ceil(yd/rec), Math.round(yd/rec*R(1.3,2.4)))) : 0;
+      s.rec=(s.rec||0)+rec; s.tgt=(s.tgt||0)+tgt;
+      const hot = yd>=100||myTd>=2; trackMe(p, {cy:yd, ctd:myTd, rec, tgt, clg});
       if(bumpDev(p, hot)) risers.push(p);
     });
     // defense
@@ -2550,6 +2656,7 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     while(sacks-- > 0 && rushersD.length){ const p = pick(rushersD), s = stOf(p); s.sk++; const hot = Math.random()<.35; trackMe(p, {sk:1}); if(bumpDev(p, hot)) risers.push(p); }
     let ints = Math.random() < .38 ? RI(1, 2) : 0;
     const balls = cbs.concat(ss);
+    intsBy[oi] = ints;
     while(ints-- > 0 && balls.length){ const p = pick(balls), s = stOf(p); s.int++; const hot = Math.random()<.6; trackMe(p, {int:1}); if(bumpDev(p, hot)) risers.push(p); }
     // forced fumbles — a real defensive stat, roughly one per team every couple games
     let ffs = Math.random() < .4 ? 1 : 0;
@@ -2557,9 +2664,13 @@ function recordGameStats(ai, bi, as, bs, liveBox){
     while(ffs-- > 0 && ffPool.length){ const p = pick(ffPool), s = stOf(p); s.ff = (s.ff||0) + 1; trackMe(p, {ff:1}); }
     // kicker
     const k = depthAt(t,'K')[0];
-    if(k){ const s = stOf(k); s.gp++; s.fgm += fgs; const hot = fgs>=4; trackMe(k, {fgm:fgs}); if(bumpDev(k, hot)) risers.push(k); }
+    if(k){ const s = stOf(k); s.gp++; s.fgm += fgs; const fga = fgs + (Math.random()<.28?1:0), xpa = tds, xpm = Math.max(0, tds - (Math.random()<.07?1:0));
+      s.fga=(s.fga||0)+fga; s.xpa=(s.xpa||0)+xpa; s.xpm=(s.xpm||0)+xpm;
+      const hot = fgs>=4; trackMe(k, {fgm:fgs, fga, xpa, xpm, flg: fgs ? RI(26,Math.max(30,Math.min(56,40+Math.round(((k.rating||70)-70)/2)))) : 0}); if(bumpDev(k, hot)) risers.push(k); }
     try { stSimSeasonLine(t, trackMe, risers); } catch(e){ console.error('st stats', e); }
   });
+  [[ai,bi],[bi,ai]].forEach(([ti,oi]) => { const q = qbOf[ti], n = intsBy[ti] || 0; if(q && n){ curTi = ti; const s = stOf(q); s.pint = (s.pint||0) + n; trackMe(q, {pint:n}); } });
+  curTi = null;
   if(G.mode === 'player' && G.playerId){
     G.playerGamePlayed = myGamePlayed;
     if(myGamePlayed){
@@ -3776,7 +3887,7 @@ function creditLive(teamIdx, p, delta){
   if(!GM.liveBox[teamIdx]) GM.liveBox[teamIdx] = {};
   if(!GM.liveBox[teamIdx][p.id]) GM.liveBox[teamIdx][p.id] = Object.assign({ id:p.id, name:p.name, pos:p.pos }, blankStats(), {gp:1});
   const line = GM.liveBox[teamIdx][p.id];
-  Object.keys(delta).forEach(k => { line[k] = (line[k]||0) + delta[k]; });
+  Object.keys(delta).forEach(k => { if(k.slice(-2)==='lg') line[k] = Math.max(line[k]||0, delta[k]); else line[k] = (line[k]||0) + delta[k]; });
 }
 function attributePlay(res, offIdx, dIdx, isTD){
   if(!GM || !GM.liveBox) return;
@@ -3795,18 +3906,25 @@ function attributePlay(res, offIdx, dIdx, isTD){
 
   if(res.type === 'run'){
     const carrier = res.carrier || pickWeighted(rbs) || qb;
-    if(carrier) creditLive(offIdx, carrier, { ry: res.yards, rtd: isTD?1:0 });
+    if(carrier) creditLive(offIdx, carrier, { ry: res.yards, rtd: isTD?1:0, car:1, rlg:res.yards });
     const tackler = pickWeighted(defenders);
     if(tackler && res.yards <= 8) creditLive(dIdx, tackler, { tk: 1 });
   } else if(res.type === 'pass'){
-    if(qb) creditLive(offIdx, qb, { py: res.yards, ptd: isTD?1:0 });
+    if(qb) creditLive(offIdx, qb, { py: res.yards, ptd: isTD?1:0, cmp:1, att:1 });
     const target = res.target || pickWeighted(recvs);
-    if(target) creditLive(offIdx, target, { cy: res.yards, ctd: isTD?1:0 });
+    if(target) creditLive(offIdx, target, { cy: res.yards, ctd: isTD?1:0, rec:1, tgt:1, clg:res.yards });
     if(!isTD){
       const tackler = pickWeighted(defenders);
       if(tackler) creditLive(dIdx, tackler, { tk: 1 });
     }
+  } else if(res.type === 'inc'){
+    if(res.nul) return;
+    if(qb) creditLive(offIdx, qb, { att:1 });
+    const target = res.target || pickWeighted(recvs);
+    if(target) creditLive(offIdx, target, { tgt:1 });
   } else if(res.type === 'int'){
+    if(qb) creditLive(offIdx, qb, { att:1, pint:1 });
+    const tg = res.target || pickWeighted(recvs); if(tg) creditLive(offIdx, tg, { tgt:1 });
     const picker = pickWeighted(cbs.concat(ss));
     if(picker) creditLive(dIdx, picker, { int: 1 });
   } else if(res.type === 'sack'){
@@ -3821,7 +3939,7 @@ function applyPlay(res){
   if(res.pen){
     const done = applyPenalty(res);
     if(done){
-      if(!res.pen || !res.pen.pre){ if(res.type !== 'pen') attributePlay({type:'inc', oc:res.oc, dc:res.dc}, GM.poss, defIdx(), false); runoff(res.type==='inc'?res:{type:'run'}); }
+      if(!res.pen || !res.pen.pre){ if(res.type !== 'pen') attributePlay({type:'inc', oc:res.oc, dc:res.dc, nul:true}, GM.poss, defIdx(), false); runoff(res.type==='inc'?res:{type:'run'}); }
       return;
     }
   }
@@ -3839,6 +3957,7 @@ function applyPlay(res){
     return;
   }
   if(res.type==='inc'){
+    attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
     logMsg(offName + ' — ' + OFF_PLAYS[res.oc].label + ': incomplete.');
     GM.down++;
   } else {
@@ -3890,6 +4009,7 @@ function doTry(kind){
   const t = offT();
   if(kind==='xp'){
     const make = Math.random() < .90 + (kRating(t)-75)*.003;
+    const xk = stUnit(t,'FG').K; if(xk) creditLive(GM.poss, xk, { xpa:1, xpm: make?1:0 });
     if(make){ addPts(GM.poss,1); logMsg('Extra point is good.'); fieldFlash('Kick is Good','fd'); }
     else { logMsg('Extra point MISSED!', 'bad'); fieldFlash('No Good','opp'); }
   } else {
@@ -3908,10 +4028,11 @@ function doFG(){
   const kfx = wxFx(GM.wx);
   const p = clamp(.99 - Math.max(0, dist-kfx.kickDist-20)*.0135 + (k-75)*.004 + kfx.kickAcc, .05, .99);
   GM.clock -= 6;
+  const kP0 = stUnit(offT(),'FG').K; if(kP0) creditLive(GM.poss, kP0, { fga: 1 });
   if(Math.random() < p){
     addPts(GM.poss, 3);
-    const kP = stUnit(offT(),'FG').K;
-    if(kP) creditLive(GM.poss, kP, { fgm: 1 });
+    const kP = kP0;
+    if(kP) creditLive(GM.poss, kP, { fgm: 1, flg: dist });
     logMsg(dist + '-yd field goal is GOOD. ' + G.teams[GM.poss].abbr + ' +3.', 'big');
     fieldFlash('Kick is Good','fd');
     GM.koAfter = GM.poss;
@@ -5549,15 +5670,15 @@ function stApply(R){
   logMsg((R.kind==='ko'?'Kickoff: ':'Punt: ')+R.txt, big?'big':null);
   const secs = R.tb ? 0 : Math.min(9, Math.round(R.time*.75));
   if(R.kind==='ko'){
-    if(R.carrier) creditLive(s.recv, R.carrier, {kr:1, kry:R.retYds||0, krtd:R.td?1:0});
+    if(R.carrier) creditLive(s.recv, R.carrier, {kr:1, kry:R.retYds||0, krtd:R.td?1:0, krlg:R.retYds||0});
     if(R.tackler && !R.td) creditLive(s.kick, R.tackler, {tk:1});
     if(R.onside){ if(R.rec){ startPossession(s.kick, clamp(Math.round(R.x-10),1,99)); fieldFlash('Onside Recovered!', s.kick===G.userTeam?'td':'opp'); } else startPossession(s.recv, clamp(Math.round(110-R.x),1,99)); }
     else if(R.td){ GM.poss = s.recv; GM.spot = 99; GM.clock -= secs; touchdownST(); return; }
     else startPossession(s.recv, R.recvSpot);
   } else {
     const pfakeOrBlock = R.fake || R.blocked;
-    if(!pfakeOrBlock){ creditLive(s.kick, R.punter, {pu:1, puy:Math.max(0,R.gross||0), pin:(R.recvSpot!=null&&R.recvSpot<=20&&R.end.type!=='tb')?1:0}); }
-    if(R.carrier && R.kind==='punt' && !R.fake) creditLive(s.recv, R.carrier, {pr:1, pry:R.retYds||0, prtd:R.td?1:0});
+    if(!pfakeOrBlock){ creditLive(s.kick, R.punter, {pu:1, puy:Math.max(0,R.gross||0), pin:(R.recvSpot!=null&&R.recvSpot<=20&&R.end.type!=='tb')?1:0, plg:Math.max(0,R.gross||0)}); }
+    if(R.carrier && R.kind==='punt' && !R.fake) creditLive(s.recv, R.carrier, {pr:1, pry:R.retYds||0, prtd:R.td?1:0, prlg:R.retYds||0});
     if(R.tackler && !R.fake && R.tackler && G.teams[s.kick].roster.includes(R.tackler)) creditLive(s.kick, R.tackler, {tk:1});
     if(R.fake){ if(R.fakeTD){ GM.poss = s.kick; GM.spot = 99; GM.clock -= secs; touchdownST(); return; }
       const newSpot = clamp(Math.round(R.s.L-10+R.gain), 1, 99);
@@ -5679,9 +5800,9 @@ function stCallsheet(grid, title, side){
 /* ---------- AI season stats for ST (non-live games) ---------- */
 function stSimSeasonLine(t, trackMe, risers){
   const pt = stUnit(t,'PUNT').P, kr = stUnit(t,'KR').KR1, pr = stUnit(t,'PR').PR;
-  if(pt){ const s = stOf(pt); s.gp++; const n = RI(2,6), a = stAttr(pt); s.pu=(s.pu||0)+n; s.puy=(s.puy||0)+Math.round(n*(43+(a.leg-75)*.35+R(-3,3))); s.pin=(s.pin||0)+RI(0,Math.min(3,n)); trackMe(pt,{pu:n}); }
-  if(kr){ const s = stOf(kr), n = RI(1,4), a = stAttr(kr); s.kr=(s.kr||0)+n; s.kry=(s.kry||0)+Math.round(n*(21+(a.spd-80)*.2+R(-4,6))); if(Math.random()<.02){ s.krtd=(s.krtd||0)+1; } }
-  if(pr){ const s = stOf(pr), n = RI(0,3), a = stAttr(pr); s.pr=(s.pr||0)+n; s.pry=(s.pry||0)+Math.round(n*(8+(a.elu-75)*.12+R(-3,4))); if(n && Math.random()<.02){ s.prtd=(s.prtd||0)+1; } }
+  if(pt){ const s = stOf(pt); s.gp++; const n = RI(2,6), a = stAttr(pt), y = Math.round(n*(43+(a.leg-75)*.35+R(-3,3))), i20 = RI(0,Math.min(3,n)); s.pu=(s.pu||0)+n; s.puy=(s.puy||0)+y; s.pin=(s.pin||0)+i20; trackMe(pt,{pu:n, puy:y, pin:i20, plg:Math.round(y/n*R(1.08,1.25))}); }
+  if(kr){ const s = stOf(kr), n = RI(1,4), a = stAttr(kr), y = Math.round(n*(21+(a.spd-80)*.2+R(-4,6))), td = Math.random()<.02?1:0; s.kr=(s.kr||0)+n; s.kry=(s.kry||0)+y; s.krtd=(s.krtd||0)+td; trackMe(kr,{kr:n, kry:y, krtd:td, krlg:td?Math.max(95,Math.round(y/n)):Math.min(y,Math.round(y/n*R(1.1,1.8)))}); }
+  if(pr){ const s = stOf(pr), n = RI(0,3), a = stAttr(pr); if(n){ const y = Math.round(n*(8+(a.elu-75)*.12+R(-3,4))), td = Math.random()<.02?1:0; s.pr=(s.pr||0)+n; s.pry=(s.pry||0)+y; s.prtd=(s.prtd||0)+td; trackMe(pr,{pr:n, pry:y, prtd:td, prlg:td?Math.max(60,y):Math.max(0,Math.min(y,Math.round(y/n*R(1.2,2.2))))}); } }
 }
 
 /* ---------- depth chart: special teams tab ---------- */
@@ -5883,6 +6004,7 @@ function drawFormation(){
   const numList = nums.off.concat(nums.def);
   g.innerHTML = pts.map((q,i)=>({q,i,p:legacyToIso(q[0],q[1],0)})).sort((a,b)=>a.p.y-b.p.y).map(({q,i,p})=>vinylSVG(p.x,p.y,q[2],numList[i],q[3],0,{k,pose:q[4]==='block'?'block':'run'})).join('');
   isoPaintEndzones();
+  if(qbActive()) qbShowFormation(true, pts.map(q=>[q[0],q[1]]), numList);
   const los=document.getElementById('losLine'),fd=document.getElementById('fdLine');
   if(los){const a=proj(GM.spot+10,-26.65),b=proj(GM.spot+10,26.65);los.innerHTML='<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#4C8DFF" stroke-width="3"/>';}
   if(fd){const yard=Math.min(100,GM.spot+GM.dist),a=proj(yard+10,-26.65),b=proj(yard+10,26.65);fd.innerHTML=yard>=100?'':'<line x1="'+a.x+'" y1="'+a.y+'" x2="'+b.x+'" y2="'+b.y+'" stroke="#FFD447" stroke-width="3"/>';}
@@ -5890,11 +6012,13 @@ function drawFormation(){
 function isoRebuildField(){
   const wrap=document.getElementById('fieldwrap'); if(!wrap||!GM) return;
   wrap.querySelector('#field')?.remove(); wrap.insertAdjacentHTML('afterbegin',fieldSVG()); drawFormation();
-  document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('on',b.dataset.camera===ISO_CAM));
+  const qa=qbActive(); document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('on',qa?b.dataset.camera==='QB':b.dataset.camera===ISO_CAM));
 }
 function setGameCamera(mode){
   const presets={TV:{a:Math.PI/6,t:2.5,z:1},Behind:{a:Math.PI/5.4,t:2.45,z:1.02},Sky:{a:Math.PI/4.1,t:2.15,z:.96},Island:{a:Math.PI/6,t:2.9,z:1.08}};
   if(busy) return;
+  if(mode==='QB'){ if(!s3dOn()){ uiAlert('Behind QB view needs the 3D stadium. Turn on 3D first.'); return; } ISO_CAM='QB'; if(G){ G.qbAuto=true; save(); } isoRebuildField(); return; }
+  if(G && GM && userOnO()){ G.qbAuto=false; save(); }
   const v=presets[mode]||presets.TV; ISO_ANGLE=v.a; ISO_TILE=v.t; ISO_ZOOM=v.z; ISO_CX=500; ISO_CY=340; ISO_VZ=1; ISO_CAM=mode;
   isoRebuildField();
 }
@@ -5903,10 +6027,10 @@ let isoDrag=null, isoRaf=0;
 function isoSchedule(){ if(isoRaf) return; isoRaf=requestAnimationFrame(()=>{ isoRaf=0; if(!busy) isoRebuildField(); }); }
 function landscapeForced(){ return !!(window.matchMedia && matchMedia('(orientation:portrait) and (pointer:coarse)').matches); }
 function dragX(e){ return landscapeForced() ? e.clientY : e.clientX; }
-document.addEventListener('pointerdown',e=>{ if(busy||!e.target||!e.target.closest) return; if(!e.target.closest('#fieldwrap')) return; isoDrag={x:dragX(e),a:ISO_ANGLE}; });
+document.addEventListener('pointerdown',e=>{ if(busy||!e.target||!e.target.closest||qbActive()) return; if(!e.target.closest('#fieldwrap')) return; isoDrag={x:dragX(e),a:ISO_ANGLE}; });
 document.addEventListener('pointermove',e=>{ if(!isoDrag||busy) return; ISO_ANGLE=Math.max(.35,Math.min(1.1,isoDrag.a+(dragX(e)-isoDrag.x)*0.004)); ISO_CAM='Custom'; isoSchedule(); });
 document.addEventListener('pointerup',()=>{ isoDrag=null; });
-document.addEventListener('wheel',e=>{ if(!e.target||!e.target.closest||!e.target.closest('#fieldwrap')||busy) return; e.preventDefault(); ISO_VZ=Math.max(.7,Math.min(2.2,ISO_VZ*(e.deltaY<0?1.1:1/1.1))); ISO_CAM=(ISO_CAM==='TV'&&ISO_VZ===1)?'TV':'Custom'; isoSchedule(); },{passive:false});
+document.addEventListener('wheel',e=>{ if(!e.target||!e.target.closest||!e.target.closest('#fieldwrap')||busy||qbActive()) return; e.preventDefault(); ISO_VZ=Math.max(.7,Math.min(2.2,ISO_VZ*(e.deltaY<0?1.1:1/1.1))); ISO_CAM=(ISO_CAM==='TV'&&ISO_VZ===1)?'TV':'Custom'; isoSchedule(); },{passive:false});
 const CONFETTI_COLORS = ['#FFD447','#E25555','#4C8DFF','#3DBE6C','#F2EFE7'];
 function fieldFlash(txt, cls){
   if(simFast || reducedMotion) return; // never spam flashes during fast sims
@@ -6022,7 +6146,8 @@ function animatePlay(res, cb){
   let yAir = CYf(mid + gauss()*110);
   let target = null;
   if(isPassBall){
-    if(res.oc==='sc'){ target = RB; xAir = CXf(x0 - 10); yAir = CYf(mid + (Math.random()<.5?-1:1)*R(70,130)); }
+    if(res.tgtKey==='w1'||res.tgtKey==='w2'){ target = res.tgtKey==='w1' ? WRT : WRB; yAir = CYf(target.y0i + (mid-target.y0i)*.2 + gauss()*18); }
+    else if(res.oc==='sc'){ target = RB; xAir = CXf(x0 - 10); yAir = CYf(mid + (Math.random()<.5?-1:1)*R(70,130)); }
     else {
       const recs=[WRT,WRB,SLOT,TEr];
       target = recs.reduce((b,r)=>Math.abs(r.y0i-yAir)<Math.abs(b.y0i-yAir)?r:b, recs[0]);
@@ -6159,11 +6284,13 @@ function animatePlay(res, cb){
     return carrier ? posAt(carrier,t) : {x:xAir,y:yAir};
   }
 
-  const dur = clamp(1250 + Math.abs(res.yards||0)*14, 1250, 2100);
+  const qbOn = qbActive(), qbWrap = document.getElementById('fieldwrap'), T0 = qbOn && res.t0 ? res.t0 : 0;
+  const dur = clamp(1250 + Math.abs(res.yards||0)*14, 1250, 2100) * (qbOn ? 1.35 : 1) * (1 - T0*.6);
   let start=null, trailD='';
   function step(ts){
     if(!start) start=ts;
-    const t=Math.min(1,(ts-start)/dur);
+    const t=Math.min(1, T0 + (1-T0)*(ts-start)/dur);
+    if(qbOn && qbWrap){ try { const rel=posAt(QB,tThrow); S3D.qbFrame(qbWrap,{pos:actors.map(a=>posAt(a,t)), ball:ballPos(t), t, tThrow, tCatch, isPass:isPassBall, carrier: carrier?actors.indexOf(carrier):-1, tCarry, air:[xAir,yAir], rel:[rel.x,rel.y], hideBall:false}); } catch(e){ console.error('qb frame', e); } }
     const carNow = carrier && t>=tCarry ? carrier : (!isPassBall && !carrier ? QB : null);
     plyG.innerHTML = actors.map(a=>{ const w=posAt(a,t), p=legacyToIso(w.x,w.y,0); const dx=p.x-a.prev.x, mvd=Math.hypot(dx,p.y-a.prev.y); if(Math.abs(dx)>.15) a.face = dx<0?-1:1; a.prev=p; return {a,p,mv:mvd>.05}; })
       .sort((m,n)=>m.p.y-n.p.y).map(({a,p,mv})=>vinylSVG(p.x,p.y,a.team,a.num,a.face,ts,{k:vk,moving:mv&&t<1,carrier:a===carNow,pose:a.lineman&&t>.06&&t<1?'block':'run'})).join('');
@@ -6250,7 +6377,7 @@ function pageChromeHTML(v){
   return '<div class="page-chrome"><div class="page-hd"><button class="btn tiny" onclick="closePage()">← Hub</button>' +
     '<span class="disp page-title">'+(PAGE_TITLES[v]||'')+'</span></div><div class="page-body">'+pageBodyHTML(v)+'</div></div>';
 }
-function openPage(v){ G.activePage = v; modalView = null; modalArg = null; modalBack = null; save(); render(); }
+function openPage(v){ if(v === 'hub') return closePage(); G.activePage = v; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function closePage(){ G.activePage = null; save(); render(); }
 function navTo(v){ G.activePage = (G.activePage === v) ? null : v; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function openModal(v, arg){
@@ -6351,25 +6478,12 @@ function gameReportHTML(){
   } else {
     s += '<div class="hd disp" style="font-size:16px">'+(r.phase==='pre'?'Preseason':r.phase==='playoffs'?'Playoff Game':'Regular Season')+(r.week?' · Week '+r.week:'')+(r.round?' · Round '+r.round:'')+'</div>';
   }
-  s += '<div class="finalscore mono" style="margin:6px 0">'+esc(tA.abbr)+' '+r.as+' — '+r.bs+' '+esc(tB.abbr)+'</div>' +
+  s += (r.teams ? '' : '<div class="finalscore mono" style="margin:6px 0">'+esc(tA.abbr)+' '+r.as+' — '+r.bs+' '+esc(tB.abbr)+'</div>') +
     '<p class="sub">'+esc(tA.city+' '+tA.name)+' vs '+esc(tB.city+' '+tB.name)+'</p></div>';
 
   if(r.teams){
     // full box-score report (regular season / playoffs)
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Team Totals</div>' +
-      '<table class="tbl"><tr><th></th><th>'+esc(tA.abbr)+'</th><th>'+esc(tB.abbr)+'</th></tr>' +
-      '<tr><td class="sub">Passing Yds</td><td>'+(r.teams[r.a]?r.teams[r.a].passYd:0)+'</td><td>'+(r.teams[r.b]?r.teams[r.b].passYd:0)+'</td></tr>' +
-      '<tr><td class="sub">Rushing Yds</td><td>'+(r.teams[r.a]?r.teams[r.a].rushYd:0)+'</td><td>'+(r.teams[r.b]?r.teams[r.b].rushYd:0)+'</td></tr>' +
-      '</table></div>';
-    [r.a, r.b].forEach(ti => {
-      const team = r.teams[ti];
-      if(!team || !team.lines.length) return;
-      const t = G.teams[ti];
-      s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">'+(ti===G.userTeam?'Your':esc(t.abbr))+' Box Score</div>' +
-        '<table class="tbl"><tr><th>Player</th><th>Pos</th><th>Line</th></tr>';
-      team.lines.forEach(l => { s += '<tr><td>'+pn(l)+'</td><td><b>'+l.pos+'</b></td><td>'+gameLineText(l)+'</td></tr>'; });
-      s += '</table></div>';
-    });
+    s += boxScoreHTML(r);
     if(r.progressions && r.progressions.length){
       s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">📈 Player Progressions</div><p class="sub" style="margin-top:4px">' +
         r.progressions.map(p => (p.id?pn(p):esc(p.name))+' ('+p.pos+') → <b style="color:var(--gold)">'+p.ovr+'</b> OVR').join(' · ') + '</p></div>';
@@ -6393,6 +6507,61 @@ function gameReportHTML(){
   }
   return s;
 }
+/* ---------- side-by-side box score ---------- */
+function bsPlayer(id){ for(const t of G.teams){ const p = t.roster.find(x => x.id === id); if(p) return p; } return null; }
+function boxScoreHTML(r){
+  const A = G.teams[r.a], B = G.teams[r.b], LA = (r.teams[r.a]||{lines:[]}).lines, LB = (r.teams[r.b]||{lines:[]}).lines;
+  const sum = (L,k) => L.reduce((x,l) => x + (l[k]||0), 0);
+  const f1 = v => (Math.round(v*10)/10).toFixed(1);
+  const avg = (y,n) => n ? f1(y/n) : '0.0';
+  const lg = v => v ? v : '-';
+  const SEC = [
+    { h:'Passing', f:l => l.att || l.py || l.cmp, sort:l => (l.att||0)*10 + (l.py||0), cols:['C/ATT','YDS','AVG','TD','INT'],
+      row:l => [(l.cmp!=null||l.att!=null) ? (l.cmp||0)+'/'+(l.att||0) : '-', l.py||0, l.att ? avg(l.py||0,l.att) : '-', l.ptd||0, l.pint||0] },
+    { h:'Rushing', f:l => l.car || l.ry, sort:l => (l.ry||0)+(l.car||0)*.1, cols:['CAR','YDS','AVG','TD','LONG'],
+      row:l => [l.car!=null?l.car:'-', l.ry||0, l.car ? avg(l.ry||0,l.car) : '-', l.rtd||0, l.rlg!=null&&l.car ? l.rlg : '-'] },
+    { h:'Receiving', f:l => l.rec || l.cy || l.tgt, sort:l => (l.cy||0)+(l.rec||0)*.1+(l.tgt||0)*.01, cols:['REC','YDS','AVG','TD','LONG','TGTS'],
+      row:l => [l.rec!=null?(l.rec||0):'-', l.cy||0, l.rec ? avg(l.cy||0,l.rec) : '0.0', l.ctd||0, l.rec ? lg(l.clg) : '-', l.tgt!=null?(l.tgt||0):'-'] },
+    { h:'Defense', f:l => l.tk || l.sk || l.int || l.ff, sort:l => (l.tk||0) + (l.sk||0)*2 + (l.int||0)*3 + (l.ff||0)*2, cols:['TCK','SACK','INT','FF'],
+      row:l => [l.tk||0, f1(l.sk||0), l.int||0, l.ff||0] },
+    { h:'Kick Returns', f:l => l.kr, sort:l => l.kry||0, cols:['NO','YDS','AVG','TD','LONG'],
+      row:l => [l.kr, l.kry||0, avg(l.kry||0,l.kr), l.krtd||0, lg(l.krlg)] },
+    { h:'Punt Returns', f:l => l.pr, sort:l => l.pry||0, cols:['NO','YDS','AVG','TD','LONG'],
+      row:l => [l.pr, l.pry||0, avg(l.pry||0,l.pr), l.prtd||0, lg(l.prlg)] },
+    { h:'Kicking', f:l => l.fga || l.fgm || l.xpa || l.xpm, sort:l => (l.fgm||0)*3 + (l.xpm||0), cols:['FG','PCT','LONG','XP','PTS'],
+      row:l => { const fa = l.fga!=null ? l.fga : (l.fgm||0); return [(l.fgm||0)+'/'+fa, fa ? Math.round((l.fgm||0)/fa*100)+'%' : '-', lg(l.flg), (l.xpm||0)+'/'+(l.xpa!=null?l.xpa:(l.xpm||0)), (l.fgm||0)*3+(l.xpm||0)]; } },
+    { h:'Punting', f:l => l.pu, sort:l => l.pu||0, cols:['NO','YDS','AVG','IN 20','LONG'],
+      row:l => [l.pu, l.puy||0, avg(l.puy||0,l.pu), l.pin||0, lg(l.plg)] }
+  ];
+  const side = (t, L, sec) => {
+    const rows = L.filter(sec.f).sort((x,y) => sec.sort(y) - sec.sort(x));
+    let h = '<div class="bs-side"><table class="bs-tbl"><tr><th class="bs-pl"><span class="bs-dot" style="background:'+t.c1+'"></span>'+esc(t.abbr)+'</th>'+sec.cols.map(c => '<th>'+c+'</th>').join('')+'</tr>';
+    if(!rows.length) h += '<tr><td class="bs-pl sub" colspan="'+(sec.cols.length+1)+'">None</td></tr>';
+    rows.forEach(l => { const p = bsPlayer(l.id), num = p ? jerseyOf(p) : '';
+      h += '<tr><td class="bs-pl"><span class="bs-num">'+num+'</span>'+(p ? '<span class="pname" onclick="openModal(\'player\','+l.id+')">'+esc(shortName(l.name))+'</span>' : esc(shortName(l.name)))+' <span class="bs-pos">'+esc(l.pos||'')+'</span></td>'+sec.row(l).map(v => '<td>'+v+'</td>').join('')+'</tr>'; });
+    return h + '</table></div>';
+  };
+  // header + team stats
+  const tot = L => { const py = sum(L,'py'), ry = sum(L,'ry'); return { yds:py+ry, py, ry, cmp:sum(L,'cmp'), att:sum(L,'att'), car:sum(L,'car'), to:sum(L,'pint'), pen:sum(L,'pen'), peny:sum(L,'peny'), sk:sum(L,'sk') }; };
+  const ta = tot(LA), tb = tot(LB);
+  const winA = r.as > r.bs, winB = r.bs > r.as;
+  let s = '<div class="panel bs-wrap" style="margin-bottom:12px">' +
+    '<div class="bs-head"><div class="bs-team"><span class="bs-logo" style="background:'+A.c1+';border-color:'+A.c2+'">'+esc(A.abbr)+'</span><b class="'+(winA?'':'bs-lose')+'">'+r.as+'</b></div>' +
+    '<div class="bs-final sub">Final</div><div class="bs-team r"><b class="'+(winB?'':'bs-lose')+'">'+r.bs+'</b><span class="bs-logo" style="background:'+B.c1+';border-color:'+B.c2+'">'+esc(B.abbr)+'</span></div></div>' +
+    '<table class="bs-tbl bs-totals"><tr><th>'+esc(A.abbr)+'</th><th class="bs-mid">Team</th><th>'+esc(B.abbr)+'</th></tr>' +
+    [['Total yards','yds'],['Passing','py'],['Rushing','ry']].map(([n,k]) => '<tr><td>'+ta[k]+'</td><td class="bs-mid sub">'+n+'</td><td>'+tb[k]+'</td></tr>').join('') +
+    '<tr><td>'+(ta.att?ta.cmp+'/'+ta.att:'-')+'</td><td class="bs-mid sub">Comp/Att</td><td>'+(tb.att?tb.cmp+'/'+tb.att:'-')+'</td></tr>' +
+    '<tr><td>'+(ta.car||'-')+'</td><td class="bs-mid sub">Rush attempts</td><td>'+(tb.car||'-')+'</td></tr>' +
+    '<tr><td>'+ta.sk+'</td><td class="bs-mid sub">Sacks</td><td>'+tb.sk+'</td></tr>' +
+    '<tr><td>'+ta.to+'</td><td class="bs-mid sub">INT thrown</td><td>'+tb.to+'</td></tr>' +
+    '<tr><td>'+ta.pen+'-'+ta.peny+'</td><td class="bs-mid sub">Penalties</td><td>'+tb.pen+'-'+tb.peny+'</td></tr></table></div>';
+  SEC.forEach(sec => {
+    if(!LA.some(sec.f) && !LB.some(sec.f)) return;
+    s += '<div class="panel bs-sec" style="margin-bottom:10px"><div class="hd disp" style="font-size:14px">'+sec.h+'</div><div class="bs-grid">'+side(A,LA,sec)+side(B,LB,sec)+'</div></div>';
+  });
+  return s;
+}
+function shortName(n){ n = String(n||''); const p = n.split(' '); return p.length > 1 ? p[0][0]+'. '+p.slice(1).join(' ') : n; }
 function statLine(s, pos){
   if(!s) return '<span class="sub">—</span>';
   const bits = [];
@@ -7414,14 +7583,14 @@ function drawRoom(t){
   }
   function snapshot(){
     const me=meT(), fh=G.franchiseHistory||{banners:[]};
-    phase = G.phase==='playoffs' ? 'playoffs' : 'season';
+    phase = G.phase==='playoffs' ? 'playoffs' : G.phase==='hub' ? 'season' : G.phase;
     team = {c1:me.c1, c2:me.c2, ab:me.abbr};
     try{ if(G.phase==='hub') generateWeeklyRecs(); }catch(e){}
     lvl = clamp(Math.max((fh.banners||[]).length,(G.seasonHistory||[]).filter(h => h.playoffs && h.playoffs.champion===G.userTeam).length)*2 + Math.floor(((G.season||1)-1)/2), 0, 4);
     const won = (G.seasonHistory||[]).filter(h => h.playoffs && h.playoffs.champion===G.userTeam).length + ((G.playoffs && G.playoffs.champion===G.userTeam && !(G.seasonHistory||[]).some(h=>h.year===G.year))?1:0);
     banners = Math.min(6, Math.max(won, (fh.banners||[]).length));
-    const g = phase==='season' ? userGame() : playoffUserGame();
-    const opp = oppOf(g);
+    const g = phase==='season' ? userGame() : phase==='playoffs' ? playoffUserGame() : null;
+    const opp = g ? oppOf(g) : null;
     let fc=null; try{ if(phase==='season' && g) fc=userForecast(); }catch(e){}
     wx = 'Night';
     if(fc){ wx = fc.tod==='Night' ? 'Night' : fc.tod==='Late Afternoon' ? 'Dusk' : 'Day'; if(fc.type!=='dome' && fc.chance>=50) wx = fc.precipType==='Snow' ? 'Snow' : 'Rain'; }
@@ -7441,7 +7610,7 @@ function drawRoom(t){
     if(phase==='playoffs'){ rows.push([roundName().toUpperCase(),'']); playoffGames().slice(0,4).forEach(x=>rows.push([G.teams[x.b].abbr+' @ '+G.teams[x.a].abbr+(x.done?'  '+x.bs+'-'+x.as:''), (x.a===G.userTeam||x.b===G.userTeam)?'me':''])); }
     else { const div=sortStand(G.teams.filter(t=>t.conf===me.conf&&t.div===me.div)); rows.push([(DIV_NAMES[me.div]+' DIV').toUpperCase(),'']); div.slice(0,4).forEach((t,i)=>rows.push([(i+1)+'  '+t.abbr+'  '+t.w+'-'+t.l, t.idx===G.userTeam?'me':''])); }
     rows.forEach((r,i)=>{ s+=ov(159,38.5+i*4.8,E(r[0]),'font-size:3.6em;color:'+(i===0?'#8fa3c4':r[1]==='me'?'var(--of-accent)':'#dfe6f0')); });
-    s+=ov(167,63.6,phase==='playoffs'?E(roundName().toUpperCase()+' ROUND'):'LEAGUE NETWORK · WK '+G.week,'font-size:2.6em;color:#fff');
+    s+=ov(167,63.6,phase==='playoffs'?E(roundName().toUpperCase()+' ROUND'):phase==='season'?'LEAGUE NETWORK · WK '+G.week:'LEAGUE NETWORK · OFFSEASON','font-size:2.6em;color:#fff');
     // monitors
     s+=ov(108,91.5,'ROSTER · '+me.roster.length+' · '+teamOverall(me)+' OVR','font-size:2.6em;color:#dfe6f0');
     if(opp) s+=ov(188,91.5,'SCOUT: '+E(opp.abbr)+' '+teamOverall(opp)+' OVR · '+opp.w+'-'+opp.l,'font-size:2.6em;color:#fff;background:rgba(0,0,0,.45);padding:0 .3em');
@@ -7470,7 +7639,7 @@ function drawRoom(t){
     const fcnt=feedCount(), pr=pendingRecs().length, ws=weekState();
     const L1=leader(), lr=lastResult();
     const list=[
-      {k:'window', x:4,y:12,w:98,h:110, n:'STADIUM WINDOW', o:'Gameday', below:1, pk: g&&opp ? 'Kick off vs '+opp.abbr : (phase==='playoffs'?'Season over for us':'No game scheduled')},
+      {k:'window', x:4,y:12,w:98,h:110, n:'STADIUM WINDOW', o:'Gameday', below:1, pk: g&&opp ? 'Kick off vs '+opp.abbr : (phase==='playoffs'?'Season over for us':OFFICE_PHASE_INFO[phase]?'Offseason':'No game scheduled')},
       {k:'banners', x:148,y:22,w:68,h:10, n:'BANNERS', o:'Franchise legacy', below:1, pk: banners+' championship'+(banners===1?'':'s')},
       {k:'logo', x:103,y:40,w:28,h:28, n:'TEAM LOGO', o:'Team profile', pk: me.city+' '+me.name},
       {k:'trophyL', x:131,y:33,w:23,h:52, n:'TROPHY CASE', o:'Ring of Honor & history', pk: ((G.franchiseHistory&&G.franchiseHistory.ringOfHonor||[]).length)+' in the Ring of Honor'},
@@ -7484,7 +7653,7 @@ function drawRoom(t){
       {k:'mon2', x:183,y:87,w:70,h:45, n:'FILM SCREEN', o:'Scout next opponent', pk: opp ? opp.city+' · '+teamOverall(opp)+' OVR · '+opp.w+'-'+opp.l : 'No opponent yet'},
       {k:'phone', x:265,y:114,w:32,h:19, n:'PHONE', o:"GM's Office", pk: tradesOpen() ? 'Trade market open' : 'Trades closed · '+(G.fa||[]).length+' free agents'},
       {k:'journal', x:19,y:136,w:51,h:24, n:'JOURNAL', o:'This Week', bd: fcnt?String(fcnt):'', pk: fcnt ? fcnt+' update'+(fcnt>1?'s':'') : 'Quiet week'},
-      {k:'clip', x:74,y:134,w:32,h:27, n:'CLIPBOARD', o: ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : 'Notes'},
+      {k:'clip', x:74,y:134,w:32,h:27, n:'CLIPBOARD', o: OFFICE_PHASE_INFO[phase]?OFFICE_PHASE_INFO[phase][0]:ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : 'Notes'},
       {k:'pad', x:142,y:137,w:77,h:24, n:'GAME PLAN', o:'Staff recommendations', bd: pr?String(pr):'', pk: pr ? pr+' call'+(pr>1?'s':'')+' to make' : 'All calls made'},
       {k:'news', x:268,y:137,w:52,h:24, n:'NEWSPAPER', o:'League News', pk: L1 ? L1.name+' ('+L1.team+')' : 'Season preview'},
       {k:'books', x:318,y:106,w:50,h:27, n:'BINDERS', o:'Season results', pk: lr ? 'Last: '+lr : me.w+'-'+me.l},
@@ -7495,7 +7664,7 @@ function drawRoom(t){
   }
   function hud(S){
     const {me,g}=S, idx=TLK.indexOf(G.phase);
-    const phaseTxt = phase==='playoffs' ? roundName()+' Round' : 'Week '+G.week;
+    const phaseTxt = phase==='playoffs' ? roundName()+' Round' : phase==='season' ? 'Week '+G.week : 'Offseason · '+(OFFICE_PHASE_INFO[phase]||[''])[0];
     let t='<div class="of-hudT"><span class="of-t">'+E(me.city+' '+me.name)+'</span><span class="of-m">Season '+G.season+' ('+G.year+') · '+phaseTxt+' · <b>'+me.w+'-'+me.l+'</b> · <b>'+G.trainPts+'</b> train pts</span>' +
       '<div class="of-tl">'+TLK.map((k,i)=>'<i class="'+(i<idx?'on':'')+(i===idx?' on now':'')+'"></i>').join('')+'<span>'+TLL[Math.max(0,idx)]+'</span></div>' +
       '<button class="of-gear" onclick="officeDrawer()">☰ Menu</button></div>';
@@ -7506,6 +7675,10 @@ function drawRoom(t){
       if(ws.canPractice) b+='<button onclick="enterPracticeScene()">🏃 Practice</button><button onclick="simToNextDay()">Sim Day →</button>';
       if(g) b+='<button class="pri" onclick="playWeek()">▶ Coach Game</button><button onclick="simWeek()">Sim Week</button>';
       b+='</div>';
+    } else if(OFFICE_PHASE_INFO[phase]){
+      const pi=OFFICE_PHASE_INFO[phase];
+      b+='<span class="of-m" style="font-size:4.2em;color:var(--chalk)"><b style="color:var(--of-accent)">'+E(pi[0].toUpperCase())+'</b> · '+E(pi[1])+'</span><div class="of-acts">' +
+        '<button class="pri" onclick="officeOpenDesk()">'+pi[2]+'</button>'+(tradesOpen()?'<button onclick="openPage(\'gm\')">💼 GM\'s Office</button>':'')+'</div>';
     } else {
       const pg=playoffUserGame();
       b+='<span class="of-m" style="font-size:4.2em;color:var(--chalk)"><b style="color:var(--of-accent)">PLAYOFFS</b> · '+E(roundName())+(pg?' · '+(pg.a===G.userTeam?'vs ':'@ ')+E(G.teams[pg.a===G.userTeam?pg.b:pg.a].abbr):' · watching from home')+'</span><div class="of-acts">';
@@ -7546,9 +7719,9 @@ function drawRoom(t){
   function mount(){ fit(); selected=null; if(!raf) raf=requestAnimationFrame(loop); }
   function toast(m){ const t=document.getElementById('officeToast'); if(!t) return; t.textContent=m; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1600); }
   function act(k){
-    const g = phase==='season' ? userGame() : playoffUserGame();
+    const g = phase==='season' ? userGame() : phase==='playoffs' ? playoffUserGame() : null;
     switch(k){
-      case 'window': if(phase==='season' && g) return playWeek(); if(phase==='playoffs' && g) return playPlayoffGame(); return toast('No game to play right now.');
+      case 'window': if(phase==='season' && g) return playWeek(); if(phase==='playoffs' && g) return playPlayoffGame(); if(phase==='preseason') return officeOpenDesk(); return toast('No game to play right now.');
       case 'cal': leagueTab='schedule'; return openPage('league');
       case 'tv': if(phase==='playoffs') return openModal('office','bracket'); leagueTab='standings'; return openPage('league');
       case 'trophyR': leagueTab='stats'; return openPage('league');
@@ -7561,7 +7734,7 @@ function drawRoom(t){
       case 'mon2': { const o=oppOf(g); return o ? openModal('team', o.idx) : toast('No opponent scheduled.'); }
       case 'phone': return openPage('gm');
       case 'journal': return openModal('office','feed');
-      case 'clip': { const ws=weekState(); if(phase==='season' && ws.canPractice) return enterPracticeScene(); return openModal('office','week'); }
+      case 'clip': { if(OFFICE_PHASE_INFO[phase]) return officeOpenDesk(); const ws=weekState(); if(phase==='season' && ws.canPractice) return enterPracticeScene(); return openModal('office','week'); }
       case 'pad': return openModal('office','recs');
       case 'news': return openModal('office','news');
       case 'books': return openModal('office','results');
@@ -7584,9 +7757,17 @@ function officeTap(el,k){ OFFICE.tap(el,k); }
 function officeDrawer(){ OFFICE.drawer(); }
 function officeLabels(){ OFFICE.labels(); }
 function setOfficeView(on){ G.officeOff = !on; OFFICE.closeDrawer(); G.activePage = null; save(); render(); }
+const OFFICE_OFFSEASON = ['tag','fa','draft','ota','camp','preseason','cutdown'];
+const OFFICE_PHASE_INFO = { tag:['Franchise Tags','Tag or extend key players before free agency opens.','🏷 Open Tag Desk'], fa:['Free Agency','Sign free agents and work the trade market.','✍️ Open Free Agency'],
+  draft:['The Draft','Run the war room and make your picks.','🎓 Open War Room'], ota:['OTAs','Install the playbook and set early reps.','📋 Open OTAs'],
+  camp:['Training Camp','Position battles and camp reps.','⛺ Open Camp'], preseason:['Preseason','Exhibition games and evaluations.','🏈 Open Preseason'], cutdown:['Final Cuts','Trim the roster to the limit.','✂️ Open Cutdown'] };
+function officeOffseason(){ return G && OFFICE_OFFSEASON.includes(G.phase); }
+function officeOpenDesk(){ G.phaseDesk = G.phase; G.activePage = null; save(); render(); }
+function officeBackFromDesk(){ G.phaseDesk = null; G.activePage = null; save(); render(); }
 function officeActive(){
+  if(G && G.activePage === 'hub') G.activePage = null;
   return G && G.mode === 'coachgm' && G.userTeam != null && !G.unemployed && !G.officeOff && !G.activePage && !G.practiceScene &&
-    (G.phase === 'hub' || G.phase === 'playoffs');
+    (G.phase === 'hub' || G.phase === 'playoffs' || (officeOffseason() && G.phaseDesk !== G.phase));
 }
 function officeModalTitle(a){ return {legacy:'Franchise Legacy', bracket:'Playoffs', feed:'This Week', week:'Week Calendar', recs:'Game Plan', news:'League News', results:'Season Results'}[a] || 'Office'; }
 function officeModalBody(a){
@@ -8034,6 +8215,8 @@ function render(){
     catch(err){ console.error('Office render failed, falling back to classic hub:', err); }
   }
   let body = '';
+  const deskBar = (G && G.mode==='coachgm' && !G.officeOff && !G.unemployed && officeOffseason() && G.phaseDesk===G.phase && !G.activePage)
+    ? '<div class="desk-bar"><button class="btn tiny" onclick="officeBackFromDesk()">← Office</button></div>' : '';
   const canBrowsePages = G.phase !== 'game' && G.phase !== 'pregame' && G.phase !== 'fired' && G.phase !== 'jobs' && G.phase !== 'retired';
   try {
     if(G.unemployed && G.phase!=='game' && G.phase!=='pregame' && G.activePage!=='league'){ if(modalView && !['team','jobnote','bringstaff'].includes(modalView)){ modalView=null; modalArg=null; } G.activePage=null; body = unemployedHTML(); }
@@ -8071,7 +8254,7 @@ function render(){
       '<p class="sub">No progress was lost — your last save is intact. Try a different page from the nav above, or use Quit to Menu in Front Office.</p></div>';
   }
   const nav = (G.phase === 'game' || G.phase === 'pregame' || G.phase === 'jobs' || G.unemployed || G.practiceScene || G.userTeam == null) ? '' : navHTML();
-  app.innerHTML = headerHTML() + nav + body + modalHTML() + posPopupHTML();
+  app.innerHTML = headerHTML() + nav + deskBar + body + modalHTML() + posPopupHTML();
   if(G.phase==='game'){ drawFormation(); renderLog(); updateGameUI(); }
 }
 
@@ -12546,6 +12729,7 @@ function proposeTrade(){
   const getPk = G.draftPicks.filter(pk => cart.getPicks.includes(pk.id) && pk.team === them.idx);
   if(!giveP.length && !givePk.length){ alert('Add at least one player or pick to send.'); return; }
   if(!getP.length && !getPk.length){ alert('Add at least one player or pick to request.'); return; }
+  if(trPatience(them.idx) <= 0){ uiAlert(trGMName(them.idx)+' isn\'t taking your calls this week.'); return; }
   cartClauses(cart);
   const capAfter = tradeCapAfter(me, them, giveP, getP, cart);
   if(capAfter.mine > capNow()){ alert('That swap puts you over the cap'+(giveP.some(p=>tradeDeadCharge(p)>0 && !cart.xfer.includes(p.id))?' (dead money included). Try sending a bonus with the player.':'.')); return; }
@@ -12555,6 +12739,9 @@ function proposeTrade(){
   const need = teamNeed(them);
   const needBonus = giveP.filter(p => p.pos === need).length * 3;
   const verdict = tradeVerdict(giveVal, getVal, needBonus);
+  const tI = them.idx;
+  trMsg(tI, 'me', 'Offer: '+trAssetsText(giveP, givePk)+' for '+trAssetsText(getP, getPk)+'.');
+  trView = 'phone'; trPhoneSel = 't'+tI;
   if(verdict.tier === 'accept'){
     const tradeDead = giveP.filter(p => !cart.xfer.includes(p.id)).reduce((s,p) => s + tradeDeadCharge(p), 0);
     if(tradeDead > 0 && !uiConfirm('Trading away '+giveP.filter(p => !cart.xfer.includes(p.id)).map(p=>p.name).join(', ')+' will charge '+money(tradeDead)+' to your cap as dead money. Continue?', () => proposeTrade())) return;
@@ -12567,8 +12754,12 @@ function proposeTrade(){
     G.tradeCarts[tradeTeam] = {give:[], givePicks:[], get:[], getPicks:[], xfer:[], absorb:[]};
     logOwnerMove('Traded with '+them.city+': '+summary+'.');
     clearTradeCounter(tradeTeam);
-    alert('Trade accepted! You send '+esc(summary)+'.');
+    trMsg(tI, 'them', trLine('accept'));
+    trMsg(tI, 'them', '', { offer:{ title:'Trade completed', give: trAssetsText(giveP, givePk), get: trAssetsText(getP, getPk) } });
+    trThread(tI).status = 'done'; trThread(tI).unread = false;
+    if(!G.trHistory) G.trHistory = []; G.trHistory.push({ team:tI, year:G.year, week:G.week });
     save(); render();
+    uiAlert('Trade accepted! You send '+esc(summary)+'.');
     return;
   }
   if(verdict.tier === 'soft'){
@@ -12576,15 +12767,21 @@ function proposeTrade(){
     const gap = needed - giveVal;
     const suggestion = suggestCounterAsset(tradeTeam, gap);
     if(!suggestion){
-      alert(esc(them.city)+' declined — they want more value back, and you don\'t have anything small enough left to close the gap.');
+      trMsg(tI, 'them', 'Close, but you don\'t have the piece I need to bridge it. Pass.');
+      save(); render();
       return;
     }
     if(!G.tradeCounters) G.tradeCounters = {};
     G.tradeCounters[tradeTeam] = { who: esc(them.city)+' counters', suggestion, gapValue: gap };
+    trMsg(tI, 'them', trLine('soft', suggestion.label));
+    trMsg(tI, 'them', '', { offer:{ title:'Their counter', give: trAssetsText(giveP, givePk)+', '+suggestion.label, get: trAssetsText(getP, getPk) } });
     save(); render();
     return;
   }
-  alert(esc(them.city)+' declined — that\'s too far off the value they want back.');
+  const lowball = giveVal < Math.max(.1, getVal + 1.5 - needBonus) * .6;
+  trSetPatience(tI, trPatience(tI) - (lowball ? 2 : 1));
+  trMsg(tI, 'them', trPatience(tI) <= 0 ? trLine('angry') : trLine('reject'));
+  save(); render();
 }
 function acceptCounter(){
   if(tradeTeam == null) return;
@@ -12703,6 +12900,8 @@ function resolveIncomingOffer(offerId, action){
     executeTrade(me, them, getP, getPk, giveP, givePk);
     G.incomingOffers = G.incomingOffers.filter(o => o.id!==offerId);
     logOwnerMove('Accepted trade offer from '+them.city+'.');
+    if(!G.trHistory) G.trHistory = []; G.trHistory.push({ team:them.idx, year:G.year, week:G.week });
+    trMsg(them.idx, 'me', 'You have a deal.'); trMsg(them.idx, 'them', trLine('accept')); trThread(them.idx).status = 'done'; trThread(them.idx).unread = false; trPhoneSel = 't'+them.idx;
     alert('Trade accepted with '+esc(them.city)+'!');
     save(); render();
   }
@@ -12794,6 +12993,10 @@ function tradeHTML(){
     }
     return '<div class="panel"><p class="sub">The trade deadline ('+fmtDate(tradeDeadline(G.year))+') has passed. No trades until the new league year opens on '+fmtDate(leagueYearDate(G.year+1))+'.</p></div>';
   }
+  return trHubHTML();
+}
+function tradeHTMLLegacy(){
+  const me = meT();
   if(tradeTeam === null || tradeTeam === G.userTeam) tradeTeam = G.teams.find(t=>t.idx!==G.userTeam).idx;
   const them = G.teams[tradeTeam];
   const cart = tradeCart(tradeTeam);
@@ -13154,7 +13357,7 @@ function gameConditionsHTML(){
   const lines = wxSummaryLines(wx);
   return '<div class="game-conditions"><span>'+wxIcon(wx.cond,wx.tod)+' <b>'+esc(wxCondLabel(wx))+'</b></span><span>🏟 <b>'+esc(wx.stadium||'')+'</b></span><span>🌱 <b>'+(wx.surface==='turf'?'Turf':'Grass')+'</b></span><span>🕒 <b>'+esc((wx.slotLabel||'')+' · '+(wx.tod||''))+'</b></span><span>🌡 <b>'+wx.temp+'°F</b></span>' +
     (lines.length ? '<span class="wxfx-note" title="'+esc(lines.join(' · '))+'">ⓘ '+lines.length+' factor'+(lines.length>1?'s':'')+'</span>' : '') + (GM.refs ? '<span title="Ref crew flag rate">🦓 <b>'+esc(GM.refs.name)+' crew · '+GM.refs.style+'</b></span>' : '') + '</div>' +
-    '<div class="camera-row"><span>CAMERA</span>'+['TV','Behind','Sky','Island'].map((v)=>'<button class="btn '+(v===ISO_CAM?'on':'')+'" data-camera="'+v+'" onclick="setGameCamera(\''+v+'\')">'+v+'</button>').join('')+'<button class="btn '+(s3dOn()?'on':'')+'" data-s3d="1" onclick="toggle3D()">3D</button><span style="margin-left:6px">drag to turn · wheel to zoom</span></div>';
+    '<div class="camera-row"><span>CAMERA</span>'+['TV','Behind','Sky','Island'].map((v)=>'<button class="btn '+(v===ISO_CAM&&!qbActive()?'on':'')+'" data-camera="'+v+'" onclick="setGameCamera(\''+v+'\')">'+v+'</button>').join('')+'<button class="btn '+(qbActive()?'on':'')+'" data-camera="QB" onclick="setGameCamera(\'QB\')">🏈 Behind QB</button>'+'<button class="btn '+(s3dOn()?'on':'')+'" data-s3d="1" onclick="toggle3D()">3D</button><span style="margin-left:6px">drag to turn · wheel to zoom</span></div>';
 }
 function gameHTML(){
   const H = G.teams[GM.home], A = G.teams[GM.away];
@@ -13479,6 +13682,7 @@ function snapTheBall(){
   s += '<div style="display:flex;gap:6px"><button class="play st" onclick="qbThrowAway()">Throw It Away<small>live to see 2nd down</small></button><button class="play st" onclick="qbScramble()">Tuck &amp; Run<small>take off</small></button></div></div>';
   grid.innerHTML = s;
   st.tickHandle = setInterval(qbTick, 100);
+  if(qbActive()){ st.live3d = true; const w = document.getElementById('fieldwrap'); try { S3D.qbLiveStart(w, () => livePlayState && livePlayState.targets ? livePlayState.targets.map(t => ({ idx: t.key==='rb'?6:t.key==='w1'?7:8, open: t.openness })) : null, i => qbThrow(i)); } catch(e){ console.error(e); } }
 }
 function qbTick(){
   const st = livePlayState;
@@ -13522,7 +13726,9 @@ function qbEvade(){
   if(ev) ev.innerHTML = '<span class="sub" style="color:var(--gold)">Pocket extended to 7s.</span>';
 }
 function finishPlayerPlay(res){
+  if(livePlayState && livePlayState.live3d && res.t0 == null) res.t0 = res.type==='run' ? .2 : .32;
   livePlayState = null;
+  try { if(window.S3D && S3D.qbLiveStop) S3D.qbLiveStop(); } catch(e){}
   busy = true;
   animatePlay(res, () => {
     applyPlay(res); busy = false; checkAITurn(); updateGameUI();
@@ -13542,11 +13748,11 @@ function qbThrow(idx){
   let res;
   if(roll < compProb){
     const yac = Math.round(3 + captured/10 + Math.random()*8 + (t.key==='w2'?10:0));
-    res = { oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.15, target: t.p };
+    res = { oc, dc: st.dc, type:'pass', yards: yac, oob: Math.random()<.15, target: t.p, tgtKey: t.key };
   } else if(captured < 35 && roll < compProb + (100-compProb)*0.3){
-    res = { oc, dc: st.dc, type:'int', yards: Math.round(R(2,14)) };
+    res = { oc, dc: st.dc, type:'int', yards: Math.round(R(2,14)), tgtKey: t.key };
   } else {
-    res = { oc, dc: st.dc, type:'inc', yards: 0 };
+    res = { oc, dc: st.dc, type:'inc', yards: 0, tgtKey: t.key };
   }
   finishPlayerPlay(res);
 }
@@ -13754,9 +13960,10 @@ function lockKick(){
   GM.clock -= 6;
   busy = true;
   const kicker = mePlayer();
+  if(kicker) creditLive(GM.poss, kicker, st.ftype==='fg' ? { fga:1 } : { xpa:1 });
   if(made){
     addPts(GM.poss, st.ftype==='fg' ? 3 : 1);
-    if(kicker && st.ftype==='fg') creditLive(GM.poss, kicker, { fgm: 1 });
+    if(kicker) creditLive(GM.poss, kicker, st.ftype==='fg' ? { fgm: 1, flg: st.dist } : { xpm:1 });
     logMsg((st.ftype==='fg' ? st.dist+'-yd field goal' : 'Extra point') + ' is GOOD. ' + G.teams[GM.poss].abbr + ' +' + (st.ftype==='fg'?3:1) + '.', 'big');
     fieldFlash('Kick is Good','fd');
     GM.koAfter = GM.poss;
@@ -14112,7 +14319,7 @@ function env(S,L,out){
   const sun=new THREE.DirectionalLight(night?'#eef2ff':late?'#ffd9a8':'#fff1dc',night?.28:dim?.9:1.65);
   sun.position.set(night?20:-170,night?320:late?140:250,night?60:150);sun.castShadow=true;
   const sc=sun.shadow.camera;sc.left=-300;sc.right=300;sc.top=300;sc.bottom=-300;sc.near=10;sc.far=1000;
-  const ms=C.mode==='game'?2048:4096;sun.shadow.mapSize.set(ms,ms);sun.shadow.bias=-.0004;sun.shadow.normalBias=.4;
+  const ms=C.mode==='preview'?4096:2048;sun.shadow.mapSize.set(ms,ms);sun.shadow.bias=-.0004;sun.shadow.normalBias=.4;
   root.add(sun);root.add(sun.target);
   if(night){const tz=L.dF;[[-1,-1],[1,-1],[1,1],[-1,1]].forEach(q=>{const sp=new THREE.SpotLight('#fff6dc',1.1,0,.5,.55,1);sp.position.set(q[0]*(LX+tz),L.H+40,q[1]*(LZ+tz));sp.target.position.set(q[0]*-10,0,q[1]*-6);root.add(sp);root.add(sp.target);});}
 }
@@ -14143,7 +14350,7 @@ function fieldAndSidelines(S,out){
     box(30,1.5,.4,std('#0f141c'),-20,.75,sd*36.2,0);
     for(let i=0;i<46;i++){const x=rnd(-22,22),z=sd*rnd(30.2,32.6);pushMA(bodyM,x,.75,z,srand()*6,1,1,1);pushC(bodyC,c,.08);pushMA(headM,x,1.62,z,0,1,1,1);pushC(headC,hc);}
   });
-  if(C.mode!=='game'){
+  if(C.mode!=='game'&&!C.noPlayers){
     const los=-5, off=[[los-.8,-2.2],[los-.8,-1.1],[los-.8,0],[los-.8,1.1],[los-.8,2.2],[los-1.2,3.4],[los-5,0],[los-8,0],[los-.8,-21],[los-1.6,14],[los-.8,19]];
     const def=[[los+.9,-3],[los+.9,-1],[los+.9,1],[los+.9,3],[los+5,-4],[los+5,0],[los+5,4],[los+7,-21],[los+7,19],[los+15,-9],[los+15,8]];
     off.forEach(p=>{pushMA(bodyM,p[0],.75,p[1],Math.PI/2,1,1,1);pushC(bodyC,C.c1);pushMA(headM,p[0],1.62,p[1],0,1,1,1);pushC(headC,C.c2);});
@@ -14400,7 +14607,7 @@ function buildScene(cfg){
   KR=C.mode==='game'?KEEP:null;
   const S=cfg.parts, L=layout(S.cap||0,S.suites||0); out.L=L;
   env(S,L,out); ground(S,L); fieldAndSidelines(S,out); bowl(S,L,out); boards(S,L,out); lights(S,L); roof(S,L,out);
-  if(C.mode!=='game') grounds(S,L);
+  if(C.mode!=='game'&&!C.noGrounds) grounds(S,L);
   if(C.cons) construction(S,L);
   KR=null; C=null; root=null;
   return out;
@@ -14493,10 +14700,139 @@ function loopP(){
   renderer.render(P3.scene,pCam);
   canvas.__w2=0;
 }
-function invalidateGame(){ lastSig=''; }
-return { ok, gameMount, gameDetach, previewMount, goCam, orb, invalidateGame, get canvas(){return canvas;}, layout };
-})();
 
+/* ---------- behind-the-QB view ---------- */
+let Q3=null, qCam=null, qFig=null, qBall=null, qLines=null, qTeamKey='', qFocus=null, qCP=null, qCT=null, qLast=0, qIcons=null, qLive=null;
+const L2W=(x,y)=>[((x-105)/8.5+10)-60, (y-250)/8.63];
+function lin(c){ return new THREE.Color(c).convertSRGBToLinear(); }
+function numCanvas(){ const c=document.createElement('canvas'); c.width=64; c.height=64; return c; }
+function paintNum(c,n,fg,bg){ const g=c.getContext('2d'); g.fillStyle=bg; g.fillRect(0,0,64,64); g.fillStyle=fg; g.font='900 42px "Arial Black",Arial'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(String(n),32,35); }
+function makeFigure(scene, i){
+  const mk=(c,o)=>new THREE.MeshStandardMaterial(Object.assign({color:lin(c),roughness:.45,metalness:.05},o||{}));
+  const mats={ jersey:mk('#888'), pants:mk('#eeeeee'), helm:mk('#888',{metalness:.35,roughness:.25}), stripe:mk('#fff'), skin:mk(['#d9a066','#a86b3c','#6b3f22','#f1c7a1','#e0b48a'][i%5]), shoe:mk('#111'), mask:mk('#dddddd',{metalness:.6}) };
+  const big=(i<5||(i>=11&&i<15))?1.18:1, g=new THREE.Group();
+  const add=(geo,m,x,y,z)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.castShadow=true; g.add(o); return o; };
+  add(new THREE.CylinderGeometry(.34*big,.3*big,.75,12),mats.jersey,0,1.32,0);
+  add(new THREE.BoxGeometry(.95*big,.22,.48),mats.jersey,0,1.62,0).scale.set(1,1,1);
+  const head=add(new THREE.SphereGeometry(.27,16,12),mats.helm,0,1.98,0); head.scale.set(1,1.05,1.1);
+  add(new THREE.BoxGeometry(.06,.05,.56),mats.stripe,0,2.24,0);
+  const mask=add(new THREE.TorusGeometry(.17,.025,6,12,Math.PI),mats.mask,.24,1.9,0); mask.rotation.set(0,Math.PI/2,Math.PI);
+  const legs=[],arms=[];
+  [-1,1].forEach(sd=>{ const l=new THREE.Group(); l.position.set(0,.98,sd*.15); const th=new THREE.Mesh(new THREE.CylinderGeometry(.13*big,.11,.92,8),mats.pants); th.position.y=-.46; th.castShadow=true; l.add(th); const sk=new THREE.Mesh(new THREE.BoxGeometry(.28,.12,.16),mats.shoe); sk.position.set(.06,-.92,0); l.add(sk); g.add(l); legs.push(l);
+    const a=new THREE.Group(); a.position.set(0,1.55,sd*.42*big); const ar=new THREE.Mesh(new THREE.CylinderGeometry(.09,.08,.62,8),mats.jersey); ar.position.y=-.3; ar.castShadow=true; a.add(ar); const hd=new THREE.Mesh(new THREE.SphereGeometry(.08,8,6),mats.skin); hd.position.y=-.64; a.add(hd); g.add(a); arms.push(a); });
+  const nc=numCanvas(), nt=new THREE.CanvasTexture(nc); nt.encoding=THREE.sRGBEncoding;
+  const nm=new THREE.MeshBasicMaterial({map:nt});
+  const back=new THREE.Mesh(new THREE.PlaneGeometry(.42,.42),nm); back.position.set(-.34*big,1.36,0); back.rotation.y=-Math.PI/2; g.add(back);
+  const front=new THREE.Mesh(new THREE.PlaneGeometry(.42,.42),nm); front.position.set(.34*big,1.36,0); front.rotation.y=Math.PI/2; g.add(front);
+  scene.add(g);
+  return { g, mats, legs, arms, nc, nt, ph:Math.random()*6, x:0, z:0, hd:i<11?0:Math.PI, num:null };
+}
+function qbEnsure(cfg){
+  ensureRenderer();
+  const key=cfg.key+'|qb';
+  if(!Q3||Q3.key!==key){
+    if(Q3) disposeScene(Q3);
+    const c=Object.assign({},cfg,{mode:'qb',noPlayers:true,noGrounds:true,roofOpen:!cfg.indoor});
+    Q3=buildScene(c); Q3.key=key; Q3.cfg=c;
+    qFig=[]; for(let i=0;i<22;i++) qFig.push(makeFigure(Q3.scene,i));
+    const bm=new THREE.MeshStandardMaterial({color:lin('#7a3e1c'),roughness:.6});
+    qBall=new THREE.Mesh(new THREE.SphereGeometry(.17,12,8),bm); qBall.scale.set(1.7,1,1); qBall.castShadow=true; Q3.scene.add(qBall);
+    qLines={}; [['los','#3b82f6'],['fd','#ffd447']].forEach(([k,cl])=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(1.1,53.3),new THREE.MeshBasicMaterial({color:cl,transparent:true,opacity:.9,depthWrite:false,toneMapped:false})); m.rotation.x=-Math.PI/2; m.position.y=.09; m.renderOrder=2; Q3.scene.add(m); qLines[k]=m; });
+    qTeamKey=''; qCP=null;
+  }
+  if(!qCam) qCam=new THREE.PerspectiveCamera(52,1,.3,3000);
+}
+function qbTeams(off,def,nums){
+  const k=off.abbr+'|'+def.abbr+'|'+nums.join(',');
+  if(k===qTeamKey) return; qTeamKey=k;
+  qFig.forEach((f,i)=>{ const t=i<11?off:def, home=i<11;
+    f.mats.jersey.color.copy(lin(t.c1)); f.mats.helm.color.copy(lin(t.c1)); f.mats.stripe.color.copy(lin(t.c2||'#ffffff'));
+    f.mats.pants.color.copy(lin(home?'#f2efe7':'#e4e4e4'));
+    paintNum(f.nc, nums[i]!=null?nums[i]:'', '#ffffff', t.c1); f.nt.needsUpdate=true; f.num=nums[i]; });
+}
+function qbSize(wrap){
+  const w=wrap.clientWidth, h=wrap.clientHeight; if(!w||!h) return false;
+  const dpr=Math.min(window.devicePixelRatio||1,2);
+  if(canvas.__qw!==w||canvas.__qh!==h||canvas.__dpr!==dpr||canvas.__mode!=='qb'){ renderer.setPixelRatio(dpr); renderer.setSize(w,h,true); canvas.__qw=w; canvas.__qh=h; canvas.__dpr=dpr; canvas.__mode='qb'; canvas.__w=0; lastSig=''; qCam.aspect=w/h; qCam.updateProjectionMatrix(); }
+  return true;
+}
+function qbAttach(wrap){
+  if(canvas.parentNode!==wrap){ wrap.insertBefore(canvas, wrap.firstChild); canvas.__w=0; lastSig=''; }
+  Object.assign(canvas.style,{position:'absolute',left:'0px',top:'0px',zIndex:0,pointerEvents:'none',borderRadius:'8px'});
+}
+function qbPlace(i,x,z,dt,face){
+  const f=qFig[i], dx=x-f.x, dz=z-f.z, d=Math.hypot(dx,dz);
+  if(d>.02) f.hd=Math.atan2(dz,dx); else if(face!=null) f.hd=face;
+  f.x=x; f.z=z; f.g.position.set(x,0,z); f.g.rotation.y=-f.hd;
+  f.ph+=d*2.6; const sw=d>.01?Math.sin(f.ph)*.7:0;
+  f.legs[0].rotation.z=sw; f.legs[1].rotation.z=-sw; f.arms[0].rotation.z=-sw*.8; f.arms[1].rotation.z=sw*.8;
+}
+function qbCamTo(focus, snap, follow){
+  const tp=follow?new THREE.Vector3(focus.x-13,7,focus.z*.8):new THREE.Vector3(focus.x-9,4.2,focus.z*.85), tt=new THREE.Vector3(focus.x+(follow?18:22),0,focus.z*.6);
+  if(!qCP||snap){ qCP=tp.clone(); qCT=tt.clone(); }
+  else { const now=performance.now(), dt=Math.min(.1,(now-qLast)/1000||.016); const k=1-Math.pow(.02,dt); qCP.lerp(tp,k); qCT.lerp(tt,k); }
+  qLast=performance.now();
+  qCam.position.copy(qCP); qCam.lookAt(qCT);
+}
+function qbRender(){ renderer.render(Q3.scene,qCam); }
+function qbUpdScore(score){ const sk=JSON.stringify(score); if(score&&Q3.boards&&Q3.boards.__sk!==sk){ withCtx(Q3,()=>Q3.boards.forEach(t=>{const cv=t.__cv;paintBoard(cv.getContext('2d'),cv.width,cv.height,t.__mode,score);t.needsUpdate=true;})); Q3.boards.__sk=sk; } }
+function qbUpdEZ(ez){ const k=JSON.stringify(ez); if(ez&&Q3.field&&Q3.field.key!==k){ withCtx(Q3,()=>{const t=Q3.field.tex;paintField(t.__cv.getContext('2d'),ez);t.needsUpdate=true;}); Q3.field.key=k; } }
+// pre-snap formation (legacy coords list [[x,y],...] x22)
+function qbFormation(wrap, cfg, d){
+  qbEnsure(cfg); qbAttach(wrap); if(!qbSize(wrap)) return;
+  qbTeams(d.off,d.def,d.nums); qbUpdScore(d.score); qbUpdEZ(d.ez);
+  d.pts.forEach((q,i)=>{ const w=L2W(q[0],q[1]); const f=qFig[i]; f.x=w[0]; f.z=w[1]; qbPlace(i,w[0],w[1],0,i<11?0:Math.PI); });
+  const qb=qFig[5]; qBall.position.set(qFig[2].x+.9,.25,qFig[2].z); qBall.visible=true;
+  qLines.los.position.x=d.los; qLines.fd.position.x=d.fd; qLines.fd.visible=d.fd!=null&&d.fd<60.5; qLines.los.visible=true;
+  qbCamTo({x:qb.x,z:qb.z},true); qbRender();
+}
+// live animation frame from animatePlay
+function qbFrame(wrap, d){
+  if(!Q3||!qFig) return; qbAttach(wrap); if(!qbSize(wrap)) return;
+  d.pos.forEach((p,i)=>{ const w=L2W(p.x,p.y); qbPlace(i,w[0],w[1],0); });
+  const b=L2W(d.ball.x,d.ball.y); let by=1.45;
+  if(d.isPass&&d.t>=d.tThrow&&d.t<d.tCatch){ const u=(d.t-d.tThrow)/(d.tCatch-d.tThrow); const span=Math.hypot(d.air[0]-d.rel[0],d.air[1]-d.rel[1])/8.5; by=1.8+Math.sin(u*Math.PI)*Math.min(11,1.5+span*.35); }
+  else if(d.t<.05) by=.25;
+  qBall.position.set(b[0]+.2,by,b[1]+.25); qBall.visible=!d.hideBall;
+  let focus;
+  if(d.carrier>=0&&d.t>=d.tCarry) focus=qFig[d.carrier];
+  else if(d.isPass&&d.t>=d.tThrow) focus={x:qBall.position.x,z:qBall.position.z};
+  else focus=qFig[5];
+  qbCamTo({x:focus.x,z:focus.z},false,focus!==qFig[5]);
+  qbRender();
+}
+// player-mode QB: live pocket before the throw. targets: [{idx, label, open}] ; onPick(i)
+function qbLiveStart(wrap, getTargets, onPick){
+  if(!Q3||!qFig) return;
+  qbLiveStop();
+  const host=wrap, icons=[]; const t0=performance.now();
+  const start=qFig.map(f=>({x:f.x,z:f.z}));
+  qLive={ raf:0, icons };
+  function tick(){
+    if(!qLive) return;
+    const el=(performance.now()-t0)/1000, u=Math.min(1,el/1.4);
+    qFig.forEach((f,i)=>{ const s=start[i]; let x=s.x, z=s.z;
+      if(i<5) x=s.x-.7*u; else if(i===5) x=s.x-5*Math.min(1,el/1.1); else if(i===6) x=s.x+.5*u;
+      else if(i<11) x=s.x+Math.min(9,el*3.2); else if(i<15) x=s.x-1.2*u; else if(i<18) x=s.x+2*u; else if(i<20) x=s.x+Math.min(8,el*2.6); else x=s.x+2*u;
+      qbPlace(i,x,z,0,i<11?0:Math.PI); });
+    qBall.position.set(qFig[5].x+.25,1.5,qFig[5].z+.35);
+    qbCamTo({x:qFig[5].x,z:qFig[5].z},false); qbRender();
+    const tg=getTargets()||[]; const W=wrap.clientWidth, H=wrap.clientHeight, v=new THREE.Vector3();
+    tg.forEach((t,k)=>{ let d=icons[k]; if(!d){ d=document.createElement('div'); d.className='qb-ricon'; d.onclick=e=>{e.stopPropagation(); onPick(k);}; host.appendChild(d); icons[k]=d; }
+      const f=qFig[t.idx]; v.set(f.x,2.9,f.z).project(qCam);
+      if(v.z>1){ d.style.display='none'; return; }
+      d.style.display='flex'; d.style.left=((v.x+1)/2*W)+'px'; d.style.top=((1-v.y)/2*H)+'px';
+      const o=Math.round(t.open), c=o>=65?'#3DBE6C':o>=35?'#F2C14E':'#E25555';
+      d.style.background=c; d.innerHTML='<b>'+(k+1)+'</b><small>'+o+'%</small>'; });
+    qLive.raf=requestAnimationFrame(tick);
+  }
+  qLive.raf=requestAnimationFrame(tick);
+}
+function qbLiveStop(){ if(!qLive) return; cancelAnimationFrame(qLive.raf); qLive.icons.forEach(d=>d.remove()); qLive=null; }
+function qbHide(){ qbLiveStop(); if(canvas&&canvas.__mode==='qb'){ canvas.__mode=''; lastSig=''; } }
+function invalidateGame(){ lastSig=''; }
+return { qbFormation, qbFrame, qbLiveStart, qbLiveStop, qbHide, buildScene, ok, gameMount, gameDetach, previewMount, goCam, orb, invalidateGame, get canvas(){return canvas;}, layout };
+})();
 }catch(e){ console.error('S3D module failed',e); window.S3D={ok:()=>false}; }
 /* ===== Stadium parts (owner builds) + 3D hookup ===== */
 const SP_ITEMS = {
@@ -14691,6 +15027,32 @@ function stadiumSummaryCardHTML(){
     '<button class="btn tiny primary" style="margin-top:6px" onclick="setFrontTab(\'stadium\')">'+(G.mode==='owner'?'Open Stadium Builder':'View Stadium in 3D')+'</button></div>';
 }
 
+
+/* ----- Behind-the-QB view ----- */
+function qbActive(){
+  if(!(typeof s3dOn === 'function' && s3dOn()) || !GM || GM.over || GM.stPending || GM.stAnim || !window.S3D || !S3D.qbFormation) return false;
+  if(ISO_CAM === 'QB') return true;
+  return G.qbAuto !== false && typeof userOnO === 'function' && userOnO() && G.phase === 'game';
+}
+function qbFormationPts(){
+  const x0=xAt(GM.spot), mid=250, pts=[];
+  for(let i=-2;i<=2;i++) pts.push([x0-12,mid+i*26]);
+  [[x0-42,mid],[x0-62,mid+22],[x0-16,90],[x0-16,410],[x0-16,mid-66],[x0-14,mid+66]].forEach(q=>pts.push(q));
+  for(let i=-1.5;i<=1.5;i++) pts.push([x0+14,mid+i*30]);
+  for(let i=-1;i<=1;i++) pts.push([x0+48,mid+i*55]);
+  [[x0+22,95],[x0+22,405],[x0+105,mid-45],[x0+105,mid+45]].forEach(q=>pts.push(q));
+  return pts;
+}
+let qbLastKey = '';
+function qbShowFormation(force, pts, nums){
+  const wrap = document.getElementById('fieldwrap'), svg = document.getElementById('field'); if(!wrap || !svg) return;
+  const key = [GM.spot,GM.dist,GM.down,GM.poss,GM.hs,GM.as,wrap.clientWidth,wrap.clientHeight,GM.q,Math.round(GM.clock/15)].join('|');
+  if(!force && key === qbLastKey) return; qbLastKey = key;
+  const off = offT(), def = defT();
+  if(!nums){ const n = formationNums(off, def); nums = n.off.concat(n.def); }
+  const fd = Math.min(100, GM.spot + GM.dist);
+  S3D.qbFormation(wrap, gameCfg3d(), { pts: pts || qbFormationPts(), nums, off, def, score: score3d(), ez: ez3d(), los: GM.spot - 50, fd: fd >= 100 ? null : fd - 50 });
+}
 /* ----- gameday 3D ----- */
 function s3dOn(){ return !!(window.S3D && S3D.ok() && G && G.opt3d !== false); }
 function toggle3D(){ G.opt3d = !s3dOn(); if(G.opt3d && !(window.S3D && S3D.ok())){ G.opt3d = false; uiAlert('3D needs WebGL. Not available on this device.'); } save(); isoRebuildField(); document.querySelectorAll('[data-s3d]').forEach(b => b.classList.toggle('on', s3dOn())); }
@@ -14711,7 +15073,13 @@ function score3d(){
 function ez3d(){ try { const o = offT(), d = defT(); return { l:{c:o.c1,t:o.abbr}, r:{c:d.c1,t:d.abbr} }; } catch(e){ return null; } }
 function s3dSync(){
   const svg = document.getElementById('field');
-  if(svg && GM && G && svg.getAttribute('data-3d') === '1'){
+  const qa = svg && G && qbActive();
+  if(svg) svg.style.visibility = qa ? 'hidden' : '';
+  document.querySelectorAll('[data-camera]').forEach(b => b.classList.toggle('on', qa ? b.dataset.camera==='QB' : b.dataset.camera===ISO_CAM));
+  if(qa){ if(!busy && !livePlayState){ try { qbShowFormation(false); } catch(e){ console.error('qb view failed', e); ISO_CAM='TV'; G.qbAuto=false; } } }
+  else if(window.S3D && S3D.qbHide) S3D.qbHide();
+  if(qa){}
+  else if(svg && GM && G && svg.getAttribute('data-3d') === '1'){
     try { S3D.gameMount(svg, gameCfg3d(), { a:ISO_ANGLE, s:ISO_TILE*ISO_ZOOM, cx:ISO_CX, cy:ISO_CY }, score3d(), ez3d()); }
     catch(e){ console.error('3D stadium failed, falling back to 2D', e); G.opt3d = false; isoRebuildField(); }
   } else if(window.S3D && S3D.ok()) S3D.gameDetach();
@@ -14724,6 +15092,287 @@ let s3dRaf = 0;
 function s3dKick(){ if(s3dRaf) return; s3dRaf = requestAnimationFrame(() => { s3dRaf = 0; s3dSync(); }); }
 if(typeof MutationObserver !== 'undefined') new MutationObserver(s3dKick).observe(document.documentElement, { childList:true, subtree:true });
 window.addEventListener('resize', s3dKick);
+
+/* ===== Trades hub: Market + Deal Table + Phone ===== */
+let trView = 'market', trBrowse = 'theirs', trBrowsePos = 'All', trPhoneSel = null;
+let trF = { pos:'', ovr:0, age:0, cap:0, block:true, gettable:true, untouch:false, list:'' };
+let trTarget = null; // {team, pid}
+const TR_POS = ['QB','RB','WR','TE','OL','DL','LB','CB','S','K','P'];
+const TR_STYLES = [
+  { n:'Shrewd', d:'Values picks and youth. Hates paying for players over 28.', age:-1.2, pick:1.15 },
+  { n:'Win-now', d:'Wants proven starters. Will overpay in picks for a vet.', age:.6, pick:.85 },
+  { n:'Rebuilding', d:'Collecting picks and young players. Sells veterans.', age:-1.5, pick:1.2 },
+  { n:'Old school', d:'Trusts ratings over potential. Fair but stubborn.', age:0, pick:1 },
+  { n:'Analytics', d:'Leans on value math. Reasonable, rarely emotional.', age:-.4, pick:1.05 }
+];
+function trStyle(ti){ return TR_STYLES[(ti*7 + 3) % TR_STYLES.length]; }
+function trGMName(ti){ try { const t = G.teams[ti], c = (typeof ccGet === 'function') && t.cs && ccGet(t.cs.GM); if(c && c.name) return c.name; } catch(e){} const F=['Marcus','Dale','Ron','Kevin','Sam','Glen','Tom','Rick','Andre','Phil'], L=['Ortega','Kerr','Ames','Lindqvist','Pike','Holt','Shaw','Grady','Monroe','Baird']; return F[ti%F.length]+' '+L[(ti*3)%L.length]; }
+function trNowKey(){ return G.year*100 + (G.week||0); }
+function trPatience(ti){ const p = (G.trPat||{})[ti]; if(!p) return 5; return Math.min(5, p.v + Math.max(0, trNowKey() - p.k)); }
+function trSetPatience(ti, v){ if(!G.trPat) G.trPat = {}; G.trPat[ti] = { v: clamp(v,0,5), k: trNowKey() }; }
+function trThread(ti){ if(!G.trThreads) G.trThreads = {}; if(!G.trThreads[ti]) G.trThreads[ti] = { msgs:[], unread:false, status:'open' }; return G.trThreads[ti]; }
+function trMsg(ti, who, text, extra){ const th = trThread(ti); th.msgs.push(Object.assign({ who, text, wk: trNowKey() }, extra||{})); if(th.msgs.length > 30) th.msgs.splice(0, th.msgs.length-30); if(who === 'them') th.unread = true; th.last = Date.now(); }
+const TR_LINES = {
+  accept: ['Deal. Paperwork is going in now.','You got yourself a deal.','That works for us. Done.','Pleasure doing business.'],
+  soft:   ['Close. Add {x} and I can sign off.','We are almost there. Throw in {x}.','I need a little more. {x} gets it done.'],
+  reject: ['Not even close. Call me when you are serious.','That is a lowball and you know it.','No thanks. That does not move the needle for us.'],
+  angry:  ['I am done talking this week.','You keep wasting my time. Try me next week.']
+};
+function trLine(kind, x){ const a = TR_LINES[kind]; return a[Math.floor(Math.random()*a.length)].replace('{x}', x||''); }
+function trAssetsText(ps, pks){ return ps.map(p => p.name+' ('+p.spot+' '+p.rating+')').concat(pks.map(pickLabel)).join(', ') || 'nothing'; }
+function trUnread(){ const th = G.trThreads||{}; return (G.incomingOffers||[]).length + Object.keys(th).filter(k => th[k].unread).length; }
+function trSetView(v){ trView = v; render(); }
+
+/* ---------- availability + packages ---------- */
+function trAvail(p, t){
+  if(isProtectedForTeam(p, t)) return 1;
+  if(isOnBlock(p, t)) return 5;
+  const losing = (t.w + t.l) > 0 && t.w < t.l;
+  if(losing && p.age >= 28) return 4;
+  if(teamTopNeeds(t,3).includes(p.pos)) return 2;
+  return 3;
+}
+function trNeedBonus(them, giveP){ const need = teamNeed(them); return giveP.filter(p => p.pos === need).length * 3; }
+function trOdds(giveVal, getVal, needBonus){
+  const needed = Math.max(.1, getVal + 1.5 - needBonus), ratio = giveVal / needed;
+  return clamp(Math.round(50 + (ratio - .9) * 300), 3, 97);
+}
+function trMyPicks(){ return G.draftPicks.filter(pk => pk.team === G.userTeam).sort((a,b) => pickValue(a) - pickValue(b)); }
+function trFillPicks(gap, exclude){
+  const picks = trMyPicks().filter(pk => !(exclude||[]).includes(pk.id));
+  if(gap <= 0) return [];
+  const one = picks.find(pk => pickValue(pk) >= gap);
+  if(one) return [one];
+  const out = []; let left = gap;
+  picks.slice().reverse().forEach(pk => { if(left > 0 && out.length < 3){ out.push(pk); left -= pickValue(pk); } });
+  return left <= 0 ? out : null;
+}
+function trPackages(ti, pid){
+  const me = meT(), them = G.teams[ti], tgt = them.roster.find(p => p.id === pid); if(!tgt) return [];
+  const need = teamNeed(them), getVal = tradeValue(tgt), out = [];
+  const tradeable = me.roster.filter(p => !p.ir && !p.protectedAsset && p.id !== pid);
+  const mk = (name, giveP, givePk, note) => {
+    if(!givePk) return;
+    const sv = tradeSideValue(giveP, givePk, [tgt], []), nb = trNeedBonus(them, giveP);
+    const capAfter = tradeCapAfter(me, them, giveP, [tgt], {give:[],get:[],xfer:[],absorb:[]});
+    if(capAfter.mine > capNow() || capAfter.theirs > capNow()) return;
+    out.push({ name, giveP, givePk, note, give: sv.giveVal, odds: trOdds(sv.giveVal, sv.getVal, nb) });
+  };
+  mk('Pick heavy', [], trFillPicks(getVal + 1.5), 'Keeps your roster whole.');
+  const swap = tradeable.filter(p => p.pos === need && tradeValue(p) < getVal + 6).sort((a,b) => tradeValue(b) - tradeValue(a))[0]
+    || tradeable.filter(p => p.onBlock).sort((a,b) => tradeValue(b) - tradeValue(a))[0];
+  if(swap){ const gap = getVal + 1.5 - tradeValue(swap) - (swap.pos === need ? 3 : 0); mk('Player swap', [swap], trFillPicks(gap), swap.pos === need ? 'Fills their '+need+' need.' : 'Moves a player off your block.'); }
+  const young = tradeable.filter(p => p.age <= 24 && p.id !== (swap && swap.id)).sort((a,b) => tradeValue(b) - tradeValue(a))[0];
+  if(young){ const gap = getVal + 1.5 - tradeValue(young) - (young.pos === need ? 3 : 0); mk('Youth for vet', [young], trFillPicks(gap), 'Young upside for a proven player.'); }
+  return out.slice(0,3);
+}
+function trLoadCart(ti, giveIds, givePkIds, getIds, getPkIds){
+  tradeTeam = ti; const c = tradeCart(ti);
+  c.give = giveIds.slice(); c.givePicks = givePkIds.slice(); c.get = getIds.slice(); c.getPicks = (getPkIds||[]).slice(); c.xfer = []; c.absorb = [];
+  clearTradeCounter(ti);
+}
+function trPkgGo(ti, pid, idx, send){
+  const pk = trPackages(ti, pid)[idx]; if(!pk) return;
+  trLoadCart(ti, pk.giveP.map(p=>p.id), pk.givePk.map(x=>x.id), [pid], []);
+  save();
+  if(send) proposeTrade(); else { trView = 'deal'; trBrowse = 'theirs'; render(); }
+}
+function trBuildOwn(ti, pid){ const c = tradeCart(ti); tradeTeam = ti; if(!c.get.includes(pid)) c.get.push(pid); clearTradeCounter(ti); trView = 'deal'; trBrowse = 'mine'; save(); render(); }
+function trSelTarget(ti, pid){ trTarget = { team:ti, pid }; render(); }
+function trSetF(k, v){ trF[k] = v; render(); }
+function trToggleF(k){ trF[k] = !trF[k]; render(); }
+
+/* ---------- views ---------- */
+function trLogo(t, sz){ sz = sz||24; return '<span class="tr-logo" style="width:'+sz+'px;height:'+sz+'px;font-size:'+Math.max(7,Math.round(sz*.32))+'px;background:'+t.c1+'">'+esc(t.abbr)+'</span>'; }
+function trDots(n){ return '<span class="tr-av">'+[1,2,3,4,5].map(i => '<i class="'+(i<=n?'f':'')+'"></i>').join('')+'</span>'; }
+function trContract(p){ return money(p.salary)+'×'+(p.years||1); }
+function trMarketHTML(){
+  const me = meT(), myNeeds = teamTopNeeds(me, 3);
+  let pool = [];
+  G.teams.forEach(t => { if(t.idx === G.userTeam) return; t.roster.forEach(p => { if(!p.ir) pool.push({ p, t, av: trAvail(p, t) }); }); });
+  pool = pool.filter(x => {
+    const p = x.p;
+    if(trF.pos && p.pos !== trF.pos) return false;
+    if(trF.list === 'needs' && !myNeeds.includes(p.pos)) return false;
+    if(trF.list === 'expiring' && !((p.years||1) <= 1 && p.rating >= 78)) return false;
+    if(trF.list === 'sellers' && !(x.t.w < x.t.l && p.age >= 27)) return false;
+    if(trF.list === 'young' && !(p.age <= 24 && p.rating >= 72)) return false;
+    if(trF.ovr && p.rating < trF.ovr) return false;
+    if(trF.age && p.age > trF.age) return false;
+    if(trF.cap && p.salary > trF.cap) return false;
+    if(x.av === 1 && !trF.untouch) return false;
+    if(x.av === 5 && !trF.block) return false;
+    if(x.av >= 2 && x.av <= 4 && !trF.gettable) return false;
+    return true;
+  }).sort((a,b) => tradeValue(b.p) - tradeValue(a.p));
+  const total = pool.length; pool = pool.slice(0, 80);
+  if(!trTarget || !pool.some(x => x.p.id === trTarget.pid)) trTarget = pool.length ? { team: pool[0].t.idx, pid: pool[0].p.id } : null;
+  const seg = (k, opts) => '<div class="tr-seg">'+opts.map(o => '<span class="'+(trF[k]===o[0]?'on':'')+'" onclick="trSetF(\''+k+'\','+JSON.stringify(o[0]).replace(/"/g,'&quot;')+')">'+o[1]+'</span>').join('')+'</div>';
+  const sel = (k, opts) => '<select class="fselect tr-sel" onchange="trSetF(\''+k+'\',+this.value)">'+opts.map(o => '<option value="'+o[0]+'"'+(trF[k]===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>';
+  const tg = (k, l) => '<span class="'+(trF[k]?'on':'')+'" onclick="trToggleF(\''+k+'\')">'+l+'</span>';
+  let f = '<div class="tr-col"><div class="tr-hd"><span class="disp">Find a player</span></div><div class="tr-scroll tr-flt">' +
+    '<label>Position</label>'+seg('pos', [['','All']].concat(TR_POS.map(p => [p,p]))) +
+    '<label>Min rating</label>'+sel('ovr', [[0,'Any'],[65,'65+'],[70,'70+'],[75,'75+'],[80,'80+'],[85,'85+']]) +
+    '<label>Max age</label>'+sel('age', [[0,'Any'],[24,'24'],[26,'26'],[28,'28'],[30,'30'],[32,'32']]) +
+    '<label>Max cap hit</label>'+sel('cap', [[0,'Any'],[3,'$3M'],[6,'$6M'],[10,'$10M'],[15,'$15M'],[25,'$25M']]) +
+    '<label>Availability</label><div class="tr-seg">'+tg('block','On block')+tg('gettable','Gettable')+tg('untouch','Untouchable')+'</div>' +
+    '<label>Quick lists</label>'+seg('list', [['','None'],['needs','My needs'],['expiring','Expiring'],['sellers','Sellers'],['young','Young']]) +
+    '<p class="sub" style="font-size:10.5px;margin-top:8px">Your needs: <b style="color:var(--gold)">'+(myNeeds.join(', ')||'none')+'</b></p></div></div>';
+  let m = '<div class="tr-col"><div class="tr-hd"><span class="disp">'+total+' player'+(total===1?'':'s')+(trF.pos?' · '+trF.pos:'')+'</span><span class="sub" style="margin-left:auto;font-size:10.5px">By trade value</span></div>' +
+    '<div class="tr-scroll" style="padding:0 6px"><table class="tr-mt"><thead><tr><th>Player</th><th>Tm</th><th>Pos</th><th>OVR</th><th>Age</th><th class="tr-hs">Contract</th><th>Avail</th><th>Value</th></tr></thead><tbody>';
+  if(!pool.length) m += '<tr><td colspan="8" class="sub" style="padding:14px">No players match. Loosen the filters.</td></tr>';
+  pool.forEach(x => { const on = trTarget && trTarget.pid === x.p.id;
+    m += '<tr class="'+(on?'sel':'')+'" onclick="trSelTarget('+x.t.idx+','+x.p.id+')"><td><b>'+esc(shortName(x.p.name))+'</b>'+(x.p.gem&&x.p.gemSeen?' 💎':'')+'</td><td>'+trLogo(x.t,18)+'</td><td>'+x.p.spot+'</td><td class="tr-ovr">'+x.p.rating+'</td><td>'+x.p.age+'</td><td class="tr-hs">'+trContract(x.p)+'</td><td>'+trDots(x.av)+'</td><td class="tr-pvt">'+tradeValue(x.p).toFixed(1)+'</td></tr>'; });
+  m += '</tbody></table></div></div>';
+  let r = '<div class="tr-col">';
+  if(trTarget){
+    const t = G.teams[trTarget.team], p = t.roster.find(x => x.id === trTarget.pid), av = trAvail(p, t);
+    r += '<div class="tr-hd">'+trLogo(t,28)+'<div style="min-width:0"><b>'+pn(p)+'</b> <span class="tr-ovr">'+p.rating+'</span><div class="sub" style="font-size:10.5px">'+p.spot+' · '+p.age+' · '+trContract(p)+' · '+esc(t.abbr)+' '+t.w+'-'+t.l+'</div></div></div><div class="tr-scroll">';
+    if(av === 1) r += '<p class="sub">'+esc(t.city)+' won\'t move him. He is a protected cornerstone.</p>';
+    else {
+      const pk = trPackages(t.idx, p.id);
+      r += '<div class="disp" style="font-size:11px;color:var(--gold);margin-bottom:5px">Packages they\'d take</div>';
+      if(!pk.length) r += '<p class="sub" style="font-size:11.5px">No package from your roster fits under both caps. Try building your own.</p>';
+      pk.forEach((x,i) => { const oc = x.odds >= 70 ? 'var(--green)' : x.odds >= 45 ? 'var(--gold)' : 'var(--red)';
+        r += '<div class="tr-pkg"><div class="t">'+x.name+'<span style="color:'+oc+'">'+x.odds+'%</span></div><div class="ln">You send <b>'+esc(trAssetsText(x.giveP, x.givePk))+'</b>. '+x.note+' <span class="tr-pv">'+x.give.toFixed(1)+'</span> for <span class="tr-pv get">'+tradeValue(p).toFixed(1)+'</span></div>' +
+          '<div style="display:flex;gap:4px;margin-top:5px"><button class="btn tiny primary" onclick="trPkgGo('+t.idx+','+p.id+','+i+',true)">Send</button><button class="btn tiny" onclick="trPkgGo('+t.idx+','+p.id+','+i+',false)">Edit</button></div></div>'; });
+      r += '<button class="btn" style="width:100%" onclick="trBuildOwn('+t.idx+','+p.id+')">Build my own offer →</button>';
+    }
+    r += '</div>';
+  } else r += '<div class="tr-scroll sub">Pick a player.</div>';
+  r += '</div>';
+  return '<div class="tr-view tr-market">'+f+m+r+'</div>';
+}
+function trAssetHTML(p, kind, cart){
+  const get = kind === 'get', t = G.teams[tradeTeam];
+  const tag = !get && p.onBlock ? '<span class="tr-chip blk">BLOCK</span>' : get && p.pos === teamNeed(meT()) ? '<span class="tr-chip need">YOUR NEED</span>' : !get && p.pos === teamNeed(t) ? '<span class="tr-chip need">THEIR NEED</span>' : '';
+  return '<div class="tr-asset"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><div class="nm"><span class="pname" onclick="openModal(\'player\','+p.id+')">'+esc(shortName(p.name))+'</span> '+tag+'</div><div class="meta">'+p.spot+' · '+p.age+' · '+trContract(p)+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+tradeValue(p).toFixed(1)+'</span><span class="x" onclick="'+(get?'toggleGet':'toggleGive')+'('+p.id+')">✕</span></div>' +
+    clauseRowHTML(p, get ? 'absorb' : 'xfer', (get ? cart.absorb : cart.xfer).includes(p.id));
+}
+function trPickHTML(pk, get){ return '<div class="tr-asset pick"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><div class="nm">'+pickLabel(pk)+'</div><div class="meta">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+pickValue(pk).toFixed(1)+'</span><span class="x" onclick="'+(get?'toggleGetPick':'toggleGivePick')+'('+pk.id+')">✕</span></div>'; }
+function trDealHTML(){
+  const me = meT();
+  if(tradeTeam === null || tradeTeam === G.userTeam) tradeTeam = G.teams.find(t => t.idx !== G.userTeam).idx;
+  const them = G.teams[tradeTeam], cart = cartClauses(tradeCart(tradeTeam));
+  const giveP = me.roster.filter(p => cart.give.includes(p.id)), getP = them.roster.filter(p => cart.get.includes(p.id));
+  const givePk = G.draftPicks.filter(pk => cart.givePicks.includes(pk.id) && pk.team === me.idx), getPk = G.draftPicks.filter(pk => cart.getPicks.includes(pk.id) && pk.team === them.idx);
+  const sv = tradeSideValue(giveP, givePk, getP, getPk), cl = clauseAdj(cart, giveP, getP);
+  const giveVal = Math.max(0, sv.giveVal + cl.pts), getVal = sv.getVal, nb = trNeedBonus(them, giveP);
+  const verdict = tradeVerdict(giveVal, getVal, nb), capAfter = tradeCapAfter(me, them, giveP, getP, cart);
+  const tot = (giveVal + nb + getVal) || 1, needed = Math.max(.1, getVal + 1.5 - nb), ratio = (giveVal) / needed;
+  const pos = !giveVal && !getVal ? 50 : clamp(50 + (ratio - 1) * 120, 3, 97);
+  const face = verdict.tier === 'accept' ? (ratio > 1.3 ? '🤑' : '🙂') : verdict.tier === 'soft' ? '🤔' : verdict.tier === 'reject' ? '😒' : '😐';
+  const mood = { accept:'Interested', soft:'Thinking', reject:'Not interested', empty:'Listening' }[verdict.tier];
+  const pat = trPatience(tradeTeam);
+  let L = '<div class="tr-col"><div class="tr-hd">'+trLogo(me,24)+'<span class="disp">You give</span><span class="sub" style="margin-left:auto;font-size:10.5px">Room after '+money(capNow()-capAfter.mine)+'</span></div><div class="tr-scroll">';
+  giveP.forEach(p => L += trAssetHTML(p, 'give', cart)); givePk.forEach(pk => L += trPickHTML(pk, false));
+  L += '<div class="tr-add" onclick="trBrowse=\'mine\';render()">'+(giveP.length||givePk.length?'+ Add more':'Tap your players or picks on the right')+'</div></div>' +
+    '<div class="tr-tot">Total'+(nb?' <span>need bonus <b style="color:var(--green)">+'+nb.toFixed(1)+'</b></span>':'')+(cl.pts?' <span>clauses <b style="color:'+(cl.pts>=0?'var(--green)':'var(--red)')+'">'+(cl.pts>=0?'+':'')+cl.pts.toFixed(1)+'</b></span>':'')+'<b class="v" style="color:var(--gold)">'+(giveVal+nb).toFixed(1)+'</b></div></div>';
+  const counter = tradeCounterFor(tradeTeam);
+  let M = '<div class="tr-col tr-scale"><div style="font-size:28px;line-height:1">'+face+'</div><div style="font-weight:700;color:'+verdict.color+'">'+mood+'</div>' +
+    '<div class="tr-vl"><span style="color:var(--gold)">Give '+(giveVal+nb).toFixed(1)+'</span><span style="color:#7FA8E0">Get '+getVal.toFixed(1)+'</span></div>' +
+    '<div class="tr-vt"><i style="width:'+((giveVal+nb)/tot*100)+'%;background:var(--gold)"></i><i style="width:'+(getVal/tot*100)+'%;background:#4c7fd0"></i></div>' +
+    '<div class="tr-meter"><i style="left:'+pos+'%"></i></div><div class="tr-lb"><span>Overpay</span><span>Fair</span><span>Steal</span></div>' +
+    '<div class="sub" style="font-size:10.5px;line-height:1.35;color:'+verdict.color+'">'+esc(verdict.text)+'</div>';
+  if(counter) M += '<div class="tr-counter">🔁 Wants <b>'+esc(counter.suggestion.label)+'</b> added.<div style="display:flex;gap:3px;margin-top:4px;justify-content:center"><button class="btn tiny primary" onclick="acceptCounter()">Accept</button><button class="btn tiny danger" onclick="walkAwayFromCounter()">Walk</button></div></div>';
+  M += '<div style="flex:1"></div><div class="tr-pat" title="Their patience">'+[1,2,3,4,5].map(i => '<i class="'+(i<=pat?'':'e')+'"></i>').join('')+'</div>' +
+    '<button class="btn primary" style="width:100%" '+((giveP.length||givePk.length)&&(getP.length||getPk.length)&&pat>0?'':'disabled')+' onclick="proposeTrade()">'+(pat>0?'Propose':'Not taking calls')+'</button>' +
+    '<button class="btn" style="width:100%" onclick="suggestTrade()">✨ Make it work</button><button class="btn ghost" style="width:100%" onclick="resetTradeCart();render()">Clear</button></div>';
+  let Rr = '<div class="tr-col"><div class="tr-hd">'+trLogo(them,24)+'<span class="disp">You get</span><span class="sub" style="margin-left:auto;font-size:10.5px">Room after '+money(capNow()-capAfter.theirs)+'</span></div><div class="tr-scroll">';
+  getP.forEach(p => Rr += trAssetHTML(p, 'get', cart)); getPk.forEach(pk => Rr += trPickHTML(pk, true));
+  Rr += '<div class="tr-add" onclick="trBrowse=\'theirs\';render()">'+(getP.length||getPk.length?'+ Add more':'Tap their players or picks on the right')+'</div></div><div class="tr-tot">Total <b class="v" style="color:#7FA8E0">'+getVal.toFixed(1)+'</b></div></div>';
+  // browser
+  const bt = trBrowse === 'mine' ? me : them, mine = trBrowse === 'mine';
+  const selIds = mine ? cart.give : cart.get, selPk = mine ? cart.givePicks : cart.getPicks;
+  let B = '<div class="tr-col"><div class="tr-hd" style="gap:4px"><button class="btn tiny'+(mine?' on':'')+'" onclick="trBrowse=\'mine\';render()">'+esc(me.abbr)+'</button>' +
+    '<select class="fselect tr-sel" style="flex:1;min-width:0" onchange="setTradeTeam(parseInt(this.value));trBrowse=\'theirs\'">'+G.teams.filter(t => t.idx !== G.userTeam).map(t => '<option value="'+t.idx+'"'+(t.idx===tradeTeam?' selected':'')+'>'+esc(t.abbr)+' · '+t.w+'-'+t.l+(teamTopNeeds(t,2).length?' · needs '+teamTopNeeds(t,2).join('/'):'')+'</option>').join('')+'</select>' +
+    '<button class="btn tiny'+(!mine?' on':'')+'" onclick="trBrowse=\'theirs\';render()">'+esc(them.abbr)+'</button></div>' +
+    '<div class="tr-posbar">'+['All'].concat(TR_POS,['Picks']).map(x => '<button class="btn tiny'+(trBrowsePos===x?' on':'')+'" onclick="trBrowsePos=\''+x+'\';render()">'+x+'</button>').join('')+'</div><div class="tr-scroll">';
+  if(trBrowsePos === 'Picks'){
+    const pks = G.draftPicks.filter(pk => pk.team === bt.idx).sort((a,b) => a.year - b.year || a.round - b.round);
+    if(!pks.length) B += '<p class="sub">No picks.</p>';
+    pks.forEach(pk => { const on = selPk.includes(pk.id);
+      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGivePick':'toggleGetPick')+'('+pk.id+')"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><b>'+pickLabel(pk)+'</b><div class="sub" style="font-size:10.5px">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+pickValue(pk).toFixed(1)+'</span><span class="r">'+(on?'✓':'+')+'</span></div>'; });
+  } else {
+    let ps = bt.roster.filter(p => !p.ir && (trBrowsePos === 'All' || p.pos === trBrowsePos)).sort((a,b) => tradeValue(b) - tradeValue(a));
+    ps.forEach(p => { const on = selIds.includes(p.id), prot = isProtectedForTeam(p, bt), blk = isOnBlock(p, bt);
+      const chip = prot ? '<span class="tr-chip prot">PROT</span>' : blk ? '<span class="tr-chip blk">BLOCK</span>' : (!mine && p.pos === teamNeed(me)) ? '<span class="tr-chip need">NEED</span>' : (p.gem&&p.gemSeen) ? '<span class="tr-chip gem">GEM</span>' : '';
+      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGive':'toggleGet')+'('+p.id+')"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><b>'+esc(shortName(p.name))+'</b> '+chip+'<div class="sub" style="font-size:10.5px">'+p.spot+' · '+p.age+' · '+trContract(p)+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+tradeValue(p).toFixed(1)+'</span>' +
+        (mine ? '<span class="r tr-blk" title="Trade block status" onclick="event.stopPropagation();cycleBlockStatus('+p.id+')">'+(p.onBlock?'🎯':p.protectedAsset?'🔒':'·')+'</span>' : '<span class="r">'+(prot?'🔒':on?'✓':'+')+'</span>') + '</div>'; });
+    if(mine) B += '<p class="sub" style="font-size:10.5px;margin-top:4px">Tap 🎯/🔒/· to cycle: on block, protected, normal.</p>';
+  }
+  B += '</div></div>';
+  return '<div class="tr-view tr-deal">'+L+M+Rr+B+'</div>';
+}
+function trPhoneHTML(){
+  generateIncomingOffers();
+  const me = meT(), offers = G.incomingOffers || [], threads = G.trThreads || {};
+  const items = [];
+  offers.forEach(o => items.push({ key:'o'+o.id, ti:o.fromTeam, tag:'Incoming offer', line:'Wants '+o.theirAsk.map(id => { const p = me.roster.find(x=>x.id===id); return p ? shortName(p.name) : '?'; }).join(', '), dot:true }));
+  Object.keys(threads).map(Number).sort((a,b) => (threads[b].last||0) - (threads[a].last||0)).forEach(ti => { const th = threads[ti], c = tradeCounterFor(ti), pat = trPatience(ti);
+    items.push({ key:'t'+ti, ti, tag: c ? 'Counter' : pat <= 0 ? 'Cooling off' : th.status === 'done' ? 'Done' : 'Talks', line: (th.msgs[th.msgs.length-1]||{}).text || '', dot: th.unread }); });
+  // rumors: AI teams shopping a good player
+  const rum = [];
+  G.teams.forEach(t => { if(t.idx === G.userTeam || threads[t.idx]) return; const p = t.roster.filter(p => isOnBlock(p, t) && !p.ir).sort((a,b)=>b.rating-a.rating)[0]; if(p && p.rating >= 74) rum.push({ t, p }); });
+  rum.sort((a,b) => b.p.rating - a.p.rating).slice(0, 3).forEach(r => items.push({ key:'r'+r.t.idx+'_'+r.p.id, ti:r.t.idx, tag:'Rumor', line:'Shopping '+shortName(r.p.name)+' ('+r.p.spot+' '+r.p.rating+')', pid:r.p.id }));
+  if(!trPhoneSel || !items.some(i => i.key === trPhoneSel)) trPhoneSel = items.length ? items[0].key : null;
+  const cur = items.find(i => i.key === trPhoneSel);
+  let L = '<div class="tr-col"><div class="tr-hd"><span class="disp">Inbox</span><select class="fselect tr-sel" style="margin-left:auto;max-width:110px" onchange="if(this.value){trCall(+this.value)}"><option value="">📞 Call GM</option>'+G.teams.filter(t=>t.idx!==G.userTeam).map(t => '<option value="'+t.idx+'">'+esc(t.abbr)+' · '+esc(trGMName(t.idx))+'</option>').join('')+'</select></div><div class="tr-scroll">';
+  if(!items.length) L += '<p class="sub" style="font-size:11.5px">Quiet phone. Send an offer from the Market or call a GM.</p>';
+  items.forEach(i => { const t = G.teams[i.ti];
+    L += '<div class="tr-it'+(i.key===trPhoneSel?' on':'')+'" onclick="trPhoneSel=\''+i.key+'\';render()">'+trLogo(t,26)+'<div style="min-width:0"><div class="tag">'+i.tag+'</div><b>'+esc(trGMName(i.ti))+'</b><div class="sub tr-ell" style="font-size:10.5px">'+esc(i.line)+'</div></div>'+(i.dot?'<span class="dot"></span>':'')+'</div>'; });
+  L += '</div></div>';
+  let C = '<div class="tr-col">', Rr = '<div class="tr-col"><div class="tr-hd"><span class="disp">Scouting the GM</span></div><div class="tr-scroll tr-gm">';
+  if(cur){
+    const ti = cur.ti, t = G.teams[ti], st = trStyle(ti), pat = trPatience(ti), th = trThread(ti);
+    if(cur.key[0] === 't') th.unread = false;
+    C += '<div class="tr-hd"><div class="tr-face">'+['🧔','👨‍💼','🧑‍💼','👴','🕵️'][ti%5]+'</div><div style="min-width:0"><b>'+esc(trGMName(ti))+'</b> · '+esc(t.abbr)+' GM<div class="sub" style="font-size:10.5px">'+st.n+' · '+t.w+'-'+t.l+'</div></div>' +
+      '<div style="margin-left:auto;text-align:right"><div class="sub" style="font-size:9.5px">Patience</div><div class="tr-pat">'+[1,2,3,4,5].map(i => '<i class="'+(i<=pat?'':'e')+'"></i>').join('')+'</div></div></div><div class="tr-scroll tr-chat" id="trChat">';
+    let replies = '';
+    if(cur.key[0] === 'o'){
+      const o = offers.find(x => 'o'+x.id === cur.key);
+      const giveP = o.theirGive.map(id => t.roster.find(x=>x.id===id)).filter(Boolean), givePk = o.theirGivePicks.map(id => G.draftPicks.find(x=>x.id===id)).filter(Boolean);
+      const askP = o.theirAsk.map(id => me.roster.find(x=>x.id===id)).filter(Boolean), askPk = o.theirAskPicks.map(id => G.draftPicks.find(x=>x.id===id)).filter(Boolean);
+      const gv = giveP.reduce((s,p)=>s+tradeValue(p),0)+givePk.reduce((s,pk)=>s+pickValue(pk),0), av = askP.reduce((s,p)=>s+tradeValue(p),0)+askPk.reduce((s,pk)=>s+pickValue(pk),0);
+      C += '<div class="tr-msg them">I like '+esc(askP.map(p=>p.name).join(' and ')||'what you have')+'. Here\'s what I can do.</div>' +
+        '<div class="tr-offer"><div class="disp" style="font-size:10.5px;color:var(--gold);margin-bottom:4px">Their offer</div><div class="cols"><div><b>You give <span class="tr-pv">'+av.toFixed(1)+'</span></b>'+askP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(askPk.map(pickLabel)).join('<br>')+'</div><div><b>You get <span class="tr-pv get">'+gv.toFixed(1)+'</span></b>'+giveP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(givePk.map(pickLabel)).join('<br>')+'</div></div></div>';
+      replies = '<button class="btn primary" onclick="resolveIncomingOffer('+o.id+',\'accept\')">Accept</button><button class="btn" onclick="resolveIncomingOffer('+o.id+',\'counter\');trView=\'deal\';render()">Counter in table</button><button class="btn danger" onclick="resolveIncomingOffer('+o.id+',\'decline\')">Decline</button>';
+    } else if(cur.key[0] === 'r'){
+      const p = t.roster.find(x => x.id === cur.pid);
+      C += '<div class="tr-msg them">Word around the league: '+esc(t.city)+' will listen on '+esc(p?p.name:'him')+'.</div>';
+      replies = p ? '<button class="btn primary" onclick="trView=\'market\';trF.pos=\''+p.pos+'\';trTarget={team:'+ti+',pid:'+p.id+'};render()">See packages</button><button class="btn" onclick="trBuildOwn('+ti+','+p.id+')">Build offer</button>' : '';
+    } else {
+      th.msgs.forEach(m => { C += m.offer ? '<div class="tr-offer"><div class="disp" style="font-size:10.5px;color:var(--gold);margin-bottom:4px">'+esc(m.offer.title)+'</div><div class="cols"><div><b>You give</b>'+esc(m.offer.give)+'</div><div><b>You get</b>'+esc(m.offer.get)+'</div></div></div>' : '<div class="tr-msg '+m.who+'">'+esc(m.text)+'</div>'; });
+      if(!th.msgs.length) C += '<div class="tr-msg them">'+esc(trGMName(ti))+' here. What are you thinking?</div>';
+      const c = tradeCounterFor(ti);
+      if(c){ tradeTeam = ti; replies = '<button class="btn primary" onclick="tradeTeam='+ti+';acceptCounter()">Accept counter</button><button class="btn" onclick="tradeTeam='+ti+';trView=\'deal\';clearTradeCounter('+ti+');save();render()">Edit in table</button><button class="btn danger" onclick="tradeTeam='+ti+';walkAwayFromCounter();trMsg('+ti+',\'me\',\'I will pass.\');save();render()">Walk away</button>'; }
+      else replies = '<button class="btn primary" onclick="tradeTeam='+ti+';trView=\'deal\';trBrowse=\'theirs\';render()">Open deal table</button><button class="btn" onclick="tradeTeam='+ti+';trView=\'deal\';suggestTrade()">✨ Ask for ideas</button>';
+    }
+    C += '</div><div class="tr-replies">'+replies+'</div>';
+    const myTrades = (G.trHistory||[]).filter(h => h.team === ti).length, needs = teamTopNeeds(t,3);
+    const shop = t.roster.filter(p => isOnBlock(p, t) && !p.ir).sort((a,b)=>b.rating-a.rating)[0];
+    const wkLeft = Math.max(0, 9 - (G.week||0)), losing = t.w < t.l;
+    const lev = (losing?1:0) + (G.phase==='hub' && wkLeft <= 3 ? 1 : 0) + (pat >= 4 ? 1 : 0);
+    Rr += '<div class="kv">Style</div><p><b>'+st.n+'.</b> '+st.d+'</p><div class="kv">Needs</div><p>'+(needs.join(', ')||'Nothing pressing')+'</p>' +
+      '<div class="kv">Cap room</div><p>'+money(capRoom(t))+'</p><div class="kv">History with you</div><p>'+(myTrades ? myTrades+' trade'+(myTrades>1?'s':'')+' done.' : 'No trades yet.')+'</p>' +
+      (shop ? '<div class="kv">Shopping</div><p>'+esc(shop.name)+' ('+shop.spot+' '+shop.rating+')</p>' : '') +
+      '<div class="kv">Your leverage</div><p>'+t.w+'-'+t.l+(G.phase==='hub'?', '+wkLeft+' wk to deadline':'')+'. <b style="color:'+(lev>=2?'var(--green)':lev===1?'var(--gold)':'var(--red)')+'">'+(lev>=2?'Strong':lev===1?'Fair':'Weak')+'</b></p>';
+  } else C += '<div class="tr-scroll sub">Nothing here yet.</div>';
+  C += '</div>'; Rr += '</div></div>';
+  return '<div class="tr-view tr-phone">'+L+C+Rr+'</div>';
+}
+function trCall(ti){ trThread(ti); trPhoneSel = 't'+ti; if(!trThread(ti).msgs.length) trMsg(ti, 'them', trGMName(ti)+' here. What are you thinking?'); trThread(ti).unread = false; save(); render(); }
+function trHubHTML(){
+  const me = meT(), un = trUnread();
+  const dl = G.phase === 'hub' ? Math.max(0, 9 - (G.week||0)) : null;
+  let s = '<div class="tr-hub"><div class="tr-top"><button class="tr-tab tr-x" onclick="closePage()" title="Back to hub">✕</button>' +
+    '<button class="tr-tab'+(trView==='market'?' on':'')+'" onclick="trSetView(\'market\')">🔎 Market</button>' +
+    '<button class="tr-tab'+(trView==='deal'?' on':'')+'" onclick="trSetView(\'deal\')">🤝 Deal Table</button>' +
+    '<button class="tr-tab'+(trView==='phone'?' on':'')+'" onclick="trSetView(\'phone\')">📞 Phone'+(un?'<span class="tr-badge">'+un+'</span>':'')+'</button>' +
+    '<span class="tr-stat" style="margin-left:auto">'+(dl!=null?'Deadline <b style="color:var(--gold)">'+(dl?dl+' wk':'this week')+'</b> · ':'')+'Cap room <b>'+money(capRoom(me))+'</b> · Picks <b>'+G.draftPicks.filter(pk=>pk.team===me.idx).length+'</b></span></div>';
+  s += trView === 'deal' ? trDealHTML() : trView === 'phone' ? trPhoneHTML() : trMarketHTML();
+  return s + '</div>';
+}
 
 /* ---------- boot ---------- */
 render();
