@@ -1039,15 +1039,36 @@ const POS_MULT = {QB:2.3, RB:.9, WR:1.35, TE:1.0, OL:1.25, DL:1.35, LB:1.1, CB:1
 
 /* ---------- specific spots within position groups ---------- */
 const SPOTS = { QB:['QB'], RB:['RB'], WR:['WR'], TE:['TE'],
-  OL:['LT','LG','C','RG','RT'], DL:['DE','DT'], LB:['OLB','MLB'],
-  CB:['CB'], S:['S'], K:['K'], P:['P'], LS:['LS'] };
+  OL:['LT','LG','C','RG','RT'], DL:['LE','RE','DT'], LB:['OLB','MLB'],
+  CB:['CB'], S:['SS','FS'], K:['K'], P:['P'], LS:['LS'] };
 const SPOT_GROUP = {}; Object.keys(SPOTS).forEach(g => SPOTS[g].forEach(sp => SPOT_GROUP[sp] = g));
+const SPOT_MIN = {LT:2, LG:1, C:2, RG:1, RT:2, LE:2, RE:2, DT:2, OLB:3, MLB:2, SS:2, FS:1};
+function pickSpot(pos){ if(pos==='DL'){ const r=Math.random(); return r<.25?'LE':r<.5?'RE':'DT'; } return pick(SPOTS[pos]); }
+// position shown to the player: the specific spot for split groups (LT, LE, OLB, SS...), the group otherwise
+function PL(x){ if(!x) return ''; return (x.spot && SPOTS[x.pos] && SPOTS[x.pos].length>1) ? x.spot : (x.pos||x.spot||''); }
+function migrateSpots(){
+  if(!G || G._spotV===2) return;
+  let flip=0; const seen=new Set();
+  const fix=o=>{ if(!o||typeof o!=='object'||seen.has(o)) return; seen.add(o);
+    if(Array.isArray(o)){ o.forEach(fix); return; }
+    if(typeof o.pos==='string' && typeof o.spot==='string'){
+      if(o.spot==='DE') o.spot = (flip++%2)?'RE':'LE';
+      else if(o.spot==='S') o.spot = (flip++%2)?'FS':'SS';
+      else if(o.pos==='S' && !SPOTS.S.includes(o.spot)) o.spot = (flip++%2)?'FS':'SS';
+      else if(o.pos==='DL' && !SPOTS.DL.includes(o.spot)) o.spot = 'DT';
+    }
+    for(const k in o){ const v=o[k]; if(v&&typeof v==='object') fix(v); } };
+  try{ fix(G); }catch(e){ console.error('spot migrate', e); }
+  G._spotV=2;
+}
+
 /* out-of-position rating penalty (from natural spot → assigned spot) */
 const SPOT_FIT = {
   LT:{LT:0,RT:1,LG:3,RG:3,C:4}, RT:{RT:0,LT:1,RG:3,LG:3,C:4},
   LG:{LG:0,RG:1,C:2,LT:3,RT:3}, RG:{RG:0,LG:1,C:2,RT:3,LT:3},
   C:{C:0,LG:2,RG:2,LT:4,RT:4},
-  DE:{DE:0,DT:3}, DT:{DT:0,DE:3},
+  LE:{LE:0,RE:1,DT:3}, RE:{RE:0,LE:1,DT:3}, DT:{DT:0,LE:3,RE:3},
+  SS:{SS:0,FS:1}, FS:{FS:0,SS:1},
   OLB:{OLB:0,MLB:3}, MLB:{MLB:0,OLB:3}
 };
 const SCHEME_TAG = {any:'VERS', '43':'4-3', '34':'3-4'};
@@ -1070,26 +1091,26 @@ const OFF_FORMS = {
 };
 const DEF_FORMS = {
   f43:   {name:'4-3', scheme:'43', runMod:.5, passMod:0,
-    slots:['DE','DT','DT','DE','OLB','MLB','OLB','CB','CB','S','S'],
+    slots:['LE','DT','DT','RE','OLB','MLB','OLB','CB','CB','SS','FS'],
     xy:[[305,255],[432,255],[568,255],[695,255],[330,172],[500,160],[670,172],[88,238],[912,238],[362,72],[638,72]]},
   f34:   {name:'3-4', scheme:'34', runMod:0, passMod:.5,
-    slots:['DE','DT','DE','OLB','MLB','MLB','OLB','CB','CB','S','S'],
+    slots:['LE','DT','RE','OLB','MLB','MLB','OLB','CB','CB','SS','FS'],
     xy:[[362,255],[500,255],[638,255],[228,222],[432,162],[568,162],[772,222],[88,238],[912,238],[362,72],[638,72]]},
   f52:   {name:'5-2', scheme:'34', runMod:3, passMod:-2.5,
-    slots:['DE','DT','DT','DT','DE','OLB','OLB','CB','CB','S','S'],
+    slots:['LE','DT','DT','DT','RE','OLB','OLB','CB','CB','SS','FS'],
     xy:[[262,255],[390,255],[500,255],[610,255],[738,255],[405,162],[595,162],[88,238],[912,238],[362,72],[638,72]]},
   nickel:{name:'Nickel', scheme:'43', runMod:-2, passMod:2,
-    slots:['DE','DT','DT','DE','OLB','MLB','CB','CB','CB','S','S'],
+    slots:['LE','DT','DT','RE','OLB','MLB','CB','CB','CB','SS','FS'],
     xy:[[305,255],[432,255],[568,255],[695,255],[415,168],[585,168],[88,238],[912,238],[762,192],[362,72],[638,72]]},
   dime:  {name:'Dime', scheme:'43', runMod:-4, passMod:3.5,
-    slots:['DE','DT','DT','DE','MLB','CB','CB','CB','CB','S','S'],
+    slots:['LE','DT','DT','RE','MLB','CB','CB','CB','CB','SS','FS'],
     xy:[[305,255],[432,255],[568,255],[695,255],[500,162],[88,238],[912,238],[762,192],[238,192],[362,72],[638,72]]}
 };
 /* unit-rating weights by spot (normalized per formation) */
 const W_OFF_PASS = {QB:45, WR:8, TE:5, RB:3, LT:6, RT:5, LG:3, RG:3, C:4};
 const W_OFF_RUSH = {RB:28, QB:6, TE:8, WR:2, LT:7, RT:7, LG:9, RG:9, C:10};
-const W_DEF_PASS = {CB:14, S:11, DE:8, DT:3, OLB:6, MLB:5};
-const W_DEF_RUSH = {DT:12, DE:9, OLB:8, MLB:10, S:5, CB:2};
+const W_DEF_PASS = {CB:14, FS:12, SS:10, LE:8, RE:8, DT:3, OLB:6, MLB:5};
+const W_DEF_RUSH = {DT:12, LE:9, RE:9, OLB:8, MLB:10, SS:7, FS:3, CB:2};
 
 /* ---------- league calendar ---------- */
 function tagStart(y){ const d = new Date(y,1,1); d.setDate(1 + ((8-d.getDay())%7) + 7); return d; } // 2nd Monday of Feb
@@ -1669,7 +1690,7 @@ function makePlayer(pos, rating, age, years, spot){
   const p = {
     id: G ? G.nextId++ : 0,
     name: pick(FN)+' '+pick(LN), pos, rating, age,
-    spot: spot || pick(SPOTS[pos]),
+    spot: spot || pickSpot(pos),
     scheme: (pos==='DL' || pos==='LB') ? pick(['43','43','34','34','any']) : 'any',
     years: years != null ? years : RI(1,3),
     salary: 0, injWeeks: 0, trained: 0, dressed: true
@@ -1847,8 +1868,8 @@ function openFreeAgency(){
 const FA_MIN_PER_POS = {QB:3, RB:4, WR:5, TE:3, OL:5, DL:5, LB:4, CB:4, S:3, K:2, P:2, LS:2}; // guaranteed floor per position
 /* Free-agent floors: every spot (and every front scheme) always has bodies on the street.
    Quality follows the calendar; a few young street FAs carry a hidden high ceiling. */
-const FA_SPOT_FLOOR = { QB:4, RB:4, WR:7, TE:4, LT:3, LG:3, C:3, RG:3, RT:3, CB:6, S:4, K:2, P:2, LS:2 };
-const FA_SCHEME_FLOOR = { DE:3, DT:3, OLB:3, MLB:3 }; // per scheme (4-3 and 3-4); versatile players count for both
+const FA_SPOT_FLOOR = { QB:4, RB:4, WR:7, TE:4, LT:3, LG:3, C:3, RG:3, RT:3, CB:6, SS:2, FS:2, K:2, P:2, LS:2 };
+const FA_SCHEME_FLOOR = { LE:2, RE:2, DT:3, OLB:3, MLB:3 }; // per scheme (4-3 and 3-4); versatile players count for both
 function faFillQuality(){
   const early = ['tag','fa','draft','offseason'].includes(G.phase);
   return early ? R(55,72) : R(50,66);
@@ -3301,7 +3322,7 @@ function advanceToTag(){
       if(!p.cst) p.cst = blankStats();
       Object.keys(p.st).forEach(k => p.cst[k] += p.st[k]);
       if(!p.seasonLog) p.seasonLog = [];
-      p.seasonLog.push({ year: G.year, team: t.abbr, pos: p.pos, st: Object.assign({}, p.st), salary: p.salary });
+      p.seasonLog.push({ year: G.year, team: t.abbr, pos: p.pos, spot: p.spot, st: Object.assign({}, p.st), salary: p.salary });
       if(!isHistoryPriority(p) && p.seasonLog.length > 3) p.seasonLog = p.seasonLog.slice(-3);
     }
     p.lastScore = statScore(p); p.st = null; p.devPts = 0; p.statDev = 0;
@@ -3427,7 +3448,7 @@ function makeProspect(tier, forcePos){
   const scoutMid = clamp(trueRating + RI(-3,3), 50, 99); // scouts aren't perfectly calibrated
   const bio = makeProspectBio(pos);
   return {
-    id: G.nextId++, name: pick(FN)+' '+pick(LN), pos, spot: pick(SPOTS[pos]), age: RI(21,23),
+    id: G.nextId++, name: pick(FN)+' '+pick(LN), pos, spot: pickSpot(pos), age: RI(21,23),
     scheme: (pos==='DL'||pos==='LB') ? pick(['43','43','34','34','any']) : 'any',
     trueRating, scoutLo: clamp(scoutMid-spread,50,99), scoutHi: clamp(scoutMid+spread,50,99), spread,
     home: bio.home, college: bio.college, hgt: bio.hgt
@@ -4897,7 +4918,7 @@ function demandsHTML(){
    SEASON AWARDS + LEAGUE HALL OF FAME
    ===================================================== */
 const AWARD_NAME = { mvp:'MVP', opoy:'Offensive Player of the Year', dpoy:'Defensive Player of the Year', oroy:'Offensive Rookie of the Year', droy:'Defensive Rookie of the Year', coy:'Coach of the Year' };
-const ALLPRO_SLOTS = [['QB',1],['RB',1],['WR',2],['TE',1],['OL',5],['DE',2],['DT',2],['LB',3],['CB',2],['S',2],['K',1],['P',1],['RET',1]];
+const ALLPRO_SLOTS = [['QB',1],['RB',1],['WR',2],['TE',1],['LT',1],['LG',1],['C',1],['RG',1],['RT',1],['LE',1],['RE',1],['DT',2],['OLB',2],['MLB',1],['CB',2],['SS',1],['FS',1],['K',1],['P',1],['RET',1]];
 const DEF_POS = {DL:1, LB:1, CB:1, S:1};
 function defScore(s){ return (s.tk||0)*.5 + (s.sk||0)*4 + (s.int||0)*6 + (s.ff||0)*3; }
 function offScore(s){ return (s.py||0)*.035 + (s.ptd||0)*5 + ((s.ry||0)+(s.cy||0))*.075 + ((s.rtd||0)+(s.ctd||0))*4; }
@@ -4932,17 +4953,17 @@ function computeSeasonAwards(){
   const coy = G.teams.slice().sort((a,b) => { const imp = t => { const ps = prev && prev.standings ? prev.standings.find(x => x.idx===t.idx) : null; return t.w*1.4 + (ps ? (t.w - ps.w)*1.2 : 0); }; return imp(b) - imp(a); })[0];
   if(coy){ const you = coy.idx === G.userTeam; const nm = you && G.mode==='coachgm' ? 'You' : you && G.mode==='owner' && G.hc ? G.hc.name : aiCoachName(coy); A.list.coy = { name:nm, team:coy.abbr, teamIdx:coy.idx, line:coy.w+'-'+coy.l, you: you && G.mode==='coachgm' }; if(A.list.coy.you){ if(!G.career.awards) G.career.awards = []; G.career.awards.push(yr+' Coach of the Year'); } }
   // All-Pro
-  const slot = (pos, x) => pos==='OL' ? x.p.pos==='OL' : pos==='DE'||pos==='DT' ? x.p.pos==='DL' && x.p.spot===pos : pos==='RET' ? ((x.p.st.kry||0)+(x.p.st.pry||0)) > 0 : x.p.pos===pos;
+  const slot = (pos, x) => (SPOT_GROUP[pos] && SPOTS[SPOT_GROUP[pos]].length>1) ? x.p.spot===pos : pos==='RET' ? ((x.p.st.kry||0)+(x.p.st.pry||0)) > 0 : x.p.pos===pos;
   const score = (pos, x) => { const s = x.p.st;
-    if(pos==='OL') return x.p.rating + win(x.t)*6;
+    if(SPOT_GROUP[pos]==='OL') return x.p.rating + win(x.t)*6;
     if(pos==='K') return (s.fgm||0)*3 + x.p.rating*.3;
     if(pos==='P') return (s.pu ? (s.puy||0)/s.pu : 0) + (s.pin||0)*.8 + x.p.rating*.1;
     if(pos==='RET') return (s.kry||0)*.05 + (s.pry||0)*.1 + ((s.krtd||0)+(s.prtd||0))*12;
-    if(pos==='DE'||pos==='DT'||DEF_POS[pos]) return defScore(s) + x.p.rating*.3;
+    if(DEF_POS[pos]||DEF_POS[SPOT_GROUP[pos]]) return defScore(s) + x.p.rating*.3;
     return offScore(s) + x.p.rating*.3; };
   ALLPRO_SLOTS.forEach(([pos, n]) => {
     all.filter(x => slot(pos, x)).sort((a,b) => score(pos,b) - score(pos,a)).slice(0, n).forEach(x => {
-      A.allPro.push({ id:x.p.id, name:x.p.name, pos: pos==='RET'?'KR/PR':pos==='OL'?x.p.spot:pos, team:x.t.abbr, teamIdx:x.t.idx, line:awardLine(x.p) });
+      A.allPro.push({ id:x.p.id, name:x.p.name, pos: pos==='RET'?'KR/PR':pos, team:x.t.abbr, teamIdx:x.t.idx, line:awardLine(x.p) });
       giveAward(x.p, yr+' All-Pro');
     });
   });
@@ -4971,7 +4992,7 @@ function awardsModalHTML(){
   const A = G.awards && G.awards[G.awardsShow]; if(!A) return '<p class="sub">No awards yet.</p>';
   const row = (k, a) => a ? '<tr'+(a.teamIdx===G.userTeam?' style="background:rgba(255,212,71,.08)"':'')+'><td><b>'+AWARD_NAME[k]+'</b></td><td>'+(a.id?'<span class="pname" onclick="openModal(\'player\','+a.id+')">'+esc(a.name)+'</span>':esc(a.name))+' <span class="sub">'+(a.pos||'')+' · '+esc(a.team)+'</span></td><td class="sub">'+esc(a.line)+'</td></tr>' : '';
   let s = '<div class="panel"><div class="hd disp">'+A.year+' Season Awards</div><table class="tbl">'+Object.keys(AWARD_NAME).map(k => row(k, A.list[k])).join('')+'</table></div>';
-  s += '<div class="panel" style="margin-top:10px"><div class="hd disp" style="font-size:14px">All-Pro Team</div><table class="tbl">'+A.allPro.map(a => '<tr'+(a.teamIdx===G.userTeam?' style="background:rgba(255,212,71,.08)"':'')+'><td><b>'+a.pos+'</b></td><td><span class="pname" onclick="openModal(\'player\','+a.id+')">'+esc(a.name)+'</span> <span class="sub">'+esc(a.team)+'</span></td><td class="sub">'+esc(a.line)+'</td></tr>').join('')+'</table></div>';
+  s += '<div class="panel" style="margin-top:10px"><div class="hd disp" style="font-size:14px">All-Pro Team</div><table class="tbl">'+A.allPro.map(a => '<tr'+(a.teamIdx===G.userTeam?' style="background:rgba(255,212,71,.08)"':'')+'><td><b>'+PL(a)+'</b></td><td><span class="pname" onclick="openModal(\'player\','+a.id+')">'+esc(a.name)+'</span> <span class="sub">'+esc(a.team)+'</span></td><td class="sub">'+esc(a.line)+'</td></tr>').join('')+'</table></div>';
   return s;
 }
 function awardsHistoryHTML(){
@@ -4997,7 +5018,7 @@ function hofConsider(p, t){
   const sc = hofScore(p);
   if(sc < 45) return;
   if(!G.hofBallot) G.hofBallot = [];
-  G.hofBallot.push({ id:p.id, name:p.name, pos:p.pos, team:t?t.abbr:'', teamIdx:t?t.idx:null, score:sc, retired:G.year, eligible:G.year+2, tries:0, awards:(p.awards||[]).slice(), rings:p.rings||0, peak:p.peak||p.rating, cst:Object.assign({}, p.cst||{}) });
+  G.hofBallot.push({ id:p.id, name:p.name, pos:p.pos, spot:p.spot, team:t?t.abbr:'', teamIdx:t?t.idx:null, score:sc, retired:G.year, eligible:G.year+2, tries:0, awards:(p.awards||[]).slice(), rings:p.rings||0, peak:p.peak||p.rating, cst:Object.assign({}, p.cst||{}) });
 }
 function hofVote(){
   if(!G.hofBallot || !G.hofBallot.length) return [];
@@ -5018,14 +5039,14 @@ function hofHTML(){
   let s = '<div class="panel" style="margin-bottom:10px"><div class="hd disp">League Hall of Fame</div><p class="sub">Retired players become eligible two years later. Voters weigh career stats, MVPs, All-Pro nods, titles and peak level. Near misses stay on the ballot for a few years.</p></div>';
   if(!list.length) s += '<div class="panel"><p class="sub">No one enshrined yet.</p></div>';
   else s += '<div class="panel"><table class="tbl"><tr><th>Class</th><th>Player</th><th>Pos</th><th>Team</th><th>Honors</th></tr>'+list.map(b => { const a = b.awards||[], c = k => a.filter(x=>x.endsWith(k)).length;
-    return '<tr'+(b.teamIdx===G.userTeam?' style="background:rgba(255,212,71,.08)"':'')+'><td>'+b.year+(b.firstBallot?' <span class="tag w">1st ballot</span>':'')+'</td><td><b>'+esc(b.name)+'</b></td><td>'+b.pos+'</td><td>'+esc(b.team)+'</td><td class="sub">'+[c('MVP')?c('MVP')+'× MVP':'', c('All-Pro')?c('All-Pro')+'× All-Pro':'', b.rings?b.rings+'× champ':'', 'peak '+b.peak].filter(Boolean).join(' · ')+'</td></tr>'; }).join('')+'</table></div>';
+    return '<tr'+(b.teamIdx===G.userTeam?' style="background:rgba(255,212,71,.08)"':'')+'><td>'+b.year+(b.firstBallot?' <span class="tag w">1st ballot</span>':'')+'</td><td><b>'+esc(b.name)+'</b></td><td>'+PL(b)+'</td><td>'+esc(b.team)+'</td><td class="sub">'+[c('MVP')?c('MVP')+'× MVP':'', c('All-Pro')?c('All-Pro')+'× All-Pro':'', b.rings?b.rings+'× champ':'', 'peak '+b.peak].filter(Boolean).join(' · ')+'</td></tr>'; }).join('')+'</table></div>';
   const ballot = (G.hofBallot||[]).filter(b => b.eligible <= G.year + 2).sort((a,b) => b.score - a.score).slice(0, 10);
-  if(ballot.length) s += '<div class="panel" style="margin-top:10px"><div class="hd disp" style="font-size:14px">On the ballot</div>'+ballot.map(b => '<p class="sub" style="margin:3px 0">'+esc(b.name)+' · '+b.pos+' · '+esc(b.team)+' · '+(b.eligible > G.year ? 'eligible '+b.eligible : 'year '+(b.tries+1))+'</p>').join('')+'</div>';
+  if(ballot.length) s += '<div class="panel" style="margin-top:10px"><div class="hd disp" style="font-size:14px">On the ballot</div>'+ballot.map(b => '<p class="sub" style="margin:3px 0">'+esc(b.name)+' · '+PL(b)+' · '+esc(b.team)+' · '+(b.eligible > G.year ? 'eligible '+b.eligible : 'year '+(b.tries+1))+'</p>').join('')+'</div>';
   return s;
 }
 function hofModalHTML(){
   const cls = (G.hallOfFame||[]).filter(b => b.year === G.hofShow);
-  return '<div class="panel"><div class="hd disp">Hall of Fame Class of '+G.hofShow+'</div>'+cls.map(b => '<p style="margin:6px 0"><b>'+esc(b.name)+'</b> <span class="sub">'+b.pos+' · '+esc(b.team)+(b.firstBallot?' · first ballot':'')+'</span></p>').join('')+'<button class="btn primary" style="margin-top:8px" onclick="G.hofShow=null;closeModal()">Continue</button></div>';
+  return '<div class="panel"><div class="hd disp">Hall of Fame Class of '+G.hofShow+'</div>'+cls.map(b => '<p style="margin:6px 0"><b>'+esc(b.name)+'</b> <span class="sub">'+PL(b)+' · '+esc(b.team)+(b.firstBallot?' · first ballot':'')+'</span></p>').join('')+'<button class="btn primary" style="margin-top:8px" onclick="G.hofShow=null;closeModal()">Continue</button></div>';
 }
 
 /* =====================================================
@@ -5282,7 +5303,7 @@ function gmRunContracts(){
     const cost = userPrice(p, 1), asked = keep.includes(p.id);
     const fits = cost <= capRoom(me) + p.salary - gmCapFloor()*.5;
     const wants = asked ? Math.random() < .45 + gmRel()/200 : (g.philo==='Youth' ? p.age<=28 && p.rating>=66 : g.philo==='Win now' ? p.rating>=72 : p.rating>=68 && p.age<=31);
-    if(fits && wants){ resignPlayer(p.id); gmFeed('Re-signed '+p.name+' ('+p.pos+') · '+money(cost)+'/yr'+(asked?' · your request':'')+'.'); if(asked) G.gmRelation = clamp(gmRel()+1,0,100); }
+    if(fits && wants){ resignPlayer(p.id); gmFeed('Re-signed '+p.name+' ('+PL(p)+') · '+money(cost)+'/yr'+(asked?' · your request':'')+'.'); if(asked) G.gmRelation = clamp(gmRel()+1,0,100); }
     else if(asked) gmFeed('Let '+p.name+' walk · '+(fits?'not his type of player':'did not fit the cap')+'.');
   });
   const left = pendingUFAs(me).filter(p => !p.resigned && !p.tagged && isPremiumFA(p)).sort((a,b)=>b.rating-a.rating);
@@ -5292,7 +5313,7 @@ function gmRunContracts(){
 function gmRunFA(){
   const me = meT(), req = gmReq().fa;
   req.slice().forEach(id => { const p = G.fa.find(x => x.id===id); if(!p) return; const cost = userPrice(p,1);
-    if(cost <= capRoom(me) - gmCapFloor()*.5 && Math.random() < .35 + gmRel()/220 + (G.gm?G.gm.spending:50)/400){ signFA(p.id); gmFeed('Signed '+p.name+' ('+p.pos+') · '+money(cost)+'/yr · your request.'); G.gmRelation = clamp(gmRel()+1,0,100); }
+    if(cost <= capRoom(me) - gmCapFloor()*.5 && Math.random() < .35 + gmRel()/220 + (G.gm?G.gm.spending:50)/400){ signFA(p.id); gmFeed('Signed '+p.name+' ('+PL(p)+') · '+money(cost)+'/yr · your request.'); G.gmRelation = clamp(gmRel()+1,0,100); }
     else gmFeed('Passed on '+p.name+' · '+(cost > capRoom(me) ? 'too rich for our cap' : 'did not see the fit')+'.'); });
   gmReq().fa = [];
   let guard = 8;
@@ -5301,7 +5322,7 @@ function gmRunFA(){
     const need = teamNeed(me); if(!need) break;
     const c = G.fa.filter(p => p.pos===need).sort((a,b)=>b.rating-a.rating)[0]; if(!c) break;
     const cost = userPrice(c,1); if(cost > capRoom(me) - gmCapFloor()) break;
-    signFA(c.id); gmFeed('Signed '+c.name+' ('+c.pos+') · '+money(cost)+'/yr.');
+    signFA(c.id); gmFeed('Signed '+c.name+' ('+PL(c)+') · '+money(cost)+'/yr.');
   }
 }
 function gmRunDraft(){
@@ -5314,7 +5335,7 @@ function gmRunDraft(){
         let pr = null;
         if(t.idx === G.userTeam){ const want = G.draftPool.find(p => req.includes(p.id)); if(want && Math.random() < .55 + gmRel()/250) pr = want; }
         if(!pr) pr = aiSelectProspect(t);
-        if(pr){ draftProspect(pr.id, pickObj.team, pickObj); if(t.idx === G.userTeam) gmFeed('Drafted '+pr.name+' ('+pr.pos+')'+(req.includes(pr.id)?' · your request':'')+'.'); }
+        if(pr){ draftProspect(pr.id, pickObj.team, pickObj); if(t.idx === G.userTeam) gmFeed('Drafted '+pr.name+' ('+PL(pr)+')'+(req.includes(pr.id)?' · your request':'')+'.'); }
       } else G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
     }
     G.draftPickIdx++;
@@ -5380,13 +5401,13 @@ function gmPhaseHTML(duty){
   const star = (kind,id) => '<button class="btn tiny'+(req[kind].includes(id)?' primary':'')+'" onclick="toggleGmReq(\''+kind+'\','+id+')">★ '+(req[kind].includes(id)?'Requested':'Request')+'</button>';
   if(duty==='contracts'){
     const list = pendingUFAs(me).sort((a,b)=>b.rating-a.rating);
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Expiring contracts</div>'+(list.length?'<table class="tbl"><tr><th>Player</th><th>Pos</th><th>OVR</th><th>Age</th><th>Asking</th><th></th></tr>'+list.map(p=>'<tr><td>'+pn(p)+'</td><td>'+p.pos+'</td><td>'+p.rating+'</td><td>'+p.age+'</td><td>'+money(userPrice(p,1))+'</td><td>'+star('keep',p.id)+'</td></tr>').join('')+'</table>':'<p class="sub">Nobody expiring.</p>')+'</div>';
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Expiring contracts</div>'+(list.length?'<table class="tbl"><tr><th>Player</th><th>Pos</th><th>OVR</th><th>Age</th><th>Asking</th><th></th></tr>'+list.map(p=>'<tr><td>'+pn(p)+'</td><td>'+PL(p)+'</td><td>'+p.rating+'</td><td>'+p.age+'</td><td>'+money(userPrice(p,1))+'</td><td>'+star('keep',p.id)+'</td></tr>').join('')+'</table>':'<p class="sub">Nobody expiring.</p>')+'</div>';
   } else if(duty==='fa'){
     const list = G.fa.slice().sort((a,b)=>b.rating-a.rating).slice(0, 16);
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Top free agents</div><p class="sub">Cap room '+money(capRoom(me))+'.</p><table class="tbl"><tr><th>Player</th><th>Pos</th><th>OVR</th><th>Age</th><th>Asking</th><th></th></tr>'+list.map(p=>'<tr><td>'+pn(p)+'</td><td>'+p.pos+'</td><td>'+p.rating+'</td><td>'+p.age+'</td><td>'+money(userPrice(p,1))+'</td><td>'+star('fa',p.id)+'</td></tr>').join('')+'</table></div>';
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Top free agents</div><p class="sub">Cap room '+money(capRoom(me))+'.</p><table class="tbl"><tr><th>Player</th><th>Pos</th><th>OVR</th><th>Age</th><th>Asking</th><th></th></tr>'+list.map(p=>'<tr><td>'+pn(p)+'</td><td>'+PL(p)+'</td><td>'+p.rating+'</td><td>'+p.age+'</td><td>'+money(userPrice(p,1))+'</td><td>'+star('fa',p.id)+'</td></tr>').join('')+'</table></div>';
   } else if(duty==='draft'){
     const list = (G.draftPool||[]).slice().sort((a,b)=>((b.scoutLo+b.scoutHi)-(a.scoutLo+a.scoutHi))).slice(0, 18);
-    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Your board · request targets</div><table class="tbl"><tr><th>Prospect</th><th>Pos</th><th>Your grade</th><th>College</th><th></th></tr>'+list.map(p=>'<tr><td>'+esc(p.name)+'</td><td>'+p.pos+'</td><td>'+p.scoutLo+'–'+p.scoutHi+'</td><td class="sub">'+esc(p.college||'')+'</td><td>'+star('draft',p.id)+'</td></tr>').join('')+'</table></div>';
+    s += '<div class="panel"><div class="hd disp" style="font-size:14px">Your board · request targets</div><table class="tbl"><tr><th>Prospect</th><th>Pos</th><th>Your grade</th><th>College</th><th></th></tr>'+list.map(p=>'<tr><td>'+esc(p.name)+'</td><td>'+PL(p)+'</td><td>'+p.scoutLo+'–'+p.scoutHi+'</td><td class="sub">'+esc(p.college||'')+'</td><td>'+star('draft',p.id)+'</td></tr>').join('')+'</table></div>';
   } else {
     s += '<div class="panel"><p class="sub">Roster is '+me.roster.length+'. The GM trims to '+LIMIT_REG+' keeping positional minimums.</p></div>';
   }
@@ -5979,11 +6000,11 @@ function stDepthHTML(){
   // candidates
   const slot = U.slots.find(z => z[0]===stDcSlot), role = slot[1], cur = A[stDcSlot];
   s += '<div class="stdc-pick"><div class="panel" style="margin:0"><div class="hd disp">'+U.n+' · '+stDcSlot+'</div><p class="sub">'+ST_ROLE[role].n+' rating = '+ST_ROLE[role].d+'</p>' +
-    (cur ? '<p style="margin-top:4px"><b>#'+jerseyOf(cur)+' '+esc(cur.name)+'</b> <span class="sub">'+cur.pos+'</span> <b style="color:var(--gold)">'+strr(cur,role)+'</b></p>' : '') + '</div><div class="stdc-cands">';
+    (cur ? '<p style="margin-top:4px"><b>#'+jerseyOf(cur)+' '+esc(cur.name)+'</b> <span class="sub">'+PL(cur)+'</span> <b style="color:var(--gold)">'+strr(cur,role)+'</b></p>' : '') + '</div><div class="stdc-cands">';
   const list = poolOf(t).filter(p => stEligible(p, role)).map(p => ({p, r:strr(p,role)})).sort((a,b) => b.r-a.r).slice(0, 16);
   list.forEach(({p,r}) => { const us = unitsOfPlayer(t,p), inU = Object.keys(A).find(k => A[k] && A[k].id===p.id), stt = starters.has(p.id) && !SPEC[p.pos];
     const ld = Math.min(100, (stt?45:0) + us.length*15);
-    s += '<div class="stdc-cand'+(cur&&cur.id===p.id?' cur':'')+'" onclick="stSetSlot(\''+stDcUnit+'\',\''+stDcSlot+'\','+p.id+')"><b>#'+jerseyOf(p)+'</b><div><div>'+esc(p.name)+' <span class="sub">'+p.pos+'</span>'+(stt?'<span class="sttag s">'+p.pos+' starter</span>':'')+(us.length?'<span class="sttag u">'+us.join(' · ')+'</span>':'')+(inU&&inU!==stDcSlot?'<span class="sttag f">now '+inU+'</span>':'')+'</div><div class="stload"><i style="width:'+ld+'%;background:'+(ld>70?'var(--red)':ld>45?'var(--gold)':'var(--green)')+'"></i></div></div><span class="stdc-r">'+r+'</span></div>'; });
+    s += '<div class="stdc-cand'+(cur&&cur.id===p.id?' cur':'')+'" onclick="stSetSlot(\''+stDcUnit+'\',\''+stDcSlot+'\','+p.id+')"><b>#'+jerseyOf(p)+'</b><div><div>'+esc(p.name)+' <span class="sub">'+PL(p)+'</span>'+(stt?'<span class="sttag s">'+p.pos+' starter</span>':'')+(us.length?'<span class="sttag u">'+us.join(' · ')+'</span>':'')+(inU&&inU!==stDcSlot?'<span class="sttag f">now '+inU+'</span>':'')+'</div><div class="stload"><i style="width:'+ld+'%;background:'+(ld>70?'var(--red)':ld>45?'var(--gold)':'var(--green)')+'"></i></div></div><span class="stdc-r">'+r+'</span></div>'; });
   s += '</div></div></div>';
   return s;
 }
@@ -6683,7 +6704,7 @@ function gameReportHTML(){
     s += boxScoreHTML(r);
     if(r.progressions && r.progressions.length){
       s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">📈 Player Progressions</div><p class="sub" style="margin-top:4px">' +
-        r.progressions.map(p => (p.id?pn(p):esc(p.name))+' ('+p.pos+') → <b style="color:var(--gold)">'+p.ovr+'</b> OVR').join(' · ') + '</p></div>';
+        r.progressions.map(p => (p.id?pn(p):esc(p.name))+' ('+PL(p)+') → <b style="color:var(--gold)">'+p.ovr+'</b> OVR').join(' · ') + '</p></div>';
     }
     if(r.injury){
       s += '<div class="panel"><div class="hd disp" style="font-size:14px;color:var(--red)">⚠ Injury Report</div><p class="sub" style="margin-top:4px">'+pn(r.injury)+' ('+r.injury.spot+') — out '+r.injury.injWeeks+' wk'+(r.injury.injWeeks>1?'s':'')+'</p></div>';
@@ -6692,11 +6713,11 @@ function gameReportHTML(){
     // light preseason report: dev/injury only, no full stat lines
     if(r.devs && r.devs.length){
       s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">📈 Player Progressions</div><p class="sub" style="margin-top:4px">' +
-        r.devs.map(p => (p.id?pn(p):esc(p.name))+' ('+p.pos+') → <b style="color:var(--gold)">'+p.ovr+'</b> OVR').join(' · ') + '</p></div>';
+        r.devs.map(p => (p.id?pn(p):esc(p.name))+' ('+PL(p)+') → <b style="color:var(--gold)">'+p.ovr+'</b> OVR').join(' · ') + '</p></div>';
     }
     if(r.injuries && r.injuries.length){
       s += '<div class="panel"><div class="hd disp" style="font-size:14px;color:var(--red)">⚠ Injury Report</div><p class="sub" style="margin-top:4px">' +
-        r.injuries.map(i => esc(i.name)+' ('+i.pos+') — out '+i.weeks+' wk'+(i.weeks>1?'s':'')).join(' · ') + '</p></div>';
+        r.injuries.map(i => esc(i.name)+' ('+PL(i)+') — out '+i.weeks+' wk'+(i.weeks>1?'s':'')).join(' · ') + '</p></div>';
     }
     if((!r.devs || !r.devs.length) && (!r.injuries || !r.injuries.length)){
       s += '<div class="panel"><p class="sub">Preseason box scores aren\'t tracked in full detail — just development and injury notes.</p></div>';
@@ -7744,7 +7765,7 @@ function scene(P){
       const e0=WB(u+.2,v-.07), e1=WB(u+.2,v+.07); P.line(e0[0],e0[1],e1[0],e1[1],'#1d2a44',.35); }); });
     if(wb.champ){ const c=WB(.9,.48); P.text(wb.champ,c[0],c[1],3,'#b8860b',{bold:1,center:1,skew:SK}); }
   } else {
-    const DCL=[['CB',.08,.14],['DE',.3,.14],['NT',.5,.14],['DE',.7,.14],['CB',.92,.14],['LB',.2,.3],['LB',.4,.3],['LB',.6,.3],['LB',.8,.3],['SS',.38,.44],['FS',.62,.44],
+    const DCL=[['CB',.08,.14],['LE',.3,.14],['DT',.5,.14],['RE',.7,.14],['CB',.92,.14],['OLB',.2,.3],['MLB',.4,.3],['MLB',.6,.3],['OLB',.8,.3],['SS',.38,.44],['FS',.62,.44],
       ['WR',.06,.62],['LT',.2,.62],['LG',.32,.62],['C',.44,.62],['RG',.56,.62],['RT',.68,.62],['TE',.81,.62],['WR',.94,.62],['QB',.44,.77],['RB',.44,.9],['FB',.62,.9]];
     const NMS=wb.names||[];
     DCL.forEach(([p,u,v],di)=>{ const a=WB(u,v), sz=1.7+u*.5; P.text('- '+p+' -',a[0],a[1],sz,'#1d2a44',{bold:1,center:1,skew:SK});
@@ -7927,10 +7948,10 @@ function drawRoom(t){
     // whiteboard
     if(phase==='playoffs' && G.playoffs){ const P0=G.playoffs, mk=x=>[G.teams[x.a].abbr, G.teams[x.b].abbr, x.done?(x.as>x.bs?0:1):-1];
       nd.wb={title:'PLAYOFF BRACKET', bracket:[(P0.r1||[]).map(mk),(P0.r2||[]).map(mk),(P0.r3||[]).map(mk)], champ:P0.champion!=null?G.teams[P0.champion].abbr+' ★':''}; }
-    else { const LAB=['CB','DE','NT','DE','CB','LB','LB','LB','LB','SS','FS','WR','LT','LG','C','RG','RT','TE','WR','QB','RB','FB'];
-      const GRP={CB:'CB',DE:'DL',NT:'DL',LB:'LB',SS:'S',FS:'S',WR:'WR',LT:'OL',LG:'OL',C:'OL',RG:'OL',RT:'OL',TE:'TE',QB:'QB',RB:'RB',FB:'RB'};
-      const cnt={}; LAB.forEach(l=>cnt[GRP[l]]=(cnt[GRP[l]]||0)+1); const used={};
-      const names=LAB.map(l=>{ const gp=GRP[l], arr=byPos(gp), i=used[gp]=(used[gp]==null?0:used[gp]+1), n=cnt[gp]; return [last(arr[i]&&arr[i].name), last(arr[i+n]&&arr[i+n].name)]; });
+    else { const LAB=['CB','LE','DT','RE','CB','OLB','MLB','MLB','OLB','SS','FS','WR','LT','LG','C','RG','RT','TE','WR','QB','RB','FB'];
+      const KEY=l=>l==='FB'?'RB':l; const cnt={}; LAB.forEach(l=>cnt[KEY(l)]=(cnt[KEY(l)]||0)+1); const used={};
+      const bySpot=l=>{ const k=KEY(l); const g=SPOT_GROUP[k]||k; const a=healthy.filter(p=>p.pos===g && (SPOTS[g].length===1 || p.spot===k)).sort((x,y)=>y.rating-x.rating); return a.length?a:byPos(g); };
+      const names=LAB.map(l=>{ const k=KEY(l), arr=bySpot(l), i=used[k]=(used[k]==null?0:used[k]+1), n=cnt[k]; return [last(arr[i]&&arr[i].name), last(arr[i+n]&&arr[i+n].name)]; });
       nd.wb={title:'DEPTH CHART', names}; }
     D=nd;
   }
@@ -8466,6 +8487,7 @@ function officePop(k){
 }
 
 function render(){
+  migrateSpots();
   applyTeamBrand();
   applyTeamTheme();
   const app = $('#app');
@@ -8727,7 +8749,7 @@ function rosterTable(t, actionFn){
   });
   s += '<th>Status</th><th></th></tr>';
   const list = t.roster
-    .filter(p => rFilter==='ALL' || p.pos === rFilter)
+    .filter(p => rFilter==='ALL' || p.pos === rFilter || p.spot === rFilter)
     .sort((a,b) => {
       let va, vb;
       if(rSort.key==='spot'){ va = spotSortVal(a); vb = spotSortVal(b); }
@@ -8843,7 +8865,7 @@ function gmFreeAgentsHTML(){
   s += '<th>Scheme</th><th></th></tr>';
   G.fa.forEach(p => { p.askYears = p.askYears || RI(1,3); });
   let pool = G.fa.map(p => ({ p, teamIdx: null, teamLabel: 'FA', isFA: true }));
-  if(faFilter !== 'ALL') pool = pool.filter(x => x.p.pos === faFilter);
+  if(faFilter !== 'ALL') pool = pool.filter(x => x.p.pos === faFilter || x.p.spot === faFilter);
   pool.sort((a,b) => {
     let va, vb;
     if(faSort.key === 'team'){ va = 0; vb = 0; }
@@ -9045,7 +9067,7 @@ function faHTML(){
   let pool = [];
   G.teams.forEach(t => t.roster.forEach(p => pool.push({ p, teamIdx: t.idx, teamLabel: t.abbr, isFA: false })));
   G.fa.forEach(p => pool.push({ p, teamIdx: null, teamLabel: 'FA', isFA: true }));
-  if(faFilter !== 'ALL') pool = pool.filter(x => x.p.pos === faFilter);
+  if(faFilter !== 'ALL') pool = pool.filter(x => x.p.pos === faFilter || x.p.spot === faFilter);
   if(faTeamFilter === 'FA') pool = pool.filter(x => x.isFA);
   else if(faTeamFilter !== 'ALL') pool = pool.filter(x => String(x.teamIdx) === faTeamFilter);
   pool.sort((a,b) => {
@@ -9069,9 +9091,13 @@ function faHTML(){
 function posFilterPillsHTML(t, active, setter){
   let s = '<button class="fbtn'+(active==='ALL'?' on':'')+'" onclick="'+setter+'(\'ALL\')">ALL</button>';
   POS_ORDER.forEach(pos => {
-    const have = posCount(t, pos), min = MIN53[pos];
-    const starterOvr = have > 0 ? st(t, pos, 0) : null;
-    s += '<button class="fbtn'+(active===pos?' on':'')+(have<min?' short':'')+'" onclick="'+setter+'(\''+pos+'\')">'+pos+' <span class="mb-n">'+have+'/'+min+'</span>'+(starterOvr!=null?' · <span class="mb-ovr">'+starterOvr+'</span>':'')+'</button>';
+    const spots = SPOTS[pos].length>1 ? SPOTS[pos] : [pos];
+    spots.forEach(sp => {
+      const list = (sp===pos ? t.roster.filter(p=>p.pos===pos) : t.roster.filter(p=>p.pos===pos && p.spot===sp)).filter(p=>!p.ir);
+      const have = sp===pos ? posCount(t, pos) : list.length, min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1);
+      const starterOvr = list.length ? Math.max(...list.map(p=>p.rating)) : null;
+      s += '<button class="fbtn'+(active===sp?' on':'')+(have<min?' short':'')+'" onclick="'+setter+'(\''+sp+'\')">'+sp+' <span class="mb-n">'+have+'/'+min+'</span>'+(starterOvr!=null?' · <span class="mb-ovr">'+starterOvr+'</span>':'')+'</button>';
+    });
   });
   return s;
 }
@@ -9722,7 +9748,7 @@ function forecastHTML(cls){
       const hit = projTop != null && projTop === s.made.pid;
       s.made.pid && pid2(s.made.pid);
       const nm = s.made.name.split(' ');
-      s && (wall += '<div class="fc-slot done'+(mine?' mine':'')+'"><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div><div class="fc-nm"><small>'+esc(nm[0])+'</small>'+esc(nm.slice(1).join(' '))+'</div><div class="fc-ps"><span>'+s.made.pos+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJECTED':'SURPRISE')+'</b>':'')+'</div></div>');
+      s && (wall += '<div class="fc-slot done'+(mine?' mine':'')+'"><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div><div class="fc-nm"><small>'+esc(nm[0])+'</small>'+esc(nm.slice(1).join(' '))+'</div><div class="fc-ps"><span>'+PL(s.made)+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJECTED':'SURPRISE')+'</b>':'')+'</div></div>');
       return;
     }
     if(!t){ wall += '<div class="fc-slot void"><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div><div class="fc-nm sub">Forfeited</div></div>'; return; }
@@ -10278,7 +10304,7 @@ function draftBoardHTML(){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Recent Picks</div>';
     recent.forEach(d => {
       const t = G.teams[d.team];
-      s += '<p class="sub" style="margin:2px 0">Pick '+d.pickNum+' — <b style="color:'+(d.team===G.userTeam?'var(--gold)':'var(--chalk)')+'">'+esc(t.abbr)+'</b> select '+esc(d.name)+' ('+d.pos+')'+(d.team===G.userTeam?' <b style="color:var(--gold)">'+d.ovr+' OVR</b>':'')+'</p>';
+      s += '<p class="sub" style="margin:2px 0">Pick '+d.pickNum+' — <b style="color:'+(d.team===G.userTeam?'var(--gold)':'var(--chalk)')+'">'+esc(t.abbr)+'</b> select '+esc(d.name)+' ('+PL(d)+')'+(d.team===G.userTeam?' <b style="color:var(--gold)">'+d.ovr+' OVR</b>':'')+'</p>';
     });
     s += '</div>';
   }
@@ -10370,12 +10396,12 @@ function preseasonHTML(){
   s += '</div>';
   if(G.preReport && (G.preReport.devs.length || G.preReport.injuries.length)){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Last Game — Player Report</div>';
-    if(G.preReport.devs.length) s += '<p class="sub" style="margin-top:4px">Developed with live reps: ' + G.preReport.devs.map(d => esc(d.name)+' ('+d.pos+') +'+d.delta+' → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ') + '</p>';
-    if(G.preReport.injuries.length) s += '<p class="sub" style="margin-top:4px;color:var(--red)">Injured: ' + G.preReport.injuries.map(i => esc(i.name)+' ('+i.pos+') — out '+i.weeks+'wk').join(' · ') + '</p>';
-    if(G.campReport && G.campReport.length) s += '<p class="sub" style="margin-top:4px">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+r.pos+') +'+r.delta).join(' · ')+'</p>';
+    if(G.preReport.devs.length) s += '<p class="sub" style="margin-top:4px">Developed with live reps: ' + G.preReport.devs.map(d => esc(d.name)+' ('+PL(d)+') +'+d.delta+' → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ') + '</p>';
+    if(G.preReport.injuries.length) s += '<p class="sub" style="margin-top:4px;color:var(--red)">Injured: ' + G.preReport.injuries.map(i => esc(i.name)+' ('+PL(i)+') — out '+i.weeks+'wk').join(' · ') + '</p>';
+    if(G.campReport && G.campReport.length) s += '<p class="sub" style="margin-top:4px">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+PL(r)+') +'+r.delta).join(' · ')+'</p>';
     s += '</div>';
   } else if(G.campReport && G.campReport.length){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Camp Report</div><p class="sub">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+r.pos+') +'+r.delta).join(' · ')+'</p></div>';
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Camp Report</div><p class="sub">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+PL(r)+') +'+r.delta).join(' · ')+'</p></div>';
   }
   s += posNeedsHTML(me);
   s += '<div class="panel" style="margin-bottom:12px">'+capBarHTML(me)+'<div style="margin-top:8px"><span class="countpill">Camp roster <b>'+me.roster.length+'</b> / '+LIMIT_OFF+'</span> <span class="sub">Cutdown to '+LIMIT_REG+' comes '+fmtDate(cutdownDate(G.year))+' — the day before the opener.</span></div></div>';
@@ -10453,7 +10479,7 @@ function newPlayerCareer(position){
   const spread = RI(4, 10);
   G.myProspectId = G.nextId++;
   G.draftPool.push({
-    id: G.myProspectId, name: 'You', pos: position, spot: pick(SPOTS[position]), age: RI(21,23),
+    id: G.myProspectId, name: 'You', pos: position, spot: pickSpot(position), age: RI(21,23),
     scheme: (position==='DL'||position==='LB') ? 'any' : 'any',
     trueRating: myTrue, scoutLo: clamp(myTrue+RI(-3,3)-spread,50,99), scoutHi: clamp(myTrue+RI(-3,3)+spread,50,99), spread,
     home: myBio.home, college: myBio.college, hgt: myBio.hgt, isMe: true
@@ -11217,7 +11243,7 @@ function resolveApproval(accept){
       logOwnerMove('Approved: trade with '+them.city+'.');
     } else if(a.type === 'tag'){
       const p = me.roster.find(x => x.id === a.playerId);
-      if(p){ tagPlayer(p.id); logOwnerMove('Approved: tagged '+p.name+' ('+p.pos+') — '+money(p.salary)+' gtd.'); }
+      if(p){ tagPlayer(p.id); logOwnerMove('Approved: tagged '+p.name+' ('+PL(p)+') — '+money(p.salary)+' gtd.'); }
     } else if(a.type === 'budget'){
       G.staffCapBonus = (G.staffCapBonus||0) + a.amount;
       G.budgetAskYear = G.year;
@@ -11332,8 +11358,8 @@ function ownerHandleWeek(){
   const offer = offers.find(o => !rejected.includes('trade:'+o.fromTeam));
   if(offer){
     const them = G.teams[offer.fromTeam];
-    const askP = offer.theirAsk.map(id => { const p = me.roster.find(x=>x.id===id); return p ? p.name+' ('+p.pos+')' : '?'; });
-    const giveP = offer.theirGive.map(id => { const p = them.roster.find(x=>x.id===id); return p ? p.name+' ('+p.pos+')' : '?'; });
+    const askP = offer.theirAsk.map(id => { const p = me.roster.find(x=>x.id===id); return p ? p.name+' ('+PL(p)+')' : '?'; });
+    const giveP = offer.theirGive.map(id => { const p = them.roster.find(x=>x.id===id); return p ? p.name+' ('+PL(p)+')' : '?'; });
     const askVal = offer.theirAsk.reduce((s,id)=>{ const p=me.roster.find(x=>x.id===id); return s+(p?tradeValue(p):0); },0);
     if(askVal >= G.approvalThreshold || offer.theirAsk.some(id => { const p = me.roster.find(x=>x.id===id); return p && isPremiumFA(p); })){
       requestApproval({
@@ -11415,7 +11441,7 @@ function inductRingOfHonor(pid){
   const p = G.recentRetirees[idx];
   const tc = teamContribution(p, meT().abbr);
   if(!G.franchiseHistory) G.franchiseHistory = { banners:[], ringOfHonor:[], ownershipLog:[] };
-  G.franchiseHistory.ringOfHonor.push({ id:p.id, name:p.name, pos:p.pos, tenure: p.joinYear+'–'+p.retiredYear, finalRating:p.rating, inductedYear:G.year, years:tc.years, games:tc.games, stats:tc.totals });
+  G.franchiseHistory.ringOfHonor.push({ id:p.id, name:p.name, pos:p.pos, spot:p.spot, tenure: p.joinYear+'–'+p.retiredYear, finalRating:p.rating, inductedYear:G.year, years:tc.years, games:tc.games, stats:tc.totals });
   G.recentRetirees.splice(idx,1);
   save(); render();
 }
@@ -11495,7 +11521,7 @@ function ownerDashboardHTML(){
       '<p class="sub" style="margin-bottom:8px">These veterans hung it up this offseason. Induct any of them into the Ring of Honor?</p>';
     G.recentRetirees.forEach(p => {
       const tc = teamContribution(p, meT().abbr);
-      s += '<div class="dash-fixrow"><span>'+pn(p)+' <span class="sub">('+p.pos+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
+      s += '<div class="dash-fixrow"><span>'+pn(p)+' <span class="sub">('+PL(p)+', '+p.rating+' OVR · '+p.joinYear+'–'+p.retiredYear+')</span></span>' +
         '<span style="display:flex;gap:6px"><button class="btn tiny primary" onclick="inductRingOfHonor('+p.id+')">🏵️ Induct</button><button class="btn tiny" onclick="dismissRetiree('+p.id+')">Let it go</button></span></div>' +
         '<p class="sub" style="margin:-2px 0 6px 0">'+tc.years+' season'+(tc.years!==1?'s':'')+', '+tc.games+' game'+(tc.games!==1?'s':'')+' with '+meT().city+' — '+statLine(tc.totals, tc.pos)+'</p>';
     });
@@ -11557,7 +11583,7 @@ function franchiseLegacyHTML(){
   else s += fh.banners.slice().reverse().map(b => '<div class="dash-fixrow"><span>'+brandImg('apex',22,'margin-right:6px')+b.year+'</span><span style="color:var(--gold)">NGL Champions'+(b.owner?' — owner '+esc(b.owner):'')+'</span></div>').join('');
   s += '<div class="sub" style="margin-top:10px">🏵️ Ring of Honor</div>';
   if(!fh.ringOfHonor.length) s += '<p class="sub">Nobody inducted yet.</p>';
-  else s += fh.ringOfHonor.slice().reverse().map(p => '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+p.pos+')</span></span><span class="sub">'+p.tenure+' · '+p.finalRating+' OVR final</span></div>' +
+  else s += fh.ringOfHonor.slice().reverse().map(p => '<div class="dash-fixrow"><span>'+esc(p.name)+' <span class="sub">('+PL(p)+')</span></span><span class="sub">'+p.tenure+' · '+p.finalRating+' OVR final</span></div>' +
     (p.stats ? '<p class="sub" style="margin:-2px 0 6px 0">'+(p.years||0)+' season'+(p.years!==1?'s':'')+', '+(p.games||0)+' game'+(p.games!==1?'s':'')+' — '+statLine(p.stats, p.pos)+'</p>' : '')).join('');
   s += '<div class="sub" style="margin-top:10px">📜 Ownership History</div>';
   if(!fh.ownershipLog.length) s += '<p class="sub">You\'re the first owner on record.</p>';
@@ -11577,13 +11603,13 @@ function hubHTML(){
 function activityFeedHTML(){
   const items = [];
   if(G.lastInjury && G.lastInjury.injWeeks > 0){
-    items.push({ic:'⚠', color:'var(--red)', t:'Injury — '+esc(G.lastInjury.name), s:'Out '+G.lastInjury.injWeeks+' wk'+(G.lastInjury.injWeeks===1?'':'s')+' · '+G.lastInjury.pos});
+    items.push({ic:'⚠', color:'var(--red)', t:'Injury — '+esc(G.lastInjury.name), s:'Out '+G.lastInjury.injWeeks+' wk'+(G.lastInjury.injWeeks===1?'':'s')+' · '+PL(G.lastInjury)});
   }
   (G.weekDevs||[]).forEach(d => {
-    items.push({ic:'📈', color:'var(--green)', t:esc(d.name)+' developed', s:d.pos+' · → '+d.ovr+' OVR'});
+    items.push({ic:'📈', color:'var(--green)', t:esc(d.name)+' developed', s:PL(d)+' · → '+d.ovr+' OVR'});
   });
   const expiring = meT().roster.filter(p => p.years <= 1 && !p.resigned).sort((a,b)=>b.rating-a.rating).slice(0,2);
-  expiring.forEach(p => items.push({ic:'💰', color:'var(--muted)', t:'Contract expiring — '+esc(p.name), s:p.pos+' · re-sign before the league year turns'}));
+  expiring.forEach(p => items.push({ic:'💰', color:'var(--muted)', t:'Contract expiring — '+esc(p.name), s:PL(p)+' · re-sign before the league year turns'}));
   const trades = tradesOpen() ? [{ic:'🔁', color:'var(--muted)', t:'Trade market is open', s:'Through '+fmtDate(tradeDeadline(G.year))}] : [];
   const all = items.concat(trades);
   let s = '<div class="panel"><div class="hd disp" style="font-size:14px;margin-bottom:6px">This Week</div>';
@@ -11853,7 +11879,7 @@ function scoutingReportHTML(opp){
   return s;
 }
 function scheduleHTML(){
-  const devNote = (G.weekDevs && G.weekDevs.length) ? '<div class="panel" style="margin-bottom:12px"><p class="sub">📈 Developed off big games last week: '+G.weekDevs.map(d=>esc(d.name)+' ('+d.pos+') → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ')+'</p></div>' : '';
+  const devNote = (G.weekDevs && G.weekDevs.length) ? '<div class="panel" style="margin-bottom:12px"><p class="sub">📈 Developed off big games last week: '+G.weekDevs.map(d=>esc(d.name)+' ('+PL(d)+') → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ')+'</p></div>' : '';
   const dl = tradesOpen() ? '<div class="panel" style="margin-bottom:12px"><p class="sub">🔁 Trade market open through <b style="color:var(--gold)">'+fmtDate(tradeDeadline(G.year))+'</b> (Tuesday after Week 9) — hit Trades in the nav.</p></div>' : '';
   let s = devNote + dl;
   if(G.phase === 'hub' && G.schedule && G.schedule[G.week-1]){
@@ -11869,7 +11895,7 @@ function scheduleHTML(){
         '<div class="sub">Gameday actives: <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+Math.min(dc,LIMIT_DRESS)+'</b> of '+LIMIT_DRESS+' dress · manage in Roster tab</div>' +
         matchConditionsLine(g, G.week) + '<div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end"><button class="btn primary" onclick="playWeek()">▶ Coach the Game</button><button class="btn" onclick="simWeek()">Sim Week</button></div></div></div>';
       s += (G.mode === 'player') ? scoutingReportHTML(opp) : recsPanelHTML();
-      if(G.lastInjury && G.lastInjury.injWeeks > 0) s += '<p class="sub" style="margin-top:8px;color:var(--red)">Injury report: '+esc(G.lastInjury.name)+' ('+G.lastInjury.pos+') is out '+G.lastInjury.injWeeks+' more week'+(G.lastInjury.injWeeks===1?'':'s')+'.</p>';
+      if(G.lastInjury && G.lastInjury.injWeeks > 0) s += '<p class="sub" style="margin-top:8px;color:var(--red)">Injury report: '+esc(G.lastInjury.name)+' ('+PL(G.lastInjury)+') is out '+G.lastInjury.injWeeks+' more week'+(G.lastInjury.injWeeks===1?'':'s')+'.</p>';
       s += '</div>';
     }
   } else if(G.phase === 'playoffs'){
@@ -13237,9 +13263,9 @@ function posFilterOptionsHTML(current){
   return '<option value=""'+sel('')+'>All Positions</option>' +
     '<option value="QB"'+sel('QB')+'>QB</option><option value="RB"'+sel('RB')+'>RB</option><option value="WR"'+sel('WR')+'>WR</option><option value="TE"'+sel('TE')+'>TE</option>' +
     '<optgroup label="Offensive Line"><option value="LT"'+sel('LT')+'>LT</option><option value="LG"'+sel('LG')+'>LG</option><option value="C"'+sel('C')+'>C</option><option value="RG"'+sel('RG')+'>RG</option><option value="RT"'+sel('RT')+'>RT</option></optgroup>' +
-    '<optgroup label="Defensive Line"><option value="DE"'+sel('DE')+'>DE</option><option value="DT"'+sel('DT')+'>DT</option></optgroup>' +
+    '<optgroup label="Defensive Line"><option value="LE"'+sel('LE')+'>LE</option><option value="RE"'+sel('RE')+'>RE</option><option value="DT"'+sel('DT')+'>DT</option></optgroup>' +
     '<optgroup label="Linebacker"><option value="OLB"'+sel('OLB')+'>OLB</option><option value="MLB"'+sel('MLB')+'>MLB</option></optgroup>' +
-    '<option value="CB"'+sel('CB')+'>CB</option><option value="S"'+sel('S')+'>S</option><option value="K"'+sel('K')+'>K</option>';
+    '<option value="CB"'+sel('CB')+'>CB</option><optgroup label="Safety"><option value="SS"'+sel('SS')+'>SS</option><option value="FS"'+sel('FS')+'>FS</option></optgroup><option value="K"'+sel('K')+'>K</option>';
 }
 function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock){
   const filter = tradeFilterState[which];
@@ -13450,7 +13476,7 @@ function otaHTML(){
     '<p class="sub">Four May weeks of organized team activities. Pick this week\'s drill focus — young players (26 and under) in those groups get live reps and can develop.</p></div>';
   if(G.otaReport && G.otaReport.length){
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Last Week\'s Risers</div><p class="sub">' +
-      G.otaReport.map(r => esc(r.name)+' ('+r.pos+') +'+r.delta).join(' · ') + '</p></div>';
+      G.otaReport.map(r => esc(r.name)+' ('+PL(r)+') +'+r.delta).join(' · ') + '</p></div>';
   }
   s += '<div class="panel"><div class="hd disp" style="margin-bottom:8px">This Week\'s Focus</div>' +
     '<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">' +
@@ -13764,7 +13790,7 @@ function renderStatBox(){
     if(p.pu) parts.push(p.pu+' punts, '+Math.round((p.puy||0)/p.pu)+' avg');
     if(p.kr) parts.push(p.kr+' KR '+(p.kry||0)+' yds');
     if(p.pr) parts.push(p.pr+' PR '+(p.pry||0)+' yds');
-    return '<div class="statbox-line"><b>'+esc(p.name)+'</b> <span class="sub">('+p.pos+')</span><span class="sub">'+parts.join(', ')+'</span></div>';
+    return '<div class="statbox-line"><b>'+esc(p.name)+'</b> <span class="sub">('+PL(p)+')</span><span class="sub">'+parts.join(', ')+'</span></div>';
   }
   const H = G.teams[GM.home], A = G.teams[GM.away];
   let s = '<div class="hd disp" style="font-size:13px">Live Stats</div><div class="statbox-cols">';
