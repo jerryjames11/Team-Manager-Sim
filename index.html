@@ -939,6 +939,38 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .panel:has(.dd){overflow:visible}
 .dd-warn{flex:0 0 auto;font:700 9px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#ffb3b3;background:rgba(226,85,85,.18);border:1px solid rgba(226,85,85,.45);border-radius:9px;padding:1px 6px}
 
+.cp{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}.cp-ota{margin-bottom:6px}.cp-ota summary{cursor:pointer;margin-bottom:4px}
+.cp-top{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 10px;overflow-x:auto}
+.cp-t{white-space:nowrap;font:700 13px Oswald,Arial,sans-serif;letter-spacing:.12em;color:var(--gold)}
+.cp-wk{display:flex;gap:3px}.cp-wk i{white-space:nowrap;font-style:normal;font:700 9.5px Inter,sans-serif;padding:2px 6px;border-radius:4px;background:#0c121d;border:1px solid var(--line);color:var(--muted)}
+.cp-wk i.on{background:var(--gold);color:#14100a;border-color:var(--gold)}.cp-wk i.done{background:#2a3548;color:var(--chalk)}
+.cp-go{margin-left:auto;display:flex;gap:5px}.cp-go .btn{white-space:nowrap}
+.cp-cols{display:grid;grid-template-columns:1fr 1.15fr 1.2fr;gap:6px}
+.cp-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.cp-h{display:flex;justify-content:space-between;align-items:center;font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.cp-h em{font:600 9.5px Inter,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none}
+.cp-int{border:1px solid var(--line);border-radius:8px;padding:4px 8px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.cp-int.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:rgba(255,212,71,.06)}.cp-int b{font-size:12px}
+.cp-bars{display:grid;grid-template-columns:50px 1fr;gap:2px 6px;align-items:center;font-size:9.5px;color:var(--muted)}
+.cp-bar{height:5px;border-radius:3px;background:#0c121d;overflow:hidden}.cp-bar i{display:block;height:100%;max-width:100%}
+.cp-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.cp-chip{border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:10.5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:4px}
+.cp-chip b{font:700 11px Oswald,Arial,sans-serif;letter-spacing:.06em}.cp-chip small{color:var(--muted);font-size:9px;white-space:nowrap}
+.cp-chip.on{border-color:var(--gold);background:rgba(255,212,71,.1)}
+.cp-li{display:flex;justify-content:space-between;gap:6px;font-size:11px;padding:2px 0;border-bottom:1px solid var(--line)}.cp-li:last-child{border-bottom:none}
+.cp .up{color:var(--green);font-weight:700}.cp .dn{color:var(--red);font-weight:700}
+.cp-bt{border:1px solid var(--line);border-radius:8px;padding:4px 7px;display:flex;flex-direction:column;gap:2px}
+.cp-bt .r{display:flex;align-items:center;gap:6px;font-size:11px}.cp-bt .n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-bt .vs{font:700 9px Inter,sans-serif;color:var(--muted);text-align:center;letter-spacing:.08em}
+.cp-bt .ov{font:700 13px Oswald,Arial,sans-serif;color:var(--gold)}
+.cp-form{height:6px;flex:0 0 44px;border-radius:3px;background:#0c121d;overflow:hidden}.cp-form i{display:block;height:100%}
+.cp-seg{display:inline-flex;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.cp-seg span{padding:2px 7px;font:700 9.5px Inter,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap}.cp-seg span.on{background:var(--gold);color:#14100a}
+.cp-tbl{font-size:11px}.cp-tbl td,.cp-tbl th{padding:3px 4px;white-space:nowrap}
+.cp-big{font:700 28px Oswald,Arial,sans-serif;line-height:1}
+.cp-grade{font:700 44px Oswald,Arial,sans-serif;line-height:1}
+.cp-dist{display:flex;align-items:flex-end;gap:3px;height:56px;margin:2px 0 14px}
+.cp-dist div{flex:1;border-radius:3px 3px 0 0;position:relative}.cp-dist span{position:absolute;bottom:-13px;left:-4px;right:-4px;text-align:center;font-size:8.5px;color:var(--muted);white-space:nowrap}
 .fz{display:flex;flex-direction:column;gap:6px}
 .fz-top{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
 .fz-t{white-space:nowrap;font:700 13px Oswald,Arial,sans-serif;letter-spacing:.12em;color:var(--gold)}
@@ -1284,14 +1316,65 @@ const TEAM_DEFS = [
   {city:'Denver', state:'CO',      name:'Summit',     abbr:'DEN', conf:1, div:1, c1:'#0F4A2A', c2:'#8FD6A8', market:3},
   {city:'Portland', state:'OR',    name:'Pioneers',   abbr:'POR', conf:1, div:1, c1:'#2F6E2E', c2:'#D9A13A', market:3}
 ];
-const FN = ['Marcus','DeShawn','Tyler','Jalen','Chris','Aaron','Devin','Malik','Jordan','Trevor','Cam','Isaiah','Xavier','Brandon','Zeke','Andre','Kyle','Darius','Nate','Trey','Jamal','Cody','Reggie','Vince','Terrell','Shane','Omar','Dante','Grant','Leon','Micah','Rashad','Colt','Emeka','Judah','Silas','Knox','Bo','Ray','Dez',
-  'Elijah','Josiah','Caleb','Miles','Tucker','Wyatt','Gunnar','Lamar','Deion','Jayden','Amir','Kobe','Braylon','Maxwell','Julian','Sean','Travis','Corey','Dominique','Deshaun','Antoine','Marquis','Rodney','Chase','Hunter','Levi','Ezekiel','Amari','Cole','Garrett','Jared','Preston','Roman','Sterling','Elias','Nasir','Kellen','Mason','Drew','Jerome',
-  'Anthony','Curtis','Damon','Elliot','Franklin','Gabriel','Harrison','Ivan','Jaxon','Keenan','Lincoln','Maurice','Norman','Orlando','Percy','Quincy','Roosevelt','Solomon','Theo','Ulysses','Victor','Wesley','Xander','Yusuf','Zachariah','Abel','Barrett','Cassius','Donovan','Emmett','Felix','Graham','Hollis','Ignatius','Jasper','Kingston','Landon','Milo','Noel','Otis',
-  'Phillip','Quentin','Rhys','Simeon','Titus','Uriah','Vaughn','Winston','Yosef','Zane','Ashton','Bennett','Callum','Desmond','Everett','Foster','Griffin','Holden','Isaac','Jett','Kane','Lorenzo','Mica','Nolan','Ozzie','Porter','Quinton','Ronan','Stefan','Tobias'];
-const LN = ['Washington','Carter','Brooks','Hayes','Jenkins','Mitchell','Rivers','Coleman','Douglas','Fields','Grant','Holloway','Irving','Jefferson','Knight','Lawson','Maddox','Norwood','Osei','Pierce','Quinn','Ramsey','Sutton','Tatum','Underwood','Vance','Whitfield','Xiong','Yates','Zimmerman','Bell','Crawford','Dawson','Ellison','Fontenot','Gaines','Hurst','Ivey','Jarrett','Kelley',
-  'Lambert','Monroe','Nash','Ortega','Patterson','Quimby','Rutledge','Sampson','Talbot','Ussery','Valdez','Wardlow','Yancey','Zeller','Abernathy','Beaumont','Castellano','Delgado','Ferris','Gallagher','Huxley','Isaacs','Jorgensen','Kilpatrick','Loomis','Mercer','Nakamura','Obrien','Prescott','Quintero','Redmond','Sinclair','Thackeray','Upshaw','Villanueva','Winslow','Xanthopoulos','Yarborough','Zaragoza','Abbott',
-  'Barlow','Chambers','Dorsey','Eastwood','Fairbanks','Gunderson','Hollister','Iverson','Jasper','Kirkland','Lindqvist','Mackenzie','Novak','Okafor','Paxton','Quezada','Rourke','Stallworth','Thibodeaux','Ulrich','Vasquez','Whitaker','Yamamoto','Zapata','Ainsworth','Blackwood','Cortez','Devereaux','Escobar','Farrow','Goldsmith','Hargrove','Isaakson','Jephson','Killebrew','Loftus','Mabry','Novotny',
-  'Odom','Padgett','Radcliffe','Sorensen','Thurston','Uzoma','Vandermeer','Wexler','Ainsley','Bramwell','Chatterjee','Duchamp','Emberton','Farro','Guzman','Hollows','Ionescu','Jancsy','Kowalczyk','Larkspur','Moncrief','Nickerson','Okonkwo','Pemberton','Renwick','Stavros','Thornbury'];
+const FN = [
+  'Marcus','DeShawn','Tyler','Jalen','Chris','Aaron','Devin','Malik','Jordan','Trevor','Cam','Isaiah','Xavier','Brandon','Zeke','Andre','Kyle',
+  'Darius','Nate','Trey','Jamal','Cody','Reggie','Vince','Terrell','Shane','Omar','Dante','Grant','Leon','Micah','Rashad','Colt','Emeka','Judah',
+  'Silas','Knox','Bo','Ray','Dez','Elijah','Josiah','Caleb','Miles','Tucker','Wyatt','Gunnar','Lamar','Deion','Jayden','Amir','Kobe','Braylon',
+  'Maxwell','Julian','Sean','Travis','Corey','Dominique','Deshaun','Antoine','Marquis','Rodney','Chase','Hunter','Levi','Ezekiel','Amari','Cole',
+  'Garrett','Jared','Preston','Roman','Sterling','Elias','Nasir','Kellen','Mason','Drew','Jerome','Anthony','Curtis','Damon','Elliot','Franklin',
+  'Gabriel','Harrison','Ivan','Jaxon','Keenan','Lincoln','Maurice','Norman','Orlando','Percy','Quincy','Roosevelt','Solomon','Theo','Ulysses',
+  'Victor','Wesley','Xander','Yusuf','Zachariah','Abel','Barrett','Cassius','Donovan','Emmett','Felix','Graham','Hollis','Ignatius','Jasper',
+  'Kingston','Landon','Milo','Noel','Otis','Phillip','Quentin','Rhys','Simeon','Titus','Uriah','Vaughn','Winston','Yosef','Zane','Ashton','Bennett',
+  'Callum','Desmond','Everett','Foster','Griffin','Holden','Isaac','Jett','Kane','Lorenzo','Mica','Nolan','Ozzie','Porter','Quinton','Ronan','Stefan',
+  'Tobias','Abdul','Adrian','Ahmad','Akeem','Alonzo','Ambrose','Andres','Ari','Armand','Arturo','Asante','Augustin','Avery','Bakari','Beau','Benito',
+  'Blaise','Boris','Brady','Brennan','Brock','Bryce','Byron','Cade','Calvin','Camden','Carlos','Carson','Casey','Cedric','Chance','Chidi','Clark',
+  'Clay','Colby','Colton','Conner','Corbin','Cormac','Cruz','Dakota','Dallas','Dario','Davion','Dawson','Declan','Demarco','Demetrius','Diego',
+  'Dominic','Dorian','Drake','Duke','Dwayne','Easton','Eddie','Efe','Eli','Enzo','Ezra','Femi','Fernando','Finn','Ford','Gage','Gavin','Gideon',
+  'Grady','Hakeem','Hank','Harlan','Hector','Hudson','Ibrahim','Idris','Ike','Iman','Jace','Jaden','Jamar','Jarvis','Javier','Joaquin','Jonah',
+  'Jorge','Josue','Justus','Kade','Kai','Kareem','Kasim','Keon','Khalil','Kingsley','Kofi','Lachlan','Laurence','Liam','Luca','Luis','Luther','Mack',
+  'Major','Malachi','Mateo','Matias','Max','Moses','Nico','Nnamdi','Noah','Obi','Oscar','Owen','Pablo','Pierce','Rafael','Ramon','Reed','Remy','Rex',
+  'Rocco','Rowan','Ruben','Russell','Sage','Salvador','Santiago','Saul','Sebastian','Spencer','Tariq','Tate','Teo','Thaddeus','Tomas','Travon',
+  'Tristan','Tyrese','Wade','Walker','Warren','Weston','Wiley','Zaire','Zion','Kenji','Hiroshi','Tavita','Sione','Malakai','Keoni','Tevita','Manase',
+  'Pita','Losi','Aleki','Rasheed','Dmitri','Anders','Lars','Bjorn','Soren','Henrik','Mikael','Jakub','Tomasz','Florin','Andrei','Marek','Viktor',
+  'Nikola','Stellan','Fergus','Ewan','Seamus','Ciaran','Padraig'
+];
+const LN = [
+  'Washington','Carter','Brooks','Hayes','Jenkins','Mitchell','Rivers','Coleman','Douglas','Fields','Grant','Holloway','Irving','Jefferson','Knight',
+  'Lawson','Maddox','Norwood','Osei','Pierce','Quinn','Ramsey','Sutton','Tatum','Underwood','Vance','Whitfield','Xiong','Yates','Zimmerman','Bell',
+  'Crawford','Dawson','Ellison','Fontenot','Gaines','Hurst','Ivey','Jarrett','Kelley','Lambert','Monroe','Nash','Ortega','Patterson','Quimby',
+  'Rutledge','Sampson','Talbot','Ussery','Valdez','Wardlow','Yancey','Zeller','Abernathy','Beaumont','Castellano','Delgado','Ferris','Gallagher',
+  'Huxley','Isaacs','Jorgensen','Kilpatrick','Loomis','Mercer','Nakamura','Obrien','Prescott','Quintero','Redmond','Sinclair','Thackeray','Upshaw',
+  'Villanueva','Winslow','Xanthopoulos','Yarborough','Zaragoza','Abbott','Barlow','Chambers','Dorsey','Eastwood','Fairbanks','Gunderson','Hollister',
+  'Iverson','Jasper','Kirkland','Lindqvist','Mackenzie','Novak','Okafor','Paxton','Quezada','Rourke','Stallworth','Thibodeaux','Ulrich','Vasquez',
+  'Whitaker','Yamamoto','Zapata','Ainsworth','Blackwood','Cortez','Devereaux','Escobar','Farrow','Goldsmith','Hargrove','Isaakson','Jephson',
+  'Killebrew','Loftus','Mabry','Novotny','Odom','Padgett','Radcliffe','Sorensen','Thurston','Uzoma','Vandermeer','Wexler','Ainsley','Bramwell',
+  'Chatterjee','Duchamp','Emberton','Farro','Guzman','Hollows','Ionescu','Jancsy','Kowalczyk','Larkspur','Moncrief','Nickerson','Okonkwo','Pemberton',
+  'Renwick','Stavros','Thornbury','Abara','Acosta','Adeyemi','Afolabi','Agbaje','Aguilar','Akintola','Albright','Alcott','Aldana','Alvarado','Amador',
+  'Ambrose','Amundsen','Anaya','Andrade','Archer','Arceneaux','Arrington','Ashby','Atwater','Avalos','Baca','Babineaux','Bailey','Bancroft','Banda',
+  'Barksdale','Barnhill','Barrientos','Bartlett','Batiste','Baxter','Beasley','Beckett','Belcher','Benavides','Benoit','Bergstrom','Bertrand','Bhatt',
+  'Bianchi','Bingham','Birch','Bishop','Blackburn','Blanchard','Bledsoe','Boateng','Bolden','Bonner','Booker','Bowers','Boykin','Bradshaw','Brannon',
+  'Braxton','Brennan','Bridgewater','Brightwell','Briscoe','Broussard','Buckner','Bui','Burgess','Burkhart','Cabrera','Calloway','Calderon','Camacho',
+  'Campos','Cardenas','Carlisle','Carmichael','Carrasco','Cartwright','Castille','Castro','Caulfield','Cervantes','Chandler','Chavez','Cheng',
+  'Childress','Chukwu','Cisneros','Clancy','Clements','Cobb','Colquitt','Conway','Corbett','Cormier','Cornish','Crenshaw','Crowder','Cruz','Cuevas',
+  'Culpepper','Cunningham','Dabney','Dalton','Darby','Darko','Davenport','Decker','Deleon','Demps','Desai','Diallo','Dimitrov','Dixon','Dobbins',
+  'Donnelly','Doucet','Draper','Dubois','Duffy','Dunbar','Duncan','Durant','Eckhart','Edmonds','Ejiofor','Elmore','Embry','Enriquez','Espinoza',
+  'Esposito','Eubanks','Ezeh','Falcone','Faulk','Fenwick','Ferreira','Figueroa','Finch','Fitzgerald','Flanagan','Fleming','Flowers','Forsythe',
+  'Fortier','Fowler','Franco','Frazier','Fuentes','Fulton','Gaither','Galloway','Garrison','Gatling','Gentry','Gibbs','Gilchrist','Givens','Glover',
+  'Godwin','Gonzaga','Gordon','Gorski','Granger','Graves','Greer','Griffin','Grimes','Guerrero','Gutierrez','Hadley','Haley','Halvorsen','Hamada',
+  'Hammond','Hampton','Hancock','Hardaway','Harmon','Hartley','Hawkins','Haywood','Hendrix','Herrera','Hightower','Hinton','Hobbs','Holcomb',
+  'Horvath','Houston','Howell','Huddleston','Humphrey','Ibarra','Igwe','Ingram','Iwu','Jablonski','Jacobsen','Jaramillo','Jessup','Jimenez','Joiner',
+  'Juarez','Kahale','Kalani','Kamara','Kaminski','Keane','Keller','Kendrick','Kerr','Khan','Kimura','Kincaid','Kingsley','Kipling','Kline','Kowalski',
+  'Kruger','Lacroix','Lafleur','Landry','Langford','Larue','Leblanc','Ledford','Lemaire','Levesque','Lindgren','Lockett','Lofton','Lombardi','Lopez',
+  'Lovelace','Lucero','Lundy','Lynch','Macias','Madden','Mahoney','Majors','Maldonado','Malone','Mangum','Manning','Marchand','Marquez','Matagi',
+  'Mathis','Mbeki','McAlister','McBride','McCaffrey','McCray','McDaniel','McGowan','McKinnon','Medina','Mejia','Melendez','Merriweather','Mesa',
+  'Metcalf','Millbrook','Molina','Montague','Montoya','Moody','Morales','Morrow','Moseley','Mosley','Mullins','Muniz','Murillo','Musgrave',
+  'Nakashima','Navarro','Ndiaye','Nelson','Newsome','Nguyen','Nichols','Nkemdiche','Nolan','Norris','Nwosu','Oakes','Obi','Ochoa','Odell','Ogbonna',
+  'Ogunleye','Okeke','Oliveira','Olsen','Onyeka','Orozco','Osborne','Oyelaran','Pacheco','Palmer','Park','Parrish','Pascal','Paulsen','Peebles',
+  'Pena','Penrose','Pettigrew','Phelps','Pickens','Pinkney','Pittman','Polamalu','Poole','Porter','Pritchard','Pugh','Purcell','Quarles','Ragland',
+  'Ramirez','Rankin','Ransom','Ratliff','Reaves','Reyes','Rhodes','Richter','Riggins','Rios','Robichaux','Rocha','Rodgers','Rojas','Romero','Rosales',
+  'Rowe','Ruiz','Rusk','Saldana','Salinas','Sanborn','Sandoval','Santana','Sarkisian','Saunders','Schaefer','Schmidt','Schultz','Seau','Sellers',
+  'Shaw','Shelton','Sherrod'
+];
 
 /* NFL-style roster rules */
 const POS_ORDER = ['QB','RB','WR','TE','OL','DL','LB','CB','S','K','P','LS'];
@@ -2065,7 +2148,26 @@ function newCareer(teamIdx, mode){
   ensureFADepth();
   // career opens in the franchise-tag window: expiring deals are still on rosters
   hubTab = 'schedule'; faFilter = 'ALL';
+  dedupeNames();
   save(); render();
+}
+/* light touch: at most ~1 shared last name per team, a couple of repeat full names league-wide is fine */
+function dedupeNames(){
+  const full = {}, fresh = () => pick(FN)+' '+pick(LN);
+  let fullDups = 0;
+  G.teams.forEach(t => {
+    const lasts = {}; let shared = 0;
+    t.roster.forEach(p => {
+      for(let k=0; k<20; k++){
+        const l = p.name.split(' ').pop(), dupL = lasts[l] && shared >= 1, dupF = full[p.name] && fullDups >= 2;
+        if(!dupL && !dupF) break;
+        p.name = fresh();
+      }
+      const l = p.name.split(' ').pop();
+      if(lasts[l]) shared++; if(full[p.name]) fullDups++;
+      lasts[l] = 1; full[p.name] = 1;
+    });
+  });
 }
 function save(){
   if(!G || !G.careerId) return true;
@@ -2431,10 +2533,24 @@ function payroll(t){ return t.roster.reduce((s,p) => s + p.salary, 0) + deadCapF
 function capRoom(t){ return capNow() - payroll(t); }
 function posCount(t, pos){ return t.roster.filter(p => p.pos === pos && !p.ir).length; }
 function activeCount(t){ return t.roster.filter(p => !p.ir).length; }
+/* team overall: 75% depth-chart starters (weighted by position value) + 25% top backups */
+const TOVR_W = {QB:3, LT:1.3, RT:1.1, LE:1.3, RE:1.3, CB:1.2, K:.5, P:.4};
+const TOVR_DEPTH = {QB:1, RB:1, WR:2, TE:1, OL:2, DL:2, LB:2, CB:2, S:1};
 function teamOverall(t){
   const active = t.roster.filter(p => !p.ir);
   if(!active.length) return 0;
-  return Math.round(active.reduce((s,p)=>s+p.rating,0) / active.length);
+  let lu = [];
+  try { lu = lineupFor(t, offFormOf(t), offFormKeyOf(t)).concat(lineupFor(t, defFormOf(t), defFormKeyOf(t))).filter(x => x.p); } catch(e){}
+  if(!lu.length) return Math.round(active.reduce((s,p)=>s+p.rating,0) / active.length);
+  const ids = new Set(lu.map(x => x.p.id));
+  let ws = 0, wt = 0;
+  lu.forEach(x => { const w = TOVR_W[x.spot] || 1; ws += w * x.p.rating; wt += w; });
+  ['K','P'].forEach(pos => { const best = active.filter(p => p.pos === pos).sort((a,b) => b.rating - a.rating)[0]; if(best){ ws += TOVR_W[pos] * best.rating; wt += TOVR_W[pos]; } });
+  const S = ws / wt;
+  const dep = [];
+  Object.keys(TOVR_DEPTH).forEach(pos => { active.filter(p => p.pos === pos && !ids.has(p.id)).sort((a,b) => b.rating - a.rating).slice(0, TOVR_DEPTH[pos]).forEach(p => dep.push(p.rating)); });
+  const D = dep.length ? dep.reduce((s,v)=>s+v,0) / dep.length : S - 15;
+  return Math.round(S * .75 + D * .25);
 }
 function rosterLimit(){ return (G.phase==='hub' || G.phase==='game' || G.phase==='playoffs') ? LIMIT_REG : LIMIT_OFF; }
 function rosterFrozen(){ return G.phase === 'playoffs'; }
@@ -2948,6 +3064,50 @@ function formMult(p){
   const f = p.form == null ? 100 : p.form;
   return 0.88 + 0.12 * clamp(f,0,100)/100; // fully rusty (0) plays at 88% of true rating, full form (100) plays at 100%
 }
+/* why a player's game-day rating differs from his overall */
+function effWhy(p, slotSpot, scheme){
+  const out = []; let kind = null;
+  if(p.spot !== slotSpot){
+    const fit = SPOT_FIT[p.spot], pen = (fit && fit[slotSpot] != null) ? fit[slotSpot] : 4;
+    if(pen) { out.push({t:'Out of position: natural '+p.spot+', playing '+slotSpot, d:-pen}); kind = 'pos'; }
+  }
+  if(scheme && p.scheme !== 'any' && (p.pos==='DL' || p.pos==='LB') && p.scheme !== scheme){ out.push({t:'Scheme fit: a '+SCHEME_TAG[p.scheme]+' player in your '+SCHEME_TAG[scheme]+' front', d:-SCHEME_PENALTY}); kind = 'pos'; }
+  const h = hgtBonus(p); if(h) out.push({t:'Height '+Math.floor(p.hgt/12)+'\'' + (p.hgt%12)+'" '+(h>0?'suits':'hurts him at')+' '+p.pos, d:h});
+  if(prFilmBonus(p)) out.push({t:'Film study this week', d:1});
+  const f = p.form == null ? 100 : p.form;
+  if(f < 100){ const before = effRatingRaw(p, slotSpot, scheme); const loss = before - before*formMult(p); if(loss > 0.01){ out.push({t:'Game form '+Math.round(f)+'%. Practice reps raise it.', d:-loss}); if(!kind) kind = 'form'; } }
+  const net = out.reduce((s,x) => s + x.d, 0);
+  if(!kind && net > 0) kind = 'up';
+  return {items:out, kind, net};
+}
+function effRatingRaw(p, slotSpot, scheme){
+  let r = p.rating;
+  if(p.spot !== slotSpot){ const fit = SPOT_FIT[p.spot]; r -= (fit && fit[slotSpot] != null) ? fit[slotSpot] : 4; }
+  if(scheme && p.scheme !== 'any' && (p.pos==='DL' || p.pos==='LB') && p.scheme !== scheme) r -= SCHEME_PENALTY;
+  return r + hgtBonus(p) + prFilmBonus(p);
+}
+function effTagHTML(p, slotSpot, scheme){
+  const w = effWhy(p, slotSpot, scheme), e = Math.ceil(effRating(p, slotSpot, scheme));
+  if(e === p.rating && w.kind !== 'pos') return '';
+  const k = w.kind === 'pos' ? 'pos' : e > p.rating ? 'up' : 'form';
+  const lbl = k === 'pos' ? '▾ out of pos' : k === 'form' ? '▾ form' : '▴ boost';
+  const col = k === 'pos' ? 'var(--red)' : k === 'form' ? '#F2A24A' : 'var(--green)';
+  return ' <span class="oop effwhy" style="color:'+col+';cursor:pointer" title="Tap for why" onclick="event.stopPropagation();openModal(\'effwhy\',{pid:'+p.id+',spot:\''+slotSpot+'\',scheme:'+(scheme?'\''+scheme+'\'':'null')+'})">'+lbl+'</span>';
+}
+function effWhyHTML(a){
+  const fp = findPlayer(a.pid), p = fp && fp.p ? fp.p : fp;
+  if(!p) return '<p class="sub">Player not found.</p>';
+  const w = effWhy(p, a.spot, a.scheme), e = Math.ceil(effRating(p, a.spot, a.scheme));
+  const fd = d => { const r = Math.abs(d) < 1 ? (d < 0 ? '−<1' : '+<1') : (d > 0 ? '+' : '−')+Math.round(Math.abs(d)); return '<b style="color:'+(d<0?'var(--red)':'var(--green)')+'">'+r+'</b>'; };
+  let s = '<div style="display:flex;flex-direction:column;gap:8px"><div><b>'+esc(p.name)+'</b> <span class="sub">'+PL(p)+' · playing '+a.spot+'</span></div>';
+  s += '<table class="tbl"><tr><td>Overall</td><td style="text-align:right"><b style="color:var(--gold)">'+p.rating+'</b></td></tr>';
+  if(!w.items.length) s += '<tr><td class="sub" colspan="2">No adjustments.</td></tr>';
+  w.items.forEach(x => s += '<tr><td>'+x.t+'</td><td style="text-align:right">'+fd(x.d)+'</td></tr>');
+  s += '<tr><td><b>Game-day rating</b></td><td style="text-align:right"><b style="color:var(--gold)">'+e+'</b></td></tr></table>';
+  if(w.kind === 'pos') s += '<p class="sub">Move him to his natural spot, or start a natural '+a.spot+', to remove the penalty.</p>';
+  else if(w.kind === 'form' && e < p.rating) s += '<p class="sub">He is in his natural spot. Form is game sharpness. It climbs with practice and game reps.</p>';
+  return s + '<button class="btn" style="align-self:flex-end" onclick="closeModal()">Got it</button></div>';
+}
 function effRating(p, slotSpot, scheme){
   let r = p.rating;
   if(p.spot !== slotSpot){
@@ -3380,10 +3540,16 @@ function finishWeek(userRes, liveBox){
   revertTempLineups();
   grantWeeklyScoutPoints();
   try { collegeWeek(); } catch(e){ console.error('college week', e); }
-  G.teams.forEach(t => t.roster.forEach(p => {
-    p.form = clamp((p.form==null?100:p.form) + RI(1,3), 0, 100);
-    p.fatigue = clamp((p.fatigue||0) - 6, 0, 100);
-  }));
+  G.teams.forEach(t => {
+    let ids = null; try { ids = campStarters(t).ids; } catch(e){}
+    t.roster.forEach(p => {
+      const f = p.form==null ? 100 : p.form;
+      if(p.injWeeks > 0) p.form = f > 60 ? Math.max(60, f - 5) : f;                       // out hurt: rust builds
+      else if(!ids || ids.has(p.id) || SPEC[p.pos]) p.form = clamp(f + RI(1,3), 0, 100); // played: sharper
+      else p.form = f > 75 ? Math.max(75, f - 2) : clamp(f + 1, 0, 75);                 // no snaps: slow fade
+      p.fatigue = clamp((p.fatigue||0) - 6, 0, 100);
+    });
+  });
   G.practiceUsedThisWeek = false;
   G.drillsUsedThisWeek = 0;
   G.practiceDay = 0;
@@ -4223,38 +4389,347 @@ function finishDraft(){
   G.phase = 'ota';
   save(); render();
 }
+function otaState(){
+  const me = meT();
+  if(!G.ota || G.ota.year !== G.year){
+    const snap = {}, skip = [], exc = [];
+    me.roster.forEach(p => {
+      snap[p.id] = p.rating;
+      if(p.holdout || (p.demand && p.demand.stage)) skip.push(p.id);
+      else if(p.age >= 30 && p.rating >= 82 && Math.random() < .3) exc.push(p.id);
+    });
+    G.ota = { year:G.year, snap, skip, exc, foci:[], seen:false };
+  }
+  return G.ota;
+}
 function runOTA(focus){
   // one May week of team drills; young players in the focus groups develop
   const groups = focus==='pass' ? ['QB','WR','TE','CB','S'] : focus==='run' ? ['RB','OL','DL','LB'] : POS_ORDER.filter(p=>!SPEC[p]);
-  const me = meT();
-  const young = me.roster.filter(p => p.age <= 26 && groups.includes(p.pos) && p.rating < 95);
+  const me = meT(), O = otaState(); O.foci.push(focus);
+  const away = new Set(O.skip.concat(O.exc));
+  const young = me.roster.filter(p => p.age <= 26 && groups.includes(p.pos) && p.rating < 95 && !away.has(p.id));
   const picked = young.sort(() => Math.random()-.5).slice(0, 3);
   G.otaReport = picked.map(p => { const g = RI(1, focus==='team' ? 1 : 2); p.rating = clamp(p.rating+g,50,99); logEv(p,'dev','OTA reps',g); return {name:p.name, pos:p.spot, delta:g}; });
-  G.teams.forEach(t => t.roster.forEach(p => { p.form = clamp((p.form==null?70:p.form) + RI(4,8), 0, 100); }));
+  G.teams.forEach(t => t.roster.forEach(p => {
+    if(t.idx === G.userTeam && away.has(p.id)) return;
+    const bonus = (t.idx === G.userTeam && groups.includes(p.pos) && focus !== 'team') ? 2 : 0;
+    p.form = clamp((p.form==null?70:p.form) + RI(2,4) + bonus, 0, 100);
+  }));
   G.otaWeek++;
   if(G.otaWeek > 4){ G.phase = 'camp'; }
   save(); render();
 }
 function simOTAs(){ while(G.phase==='ota') runOTA('team'); }
-function runCamp(){
-  try { gmHandleDemands(); holdoutsAtCamp(); } catch(e){ console.error('holdouts', e); }
-  // late-July padded practices: extra training points + a couple of camp risers
-  grantTrainPts(4);
+function runCamp(){ campState(); let g = 6; while(G.phase === 'camp' && g-- > 0) runCampWeek(); }
+/* ================= TRAINING CAMP 2.0: 3 camp weeks, battles, preseason snap plan, report card ================= */
+const CAMP_WEEKS = 3;
+const CAMP_INT = {
+  light:  {n:'🧘 Light',  form:3,  dev:.45, inj:.12, fat:6,  bars:[35,20,10], d:'Walkthroughs. Fresh legs.'},
+  normal: {n:'🏈 Normal', form:5,  dev:1,   inj:.35, fat:12, bars:[60,50,30], d:'Standard camp day.'},
+  padded: {n:'💥 Padded', form:8, dev:1.6, inj:.7,  fat:20, bars:[90,85,65], d:'Full contact. Big gains, real risk.'}
+};
+const CAMP_GROUPS = ['QB','RB','WR','TE','OL','DL','LB','CB','S'];
+const SNAP_GROUPS = [['QB','QB',['QB']],['OL','O-Line',['OL']],['SK','RB/WR/TE',['RB','WR','TE']],['DEF','Defense',['DL','LB','CB','S']]];
+const SNAP_PLANS = {starters:{n:'Starters',form:10,dev:.05,inj:.08}, series:{n:'1 series',form:5,dev:.15,inj:.03}, backups:{n:'Backups',form:0,dev:.25,inj:.02}, rookies:{n:'Rookies',form:0,dev:.35,inj:.015}};
+function campState(){
   const me = meT();
-  const risers = me.roster.filter(p => p.rating < 95).sort(() => Math.random()-.5).slice(0, 2);
-  G.campReport = risers.map(p => { p.rating = clamp(p.rating+1,50,99); logEv(p,'dev','Training camp riser',1); return {name:p.name, pos:p.spot, delta:1}; });
-  G.teams.forEach(t => t.roster.forEach(p => { p.form = clamp((p.form==null?75:p.form) + RI(10,18), 0, 100); }));
-  // preseason slate: 3 random opponents
-  G.preOpps = [];
-  while(G.preOpps.length < 3){
-    const o = RI(0,15);
-    if(o !== G.userTeam && !G.preOpps.includes(o)) G.preOpps.push(o);
+  if(!G.camp || G.camp.year !== G.year){
+    const snap = {}; me.roster.forEach(p => snap[p.id] = p.rating);
+    const formIn = {}; me.roster.forEach(p => formIn[p.id] = p.form == null ? 80 : p.form);
+    G.camp = { year:G.year, wk:1, int:'normal', lastInt:null, focus:campAutoFocus(), battles:[], plan:{QB:'series', OL:'series', SK:'series', DEF:'series'},
+      snap, formIn, inj:[], devs:{}, grade:null };
+    G.camp.battles = campAutoBattles();
   }
+  return G.camp;
+}
+function campAutoFocus(){
+  const me = meT();
+  const sc = CAMP_GROUPS.map(g => { const c = posCoachOf(g), pl = me.roster.filter(p => p.pos === g); const avgF = pl.length ? pl.reduce((s,p)=>s+(p.form==null?80:p.form),0)/pl.length : 100;
+    return {g, s:(100-avgF) + (c ? (c.rating-70)/2 : 0)}; });
+  return sc.sort((a,b) => b.s - a.s).slice(0,2).map(x => x.g);
+}
+function campStarters(t){
+  t = t || meT();
+  const o = lineupFor(t, offFormOf(t), offFormKeyOf(t)), d = lineupFor(t, defFormOf(t), defFormKeyOf(t));
+  return {o, d, ids:new Set(o.concat(d).filter(x => x.p).map(x => x.p.id))};
+}
+function campAutoBattles(){
+  const me = meT(), st = campStarters(me), out = [];
+  [['o', st.o, offFormKeyOf(me), offFormOf(me)], ['d', st.d, defFormKeyOf(me), defFormOf(me)]].forEach(([side, lu, fk, form]) => {
+    lu.forEach((sl, i) => {
+      if(!sl.p) return;
+      const ch = poolOf(me).filter(p => p.pos === SPOT_GROUP[sl.spot] && !st.ids.has(p.id))
+        .map(p => ({p, e:effRating(p, sl.spot, form.scheme)})).sort((a,b) => b.e - a.e)[0];
+      if(ch && sl.eff - ch.e <= 4) out.push({side, fk, i, spot:sl.spot, a:sl.p.id, b:ch.p.id, gap:sl.eff - ch.e, wa:0, wb:0});
+    });
+  });
+  const used = new Set(), pickd = [];
+  out.sort((x,y) => x.gap - y.gap).forEach(b => { if(pickd.length < 3 && !used.has(b.b)){ used.add(b.b); pickd.push(b); } });
+  return pickd.map(b => { delete b.gap; return b; });
+}
+function campP(id){ return meT().roster.find(p => p.id === id); }
+function campBattleRound(b, bonusA, bonusB){
+  const A = campP(b.a), B = campP(b.b); if(!A || !B) return;
+  const form = b.side === 'o' ? OFF_FORMS[b.fk] || offFormOf(meT()) : DEF_FORMS[b.fk] || defFormOf(meT());
+  const ea = effRating(A, b.spot, form.scheme) + (bonusA||0), eb = effRating(B, b.spot, form.scheme) + (bonusB||0);
+  const aw = Math.random() < clamp(.5 + (ea - eb)/16, .2, .8);
+  if(aw) b.wa++; else b.wb++;
+  const w = aw ? A : B;
+  w.form = clamp((w.form==null?80:w.form) + 4, 0, 100);
+  if(Math.random() < .2 && w.rating < (w.ceiling||99)){ w.rating++; campDev(w, 1, 'Won a camp battle rep'); }
+}
+function campDev(p, d, why){ const C = G.camp; C.devs[p.id] = (C.devs[p.id]||0) + d; logEv(p, 'dev', why, d); }
+function campInjure(n){
+  const me = meT(), C = G.camp;
+  for(let k=0; k<n; k++){
+    const h = me.roster.filter(p => p.injWeeks === 0 && !SPEC[p.pos] && !p.holdout); if(!h.length) return;
+    const p = pick(h); p.injWeeks = rollInjuryWeeks(1,3); G.lastInjury = p;
+    logEv(p, 'inj', 'Hurt in camp, out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''), 0);
+    C.inj.push({id:p.id, name:p.name, pos:p.spot, weeks:p.injWeeks});
+  }
+}
+function setCampInt(k){ campState().int = k; save(); render(); }
+function toggleCampFocus(g){
+  const C = campState(), i = C.focus.indexOf(g);
+  if(i >= 0) C.focus.splice(i, 1); else { C.focus.push(g); if(C.focus.length > 2) C.focus.shift(); }
+  save(); render();
+}
+function setSnapPlan(g, v){ campState().plan[g] = v; save(); render(); }
+function runCampWeek(){
+  try { if(campState().wk === 1){ gmHandleDemands(); holdoutsAtCamp(); } } catch(e){ console.error('holdouts', e); }
+  const C = campState(), me = meT(), I = CAMP_INT[C.int] || CAMP_INT.normal;
+  me.roster.forEach(p => {
+    if(p.holdout || p.injWeeks > 0) return;
+    const foc = C.focus.includes(p.pos), coach = foc ? posCoachOf(p.pos) : null, cb = coach ? (coach.rating >= 80 ? 2 : coach.rating >= 70 ? 1 : 0) : 0;
+    const gain = foc ? Math.round(I.form*1.6) + cb + RI(0,2) : I.form + RI(-1,1);
+    p.form = clamp((p.form==null?75:p.form) + gain, 0, 100);
+    p.fatigue = clamp((p.fatigue||0) + I.fat, 0, 100);
+    let ch = (foc ? .08 : .02) * I.dev * (1 + cb*.25) * (p.age <= 25 ? 1.4 : p.age >= 30 ? .5 : 1);
+    if(p.rating < (p.ceiling||99) && Math.random() < ch){ p.rating++; campDev(p, 1, 'Camp reps'+(foc?' ('+p.pos+' focus)':'')); }
+  });
+  C.battles.forEach(b => campBattleRound(b));
+  let injOdds = I.inj * (C.int === 'padded' && C.lastInt === 'padded' ? 2 : 1), n = 0;
+  while(injOdds > 0){ if(Math.random() < Math.min(1, injOdds)) n++; injOdds -= 1; }
+  campInjure(n);
+  me.roster.forEach(p => { if(p.injWeeks > 0 && C.inj.every(x => x.id !== p.id) && Math.random() < .5) p.injWeeks--; });
+  C.lastInt = C.int;
+  G.campReport = Object.keys(C.devs).map(id => { const p = campP(+id); return p ? {name:p.name, pos:p.spot, spot:p.spot, delta:C.devs[id]} : null; }).filter(Boolean);
+  C.wk++;
+  if(C.wk > CAMP_WEEKS) campToPreseason();
+  save(); render();
+}
+function campToPreseason(){
+  grantTrainPts(4);
+  G.teams.forEach(t => { if(t.idx !== G.userTeam) t.roster.forEach(p => { p.form = clamp((p.form==null?75:p.form) + RI(16,26), 0, 100); }); });
+  meT().roster.forEach(p => { p.fatigue = Math.max(0, (p.fatigue||0) - 25); });
+  G.preOpps = [];
+  while(G.preOpps.length < 3){ const o = RI(0,15); if(o !== G.userTeam && !G.preOpps.includes(o)) G.preOpps.push(o); }
   G.preSchedule = makePreSchedule();
   G.preWeek = 1; G.preResults = []; G.preReport = null;
   G.phase = 'preseason';
-  save(); render();
+  if(G.mode !== 'player') G.phaseDesk = 'preseason';
 }
+/* preseason: apply the snap plan for my team after each game */
+function campApplySnapPlan(report){
+  const C = campState(), me = meT(), st = campStarters(me), rookie = p => p.draftInfo && p.draftInfo.year === G.year;
+  SNAP_GROUPS.forEach(([k, , poss]) => {
+    const P = SNAP_PLANS[C.plan[k]] || SNAP_PLANS.series;
+    const grp = me.roster.filter(p => poss.includes(p.pos) && p.injWeeks === 0 && !p.holdout);
+    grp.forEach(p => {
+      const starter = st.ids.has(p.id);
+      if(starter) p.form = clamp((p.form==null?80:p.form) + P.form + RI(0,2), 0, 100);
+      else p.form = clamp((p.form==null?80:p.form) + 3, 0, 100);
+      let ch = 0;
+      if(!starter){ ch = .25 * P.dev * (C.plan[k] === 'rookies' ? (rookie(p) || p.age <= 23 ? 1.6 : .2) : 1) * (p.age <= 25 ? 1 : .5); }
+      else ch = P.dev * .1;
+      if(p.rating < (p.ceiling||99) && Math.random() < ch){
+        p.rating++; campDev(p, 1, 'Preseason live reps');
+        const ex = report.devs.find(d => d.id === p.id); if(ex){ ex.delta++; ex.ovr = p.rating; } else report.devs.push({id:p.id, name:p.name, pos:p.spot, ovr:p.rating, delta:1});
+      }
+    });
+    if(Math.random() < P.inj * 2.2){
+      const pool = grp.filter(p => C.plan[k] === 'starters' ? st.ids.has(p.id) : C.plan[k] === 'series' ? true : !st.ids.has(p.id));
+      if(pool.length){ const p = pick(pool); p.injWeeks = rollInjuryWeeks(1,2); G.lastInjury = p; logEv(p,'inj','Injured in preseason, out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''),0);
+        report.injuries.push({id:p.id, name:p.name, pos:p.spot, weeks:p.injWeeks}); C.inj.push({id:p.id, name:p.name, pos:p.spot, weeks:p.injWeeks}); }
+    }
+  });
+  C.battles.forEach(b => campBattleRound(b));
+  if(G.preWeek >= 3) campSettleBattles();
+}
+function campSettleBattles(){
+  const C = campState();
+  C.battles.forEach(b => {
+    if(b.done) return; b.done = true;
+    const A = campP(b.a), B = campP(b.b); if(!A || !B) return;
+    const winB = b.wb > b.wa;
+    b.win = winB ? b.b : b.a;
+    if(winB){ G.lineupOverride = G.lineupOverride || {}; G.lineupOverride[b.fk] = G.lineupOverride[b.fk] || {}; G.lineupOverride[b.fk][b.i] = B.id; logEv(B, 'dev', 'Won the '+b.spot+' job in camp', 0); try { bumpRel(A, 'coach', -3); } catch(e){} }
+    else logEv(A, 'dev', 'Held off '+B.name+' for the '+b.spot+' job', 0);
+  });
+}
+/* ---- battle editor ---- */
+function campBattleOptions(){
+  const me = meT(), st = campStarters(me), out = [];
+  [['o', st.o, offFormKeyOf(me), offFormOf(me)], ['d', st.d, defFormKeyOf(me), defFormOf(me)]].forEach(([side, lu, fk, form]) => {
+    lu.forEach((sl, i) => { if(!sl.p) return;
+      const chs = poolOf(me).filter(p => p.pos === SPOT_GROUP[sl.spot] && !st.ids.has(p.id)).map(p => ({p, e:Math.ceil(effRating(p, sl.spot, form.scheme))})).sort((a,b) => b.e - a.e).slice(0,3);
+      if(chs.length) out.push({side, fk, i, spot:sl.spot, a:sl.p, ae:Math.ceil(sl.eff), chs});
+    });
+  });
+  return out;
+}
+function campAddBattle(side, fk, i, spot, a, b){
+  const C = campState();
+  C.battles = C.battles.filter(x => !(x.fk === fk && x.i === i) && x.b !== b && x.a !== b);
+  if(C.battles.length >= 3){ alert('Max 3 battles. Remove one first.'); return; }
+  C.battles.push({side, fk, i, spot, a, b, wa:0, wb:0}); save(); render();
+}
+function campDropBattle(k){ const C = campState(); C.battles.splice(k, 1); save(); render(); }
+function campBattlesHTML(){
+  const C = campState(), opts = campBattleOptions();
+  let s = '<p class="sub" style="margin-bottom:6px">Pick up to 3 starting spots to open up. The winner of each battle starts Week 1. Battles '+C.battles.length+'/3.</p>';
+  if(C.battles.length) s += '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">' + C.battles.map((b,k) => { const A = campP(b.a), B = campP(b.b); return '<span class="countpill">'+b.spot+': '+esc(A?A.name.split(' ').pop():'?')+' vs '+esc(B?B.name.split(' ').pop():'?')+' <button class="btn tiny" onclick="campDropBattle('+k+')">✕</button></span>'; }).join('') + '</div>';
+  s += '<table class="tbl"><tr><th>Spot</th><th>Starter</th><th>Challengers</th></tr>';
+  opts.forEach(o => {
+    const on = C.battles.find(b => b.fk === o.fk && b.i === o.i);
+    s += '<tr><td><b>'+o.spot+'</b></td><td>'+esc(o.a.name.split(' ').pop())+' <b style="color:var(--gold)">'+o.ae+'</b></td><td>' + o.chs.map(c => '<button class="btn tiny'+(on && on.b === c.p.id ? ' primary' : '')+'" onclick="campAddBattle(\''+o.side+'\',\''+o.fk+'\','+o.i+',\''+o.spot+'\','+o.a.id+','+c.p.id+')">'+esc(c.p.name.split(' ').pop())+' '+c.e+(c.p.age<=23?' R':'')+'</button>').join(' ') + '</td></tr>';
+  });
+  return s + '</table>';
+}
+/* ---- UI ---- */
+function campStripHTML(cur){
+  const C = campState();
+  let w = ''; for(let i=1;i<=CAMP_WEEKS;i++) w += '<i class="'+(cur==='camp'&&i===C.wk?'on':(cur!=='camp'||i<C.wk)?'done':'')+'">Wk '+i+'</i>';
+  for(let i=1;i<=3;i++) w += '<i class="'+(cur==='pre'&&i===G.preWeek?'on':(cur==='pre'&&i<G.preWeek)||cur==='done'?'done':'')+'">Pre '+i+'</i>';
+  return '<div class="cp-wk">'+w+'</div>';
+}
+function campTeamForm(){ const st = campStarters(); const a = [...st.ids].map(campP).filter(Boolean); return a.length ? Math.round(a.reduce((s,p)=>s+(p.form==null?80:p.form),0)/a.length) : 0; }
+function fcol(f){ return f >= 90 ? 'var(--green)' : f >= 70 ? '#F2A24A' : 'var(--red)'; }
+
+function otaReportCardHTML(){
+  const O = G.ota; if(!O || O.year !== G.year) return '';
+  const me = meT(), roster = me.roster.filter(p => !SPEC[p.pos]);
+  const away = new Set(O.skip.concat(O.exc));
+  const F = p => p.form == null ? 75 : p.form;
+  const avgF = roster.length ? Math.round(roster.reduce((s,p)=>s+F(p),0)/roster.length) : 0;
+  const risers = me.roster.filter(p => O.snap[p.id] != null && p.rating > O.snap[p.id]).sort((a,b) => (b.rating-O.snap[b.id]) - (a.rating-O.snap[a.id]));
+  const gain = risers.reduce((s,p)=>s+p.rating-O.snap[p.id],0);
+  const score = (avgF - 70) * 1.5 + gain * 2 - O.skip.length * 3;
+  const g = score >= 30 ? 'A' : score >= 22 ? 'A-' : score >= 16 ? 'B+' : score >= 10 ? 'B' : score >= 5 ? 'B-' : score >= 0 ? 'C+' : score >= -6 ? 'C' : 'D';
+  const gc = g[0]==='A' ? 'var(--green)' : g[0]==='B' ? 'var(--gold)' : g[0]==='C' ? '#F2A24A' : 'var(--red)';
+  const cnt = {pass:0, run:0, team:0}; O.foci.forEach(f => cnt[f] = (cnt[f]||0)+1);
+  const fl = [['pass','7-on-7'],['run','9-on-7'],['team','11-on-11']].filter(x => cnt[x[0]]).map(x => x[1]+' ×'+cnt[x[0]]).join(' · ');
+  const bins = [0,0,0,0]; roster.forEach(p => { const f = F(p); bins[f < 65 ? 0 : f < 80 ? 1 : f < 90 ? 2 : 3]++; });
+  const mx = Math.max(1, ...bins), cols = ['var(--red)','#F2A24A','#F2A24A','var(--green)'], lb = ['<65','65-79','80-89','90+'];
+  const unit = {}; roster.forEach(p => (unit[p.pos] = unit[p.pos] || []).push(F(p)));
+  const ua = Object.keys(unit).map(k => [k, unit[k].reduce((s,v)=>s+v,0)/unit[k].length]).sort((a,b)=>b[1]-a[1]);
+  const rookies = me.roster.filter(p => p.draftInfo && p.draftInfo.year === G.year).sort((a,b) => (a.draftInfo.round||9)-(b.draftInfo.round||9) || b.rating-a.rating).slice(0,4);
+  const look = p => { const d = p.rating - (O.snap[p.id]||p.rating); if(d >= 1 || F(p) >= 85) return '<span class="up">ahead</span>'; if(F(p) < 68) return '<span class="dn">behind</span>'; return 'on track'; };
+  const att = me.roster.length - away.size;
+  let s = '<div class="cp" style="margin-bottom:10px"><div class="cp-top"><span class="cp-t">OTA REPORT CARD</span><span class="fz-pill">'+O.foci.length+' weeks'+(fl?' · '+fl:'')+'</span><span class="fz-pill">Attendance <b>'+att+'/'+me.roster.length+'</b></span>' +
+    (O.seen ? '' : '<span class="cp-go"><button class="btn tiny primary" onclick="G.ota.seen=true;save();render()">Open training camp →</button></span>') + '</div>';
+  s += '<div class="cp-cols" style="grid-template-columns:.75fr 1fr 1fr 1fr">';
+  s += '<div class="cp-card" style="align-items:center;justify-content:center;gap:6px"><span class="cp-grade" style="color:'+gc+'">'+g+'</span><div class="sub" style="text-align:center">Form reporting <b style="color:var(--chalk)">'+avgF+'</b><br>+'+gain+' OVR total<br>'+away.size+' skipped</div></div>';
+  s += '<div class="cp-card"><div class="cp-h">Reporting to camp<em>form</em></div><div class="cp-dist">'+bins.map((b,i) => '<div style="height:'+Math.max(4,b/mx*100)+'%;background:'+cols[i]+'"><span>'+lb[i]+' · '+b+'</span></div>').join('')+'</div>' +
+    (ua.length ? '<div class="cp-li"><span>Best shape</span><span>'+ua[0][0]+' room <b class="up">'+Math.round(ua[0][1])+'</b></span></div><div class="cp-li"><span>Needs work</span><span>'+ua[ua.length-1][0]+' room <b style="color:'+fcol(ua[ua.length-1][1])+'">'+Math.round(ua[ua.length-1][1])+'</b></span></div>' : '') + '</div>';
+  s += '<div class="cp-card"><div class="cp-h">OTA risers<em>+'+gain+' OVR</em></div>' + (risers.length ? risers.slice(0,5).map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+(p.draftInfo&&p.draftInfo.year===G.year?' (R)':'')+'</span><span class="up">'+O.snap[p.id]+' → '+p.rating+'</span></div>').join('') + (risers.length>5?'<div class="sub">+'+(risers.length-5)+' more</div>':'') : '<div class="sub">No risers this spring.</div>') + '</div>';
+  s += '<div class="cp-card"><div class="cp-h">Rookie first looks<em>draft class</em></div>' + (rookies.length ? rookies.map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+' · R'+(p.draftInfo.round||'?')+'</span><span>'+look(p)+'</span></div>').join('') : '<div class="sub">No rookies drafted.</div>') +
+    '<div class="cp-h" style="margin-top:3px">Skipped OTAs</div>' + (away.size ? O.skip.map(id => campP(id)).filter(Boolean).map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+'</span><span class="dn">contract · form '+Math.round(F(p))+'</span></div>').join('') +
+      (O.exc.length ? '<div class="cp-li"><span>'+O.exc.map(id => campP(id)).filter(Boolean).slice(0,3).map(p => PL(p)+' '+esc(p.name.split(' ').pop())).join(', ')+'</span><span class="sub">vets, excused</span></div>' : '') : '<div class="sub">Perfect attendance.</div>') + '</div>';
+  return s + '</div></div>';
+}
+function campHTML(){
+  if(G.ota && G.ota.year === G.year && !G.ota.seen && campState().wk === 1 && G.mode !== 'player') return otaReportCardHTML();
+  const C = campState(), me = meT(), tf = campTeamForm(), inj = me.roster.filter(p => p.injWeeks > 0).length;
+  let s = (G.ota && G.ota.year === G.year && C.wk === 1 ? '<details class="cp-ota"><summary class="sub">OTA report card</summary>'+otaReportCardHTML()+'</details>' : '') + '<div class="cp">';
+  s += '<div class="cp-top"><span class="cp-t">TRAINING CAMP</span>'+campStripHTML('camp')+'<span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Injured <b style="color:'+(inj?'var(--red)':'var(--chalk)')+'">'+inj+'</b></span>' +
+    '<span class="cp-go"><button class="btn tiny" onclick="runCamp()" title="Sim the rest of camp with these settings">⏩</button><button class="btn tiny primary" onclick="runCampWeek()">▶ Run camp week '+C.wk+'</button></span></div>';
+  s += '<div class="cp-cols">';
+  // intensity
+  s += '<div class="cp-card"><div class="cp-h">Intensity<em>this week</em></div>' + Object.keys(CAMP_INT).map(k => { const I = CAMP_INT[k];
+    return '<div class="cp-int'+(C.int===k?' on':'')+'" onclick="setCampInt(\''+k+'\')"><b>'+I.n+'</b><div class="cp-bars"><span>Form</span><div class="cp-bar"><i style="width:'+I.bars[0]+'%;background:var(--green)"></i></div><span>Develop</span><div class="cp-bar"><i style="width:'+I.bars[1]+'%;background:var(--gold)"></i></div><span>Injury</span><div class="cp-bar"><i style="width:'+I.bars[2]*(k==='padded'&&C.lastInt==='padded'?1.5:1)+'%;background:var(--red)"></i></div></div></div>'; }).join('') +
+    '<div class="sub" style="font-size:10px">'+(C.lastInt==='padded'?'<b style="color:var(--red)">Last week was padded. Another padded week doubles injury risk.</b>':'Two padded weeks in a row doubles injury risk.')+'</div></div>';
+  // focus
+  const I = CAMP_INT[C.int];
+  s += '<div class="cp-card"><div class="cp-h">Unit focus<em>pick 2 · coach boosts gains</em></div><div class="cp-chips">' + CAMP_GROUPS.map(g => { const c = posCoachOf(g);
+    return '<div class="cp-chip'+(C.focus.includes(g)?' on':'')+'" onclick="toggleCampFocus(\''+g+'\')"><b style="color:'+(POS_COL[g]||'#ccc')+'">'+g+'</b><small>'+(c?'coach '+c.rating:'no coach')+'</small></div>'; }).join('') + '</div>';
+  s += '<div class="cp-h" style="margin-top:3px">Focus preview<em>per week</em></div>';
+  C.focus.forEach(g => { const c = posCoachOf(g), cb = c ? (c.rating >= 80 ? 2 : c.rating >= 70 ? 1 : 0) : 0, n = me.roster.filter(p => p.pos===g).length;
+    s += '<div class="cp-li"><span>'+g+' room · '+n+'</span><span><span class="up">+'+(Math.round(I.form*1.6)+cb+1)+'</span> form · <span class="up">'+Math.round(.08*I.dev*(1+cb*.25)*100)+'%</span> +1 OVR</span></div>'; });
+  s += '<div class="cp-li"><span>Everyone else</span><span><span class="up">+'+I.form+'</span> form · '+Math.round(.02*I.dev*100)+'% +1 OVR</span></div>';
+  if(C.focus.length < 2) s += '<div class="sub" style="font-size:10px;color:#F2A24A">Pick '+(2-C.focus.length)+' more group'+(C.focus.length?'':'s')+'.</div>';
+  s += '</div>';
+  // battles
+  s += '<div class="cp-card"><div class="cp-h">Position battles<em>'+C.battles.length+' of 3 · winner starts</em></div>' + campBattleCardsHTML() +
+    '<button class="btn tiny" style="align-self:flex-start" onclick="openModal(\'campbattles\')">+ Change battles</button></div>';
+  s += '</div></div>';
+  return s;
+}
+function campBattleCardsHTML(){
+  const C = campState();
+  if(!C.battles.length) return '<div class="sub" style="font-size:11px">No battles. Starters keep their jobs.</div>';
+  return C.battles.map(b => {
+    const A = campP(b.a), B = campP(b.b); if(!A || !B) return '';
+    const form = b.side === 'o' ? OFF_FORMS[b.fk] || offFormOf(meT()) : DEF_FORMS[b.fk] || defFormOf(meT());
+    const ea = effRating(A, b.spot, form.scheme), eb = effRating(B, b.spot, form.scheme), pa = Math.round(clamp(.5 + (ea-eb)/16, .2, .8)*100);
+    const lead = b.wa === b.wb ? 'tied '+b.wa+'-'+b.wb : (b.wa > b.wb ? A.name.split(' ').pop()+' leads '+b.wa+'-'+b.wb : B.name.split(' ').pop()+' leads '+b.wb+'-'+b.wa);
+    const row = (p, e) => '<div class="r"><span class="fz-pos" style="--c:'+(POS_COL[p.pos]||'#ccc')+'">'+b.spot+'</span><span class="n"><b>'+esc(p.name.split(' ').pop())+'</b> <span class="sub">'+p.age+(p.draftInfo&&p.draftInfo.year===G.year?' · rookie':'')+'</span></span><div class="cp-form"><i style="width:'+(p.form==null?80:p.form)+'%;background:'+fcol(p.form==null?80:p.form)+'"></i></div><span class="ov">'+Math.ceil(e)+'</span></div>';
+    return '<div class="cp-bt">'+row(A, ea)+'<div class="vs">VS · '+(b.done ? '<b style="color:var(--green)">'+esc(campP(b.win).name.split(' ').pop())+' won</b>' : lead+' · '+pa+'%')+'</div>'+row(B, eb)+'</div>';
+  }).join('');
+}
+function preseasonPlanHTML(){
+  const C = campState(), me = meT(), st = campStarters(me), opp = G.teams[G.preOpps[G.preWeek-1]], tf = campTeamForm();
+  let s = '<div class="cp"><div class="cp-top"><span class="cp-t">PRESEASON · GAME '+G.preWeek+'</span>'+campStripHTML('pre')+'<span class="fz-pill">'+(G.preWeek!==2?'vs':'@')+' <b>'+esc(opp.abbr)+'</b></span><span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Record <b>'+me.preW+'-'+me.preL+'</b></span>' +
+    '<span class="cp-go"><button class="btn tiny" onclick="simPre()">Sim</button><button class="btn tiny primary" onclick="playPre()">▶ Coach game '+G.preWeek+'</button></span></div>';
+  s += '<div class="cp-cols" style="grid-template-columns:1.55fr 1fr">';
+  s += '<div class="cp-card"><div class="cp-h">Who plays<em>per group</em></div><table class="tbl cp-tbl"><tr><th>Group</th><th>Plan</th><th>Form</th><th>Dev</th><th>Injury</th></tr>';
+  SNAP_GROUPS.forEach(([k, lbl]) => { const P = SNAP_PLANS[C.plan[k]];
+    s += '<tr><td><b>'+lbl+'</b></td><td><div class="cp-seg">'+Object.keys(SNAP_PLANS).map(v => '<span class="'+(C.plan[k]===v?'on':'')+'" onclick="setSnapPlan(\''+k+'\',\''+v+'\')">'+SNAP_PLANS[v].n+'</span>').join('')+'</div></td>' +
+      '<td class="'+(P.form?'up':'')+'">+'+P.form+'</td><td'+(P.dev>=.25?' class="up"':'')+'>'+(P.dev>=.3?'high':P.dev>=.15?'med':'low')+'</td><td'+(P.inj>=.06?' class="dn"':'')+'>'+Math.round(P.inj*220)+'%</td></tr>'; });
+  const open = C.battles.filter(b => !b.done);
+  s += '<tr><td><b>Battles</b></td><td colspan="4" class="sub">'+(open.length ? open.map(b => { const A = campP(b.a), B = campP(b.b); return A&&B ? esc(A.name.split(' ').pop())+' vs '+esc(B.name.split(' ').pop())+' ('+b.wa+'-'+b.wb+')' : ''; }).join(' · ')+'. One round per game.' : 'None open.')+'</td></tr></table>';
+  s += '<div class="sub" style="font-size:10px">Starters gain form. Backups and rookies get development rolls. Battles settle after game 3.</div></div>';
+  // readiness
+  const starters = [...st.ids].map(campP).filter(Boolean);
+  const proj = Math.round(starters.reduce((a,p) => { const k = SNAP_GROUPS.find(g => g[2].includes(p.pos)); const P = SNAP_PLANS[C.plan[k?k[0]:'DEF']]; return a + Math.min(100, (p.form==null?80:p.form) + P.form*(4-G.preWeek)); }, 0) / Math.max(1, starters.length));
+  const rusty = starters.filter(p => (p.form==null?80:p.form) < 90).sort((a,b) => (a.form||0) - (b.form||0)).slice(0,5);
+  s += '<div class="cp-card"><div class="cp-h">Week 1 readiness<em>projected</em></div><div style="display:flex;align-items:center;gap:10px"><span class="cp-big" style="color:'+fcol(proj)+'">'+proj+'</span><div class="sub">avg starter form if this plan holds<br>for the rest of preseason</div></div>' +
+    '<div class="cp-h" style="margin-top:4px">Still rusty</div>' + (rusty.length ? rusty.map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+(p.holdout?' (holdout)':'')+'</span><span style="color:'+fcol(p.form)+'">'+Math.round(p.form)+' form</span></div>').join('') : '<div class="sub">Every starter is 90+.</div>') +
+    '<div class="sub" style="font-size:10px;margin-top:auto">Tip: give rusty starters full snaps. Rest the sharp ones.</div></div>';
+  s += '</div></div>';
+  return s;
+}
+function campGrade(){
+  const C = campState(), st = campStarters(), a = [...st.ids].map(campP).filter(Boolean);
+  const form = a.length ? a.reduce((s,p)=>s+(p.form==null?80:p.form),0)/a.length : 80;
+  const gain = Object.values(C.devs).reduce((s,d)=>s+d,0), inj = C.inj.length;
+  const score = (form - 85) * 1.5 + gain * 1.5 - inj * 4;
+  const g = score >= 45 ? 'A' : score >= 35 ? 'A-' : score >= 27 ? 'B+' : score >= 20 ? 'B' : score >= 13 ? 'B-' : score >= 6 ? 'C+' : score >= 0 ? 'C' : 'D';
+  return {g, form:Math.round(form), gain, inj, a};
+}
+function campReportCardHTML(){
+  if(!G.camp || G.camp.year !== G.year) return '';
+  const C = G.camp, R = campGrade(), me = meT();
+  const bins = [0,0,0,0]; R.a.forEach(p => { const f = p.form==null?80:p.form; bins[f < 70 ? 0 : f < 80 ? 1 : f < 90 ? 2 : 3]++; });
+  const mx = Math.max(1, ...bins), cols = ['var(--red)','#F2A24A','#F2A24A','var(--green)'], lb = ['<70','70s','80s','90+'];
+  const rust = R.a.slice().sort((a,b) => (a.form||0)-(b.form||0))[0];
+  const unit = {}; R.a.forEach(p => { (unit[p.pos] = unit[p.pos] || []).push(p.form==null?80:p.form); });
+  const best = Object.keys(unit).map(k => [k, unit[k].reduce((s,v)=>s+v,0)/unit[k].length]).sort((a,b)=>b[1]-a[1])[0];
+  const prog = me.roster.filter(p => C.snap[p.id] != null && p.rating > C.snap[p.id]).sort((a,b) => (b.rating-C.snap[b.id]) - (a.rating-C.snap[a.id]));
+  const gc = R.g[0] === 'A' ? 'var(--green)' : R.g[0] === 'B' ? 'var(--gold)' : R.g[0] === 'C' ? '#F2A24A' : 'var(--red)';
+  let s = '<div class="cp" style="margin-bottom:10px"><div class="cp-top"><span class="cp-t">CAMP REPORT CARD</span>'+campStripHTML('done')+'<span class="fz-pill">Preseason <b>'+me.preW+'-'+me.preL+'</b></span></div>';
+  s += '<div class="cp-cols" style="grid-template-columns:.75fr 1fr 1fr 1fr">';
+  s += '<div class="cp-card" style="align-items:center;justify-content:center;gap:6px"><span class="cp-grade" style="color:'+gc+'">'+R.g+'</span><div class="sub" style="text-align:center">Starter form <b style="color:var(--chalk)">'+R.form+'</b><br>+'+prog.reduce((s,p)=>s+p.rating-C.snap[p.id],0)+' OVR total<br>'+R.inj+' injur'+(R.inj===1?'y':'ies')+'</div></div>';
+  s += '<div class="cp-card"><div class="cp-h">Form going in<em>starters</em></div><div class="cp-dist">'+bins.map((b,i) => '<div style="height:'+Math.max(4, b/mx*100)+'%;background:'+cols[i]+'"><span>'+lb[i]+' · '+b+'</span></div>').join('')+'</div>' +
+    (rust ? '<div class="cp-li"><span>Rustiest</span><span>'+PL(rust)+' '+esc(rust.name.split(' ').pop())+' <b style="color:'+fcol(rust.form)+'">'+Math.round(rust.form)+'</b></span></div>' : '') +
+    (best ? '<div class="cp-li"><span>Sharpest unit</span><span>'+best[0]+' <b class="up">'+Math.round(best[1])+'</b></span></div>' : '') + '</div>';
+  s += '<div class="cp-card"><div class="cp-h">Progression<em>since camp opened</em></div>' + (prog.length ? prog.slice(0,6).map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+'</span><span class="up">'+C.snap[p.id]+' → '+p.rating+'</span></div>').join('') + (prog.length > 6 ? '<div class="sub">+'+(prog.length-6)+' more</div>' : '') : '<div class="sub">No one moved up.</div>') + '</div>';
+  s += '<div class="cp-card"><div class="cp-h">Battles<em>new starters</em></div>' + (C.battles.length ? C.battles.map(b => { const W = campP(b.win||b.a); return '<div class="cp-li"><span>'+b.spot+'</span><span><b>'+esc(W?W.name.split(' ').pop():'?')+'</b> <span class="sub">'+Math.max(b.wa,b.wb)+'-'+Math.min(b.wa,b.wb)+'</span></span></div>'; }).join('') : '<div class="sub">None held.</div>') +
+    '<div class="cp-h" style="margin-top:3px">Injuries</div>' + (C.inj.length ? C.inj.slice(-4).map(i => '<div class="cp-li"><span>'+i.pos+' '+esc(i.name.split(' ').pop())+'</span><span class="dn">'+i.weeks+' wk</span></div>').join('') : '<div class="sub">Clean camp.</div>') + '</div>';
+  return s + '</div></div>';
+}
+function campBattlesModal(){ return campBattlesHTML(); }
+
 function afterPreseasonGame(won, myScore, oppScore, liveBox){
   G.phaseDesk = null;
   const me = meT();
@@ -4263,21 +4738,8 @@ function afterPreseasonGame(won, myScore, oppScore, liveBox){
   G.preResults.push({opp: G.preOpps[round-1], my: myScore, op: oppScore, won});
   // camp battles: young guys develop with preseason reps — captured in a post-game report
   const report = {devs: [], injuries: []};
-  const young = me.roster.filter(p => p.age <= 25 && p.rating < 90);
-  for(let i=0;i<2;i++){
-    if(young.length && Math.random() < .6){
-      const p = pick(young);
-      p.rating = clamp(p.rating+1, 50, 99);
-      logEv(p, 'dev', 'Preseason live reps', 1);
-      const ex = report.devs.find(d => d.id === p.id);
-      if(ex) ex.delta++; else report.devs.push({id:p.id, name:p.name, pos:p.spot, ovr:p.rating, delta:1});
-    }
-  }
-  // light injury risk
-  if(Math.random() < .12){
-    const h = me.roster.filter(p => p.injWeeks === 0 && !SPEC[p.pos]);
-    if(h.length){ const p = pick(h); p.injWeeks = rollInjuryWeeks(1,2); G.lastInjury = p; logEv(p,'inj','Injured in preseason — out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''),0); report.injuries.push({id:p.id, name:p.name, pos:p.spot, weeks:p.injWeeks}); }
-  }
+  try { campApplySnapPlan(report); } catch(e){ console.error('snap plan', e); }
+  G.teams.forEach(t => { if(t.idx !== G.userTeam) t.roster.forEach(p => { p.form = clamp((p.form==null?80:p.form) + RI(3,6), 0, 100); }); });
   G.preReport = report;
   { const oppI = G.preOpps[round-1], homeMe = round !== 2, a = homeMe ? G.userTeam : oppI, b = homeMe ? oppI : G.userTeam;
     const R = G.lastGameReport = { a, b, as: homeMe ? myScore : oppScore, bs: homeMe ? oppScore : myScore, devs: report.devs, injuries: report.injuries, phase:'pre', week:round };
@@ -8350,7 +8812,7 @@ function poachCoach(ti, role){
   save(); render();
 }
 
-function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
+function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', effwhy:'Why This Rating', campbattles:'Position Battles', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
   if(v === 'postgame') return postgameHTML();
@@ -8359,6 +8821,8 @@ function modalBodyHTML(v){
   if(v === 'office') return officeModalBody(modalArg);
   if(v === 'extend') return extendHTML(modalArg);
   if(v === 'faoffer') return faOfferHTML(modalArg);
+  if(v === 'effwhy') return effWhyHTML(modalArg);
+  if(v === 'campbattles') return campBattlesHTML();
   if(v === 'fzcall') return fzCallHTML(modalArg);
   if(v === 'reposition') return repositionHTML(modalArg);
   if(v === 'assign') return assignHTML(modalArg);
@@ -8724,7 +9188,7 @@ function drawRoom(t){
   const E=s=>esc(String(s==null?'':s));
   function oppOf(g){ return g ? G.teams[g.a===G.userTeam ? g.b : g.a] : null; }
   function roundName(){ const r=(G.playoffs&&G.playoffs.round)||1; return ['Wild Card','Divisional','Conference','NGL Championship'][r-1]||'Playoffs'; }
-  function feedCount(){ try{ return (activityFeedHTML().match(/class="feeditem"/g)||[]).length; }catch(e){ return 0; } }
+  function feedCount(){ try{ const seen = Array.isArray(G.feedSeenK) ? G.feedSeenK : []; return feedKeys().filter(k => !seen.includes(k)).length; }catch(e){ return 0; } }
   function pendingRecs(){ try{ if(G.phase==='hub') generateWeeklyRecs(); }catch(e){} return (G.weeklyRecs||[]).filter(r=>r.status==='pending'); }
   function leader(){
     const all=[]; G.teams.forEach(t=>t.roster.forEach(p=>{ if(p.st&&p.st.gp>0) all.push({p,t}); }));
@@ -8820,7 +9284,7 @@ function drawRoom(t){
       {k:'mon1', x:121,y:90,w:63,h:32, n:'COMPUTER', o:'Roster · Scouting', bd: freshReports()?String(freshReports()):'', pk: me.roster.length+' players · '+teamOverall(me)+' OVR'+(freshReports()?' · '+freshReports()+' scout reports':'')},
       {k:'mon2', x:200,y:90,w:63,h:32, n:'FILM SCREEN', o:'Scout next opponent', pk: opp ? opp.city+' · '+teamOverall(opp)+' OVR · '+opp.w+'-'+opp.l : 'No opponent yet'},
       {k:'phone', x:274,y:120,w:28,h:14, n:'PHONE', o:"Scouting", pk: tradesOpen() ? 'Trade market open' : 'Trades closed · '+(G.fa||[]).length+' free agents'},
-      {k:'journal', x:33,y:138,w:45,h:24, n:'JOURNAL', o:'This Week', bd: fcnt?String(fcnt):'', pk: fcnt ? fcnt+' update'+(fcnt>1?'s':'') : 'Quiet week'},
+      {k:'journal', x:33,y:138,w:45,h:24, n:'JOURNAL', o:'This Week', bd: fcnt?String(fcnt):'', pk: fcnt ? fcnt+' new update'+(fcnt>1?'s':'') : 'All caught up'},
       {k:'clip', x:79,y:133,w:33,h:27, n:'CLIPBOARD', o: OFFICE_PHASE_INFO[phase]?OFFICE_PHASE_INFO[phase][0]:ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : 'Notes'},
       {k:'pad', x:117,y:133,w:148,h:26, n:'GAME PLAN', o:'Staff recommendations', bd: pr?String(pr):'', pk: pr ? pr+' call'+(pr>1?'s':'')+' to make' : 'All calls made'},
       {k:'news', x:273,y:138,w:55,h:21, n:'NEWSPAPER', o:'League News', pk: L1 ? L1.name+' ('+L1.team+')' : 'Season preview'},
@@ -8905,7 +9369,7 @@ function drawRoom(t){
       case 'mon1': return officePop('mon1');
       case 'mon2': { const o=oppOf(g); return o ? openModal('team', o.idx) : toast('No opponent scheduled.'); }
       case 'phone': return openPage('gm');
-      case 'journal': return openModal('office','feed');
+      case 'journal': markFeedSeen(); return openModal('office','feed');
       case 'clip': { if(OFFICE_PHASE_INFO[phase]) return officeOpenDesk(); const ws=weekState(); if(phase==='season' && ws.canPractice) return enterPracticeScene(); return openModal('office','week'); }
       case 'pad': return openModal('office','recs');
       case 'news': return G.lastGameReport ? openModal('postgame', G.lastGameReport) : openModal('office','news');
@@ -11339,12 +11803,7 @@ function draftReviewHTML(){
 /* ---------- preseason ---------- */
 function preseasonHTML(){
   const me = meT();
-  const opp = G.teams[G.preOpps[G.preWeek-1]];
-  const home = G.preWeek !== 2;
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Preseason Game '+G.preWeek+' of 3 — '+fmtDate(nthSaturdayOfAugust(G.year, G.preWeek))+'</div>' +
-    '<div class="nextgame"><div class="vs disp">'+(home?'vs ':'@ ')+esc(opp.city+' '+opp.name)+'<small>exhibition · result doesn\'t count</small></div>' +
-    '<div style="display:flex;gap:8px"><button class="btn primary" onclick="playPre()">▶ Coach the Game</button><button class="btn" onclick="simPre()">Sim It</button></div></div>' +
-    '<p class="sub" style="margin-top:10px">Backups get heavy snaps — unit ratings blend your 1s and 2s. Young players (25 and under) can develop from preseason reps. Preseason record: '+me.preW+'–'+me.preL+'</p>';
+  let s = preseasonPlanHTML() + '<div class="panel" style="margin-bottom:12px">';
   if(G.preResults.length){
     s += '<table class="tbl" style="margin-top:8px"><tr><th>Game</th><th>Opponent</th><th>Result</th></tr>';
     G.preResults.forEach((r,i) => {
@@ -11373,7 +11832,7 @@ function preseasonHTML(){
 function cutdownHTML(){
   const me = meT();
   const over = me.roster.length > LIMIT_REG;
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Cutdown Day — '+fmtDate(cutdownDate(G.year))+'</div>' +
+  let s = campReportCardHTML() + '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Cutdown Day — '+fmtDate(cutdownDate(G.year))+'</div>' +
     '<p class="sub" style="margin-bottom:10px">Rosters must be at '+LIMIT_REG+' by tonight. The season kicks off tomorrow, '+fmtDate(seasonStartDate(G.year))+'. Cuts hit the waiver wire (free agent pool). Minimums: QB 2 · RB 3 · WR 5 · TE 3 · OL 8 · DL 6 · LB 5 · CB 4 · S 3 · K 1.</p>' +
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
     '<span class="countpill'+(over?' over':'')+'">Roster <b>'+me.roster.length+'</b> / '+LIMIT_REG+'</span>' +
@@ -12586,6 +13045,8 @@ function hubHTML(){
     '<div class="dash-side">' + upcomingFixturesHTML() + miniStandingsHTML() + '</div>' +
     '</div>';
 }
+function feedKeys(){ try{ const d = document.createElement('div'); d.innerHTML = activityFeedHTML(); return [...d.querySelectorAll('.feeditem')].map(x => x.textContent.trim()); }catch(e){ return []; } }
+function markFeedSeen(){ const prev = Array.isArray(G.feedSeenK) ? G.feedSeenK : []; G.feedSeenK = Array.from(new Set(prev.concat(feedKeys()))).slice(-300); try{ save(); }catch(e){} }
 function activityFeedHTML(){
   const items = [];
   if(G.lastInjury && G.lastInjury.injWeeks > 0){
@@ -13164,15 +13625,15 @@ function depthChartSVG(form, lu, isDef, side){
   s += '<text x="12" y="'+(los + (isDef?18:-8))+'" fill="rgba(255,255,255,.6)" font-size="12" font-family="Oswald,Arial Narrow,sans-serif" letter-spacing="3">LOS</text>';
   lu.forEach((sl,i) => {
     const [x,y] = form.xy[i];
-    const oop = sl.p && sl.eff < sl.p.rating;
+    const ew = sl.p ? effWhy(sl.p, sl.spot, form.scheme) : null, oop = ew && ew.kind === 'pos', rusty = ew && ew.kind === 'form' && Math.ceil(sl.eff) < sl.p.rating;
     const clickable = !!side;
     s += '<g'+(clickable?' style="cursor:pointer" onclick=\"openModal(\'assign\',{side:\''+side+'\',i:'+i+'})\"':'')+'>';
-    s += '<circle cx="'+x+'" cy="'+y+'" r="21" fill="'+me.c1+'" stroke="'+(oop?'#E25555':'#F2EFE7')+'" stroke-width="'+(oop?3:2)+'"/>';
+    s += '<circle cx="'+x+'" cy="'+y+'" r="21" fill="'+me.c1+'" stroke="'+(oop?'#E25555':rusty?'#F2A24A':'#F2EFE7')+'" stroke-width="'+(oop||rusty?3:2)+'"/>';
     if(sl.manual) s += '<circle cx="'+(x+15)+'" cy="'+(y-15)+'" r="6" fill="var(--gold)" stroke="#14100A" stroke-width="1.5"/>';
     s += '<text x="'+x+'" y="'+(y+5)+'" fill="#fff" font-size="13" font-weight="700" font-family="Oswald,Arial Narrow,sans-serif" text-anchor="middle">'+sl.spot+'</text>';
     const nm = sl.p ? sl.p.name.split(' ').pop() : '—';
     s += '<text x="'+x+'" y="'+(y+40)+'" fill="#F2EFE7" font-size="13" font-weight="600" text-anchor="middle" font-family="Inter,system-ui,sans-serif">'+esc(nm)+'</text>';
-    s += '<text x="'+x+'" y="'+(y+56)+'" fill="'+(oop?'#FF9A9A':'#FFD447')+'" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,system-ui,sans-serif">'+(sl.p ? sl.eff : '')+'</text>';
+    s += '<text x="'+x+'" y="'+(y+56)+'" fill="'+(oop?'#FF9A9A':rusty?'#F2A24A':'#FFD447')+'" font-size="12" font-weight="700" text-anchor="middle" font-family="Inter,system-ui,sans-serif">'+(sl.p ? Math.ceil(sl.eff) : '')+'</text>';
     s += '</g>';
   });
   return s + '</svg>';
@@ -13187,9 +13648,9 @@ function depthTableHTML(t, form, lu, side){
       .sort((a,b) => b.e - a.e)
       .filter(x => !starters.has(x.p.id))
       .slice(0,2);
-    const cell = x => x ? esc(x.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(x.e)+'</b>'+(x.e < x.p.rating ? ' <span class="oop" title="out of natural position/scheme">▾</span>' : '') : '<span class="sub">—</span>';
+    const cell = x => x ? esc(x.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(x.e)+'</b>'+effTagHTML(x.p, sl.spot, form.scheme) : '<span class="sub">—</span>';
     const manualTag = sl.manual ? ' <span class="tag up" title="manually assigned">SET</span>' : '';
-    const sCell = sl.p ? esc(sl.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(sl.eff)+'</b>'+manualTag+(sl.eff < sl.p.rating ? ' <span class="oop" title="'+sl.p.spot+' playing '+sl.spot+(sl.p.scheme!=='any'&&form.scheme&&sl.p.scheme!==form.scheme?' in a '+SCHEME_TAG[form.scheme]+' scheme':'')+'">▾ nat '+sl.p.rating+'</span>' : '') : '<span class="oop">EMPTY</span>';
+    const sCell = sl.p ? esc(sl.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(sl.eff)+'</b>'+manualTag+effTagHTML(sl.p, sl.spot, form.scheme) : '<span class="oop">EMPTY</span>';
     const assignBtn = side ? '<td><button class=\"btn tiny\" onclick=\"openModal(\'assign\',{side:\''+side+'\',i:'+i+'})\">Set</button></td>' : '';
     s += '<tr class="depthrow"><td><b>'+sl.spot+'</b></td><td>'+sCell+'</td><td>'+cell(cands[0])+'</td><td>'+cell(cands[1])+'</td>'+assignBtn+'</tr>';
   });
@@ -13955,7 +14416,7 @@ function depthHTML(){
       const f = OFF_FORMS[k];
       s += '<button class="fbtn'+(G.offForm===k?' on':'')+'" onclick="setOffForm(\''+k+'\')">'+f.name+'</button>';
     });
-    s += '</div><p class="sub">Run '+(oForm.runMod>=0?'+':'')+oForm.runMod+' · Pass '+(oForm.passMod>=0?'+':'')+oForm.passMod+'. Best fits line up automatically — click a slot (chart or table) to hand-pick who starts there instead. Gold dot = manually set. Red ring = out of natural position.'+(oManual?' <button class=\"btn tiny\" style=\"margin-left:6px\" onclick=\"resetLineup(\'off\')\">Reset to Auto</button>':'')+'</p>';
+    s += '</div><p class="sub">Run '+(oForm.runMod>=0?'+':'')+oForm.runMod+' · Pass '+(oForm.passMod>=0?'+':'')+oForm.passMod+'. Best fits line up automatically — click a slot (chart or table) to hand-pick who starts there instead. Gold dot = manually set. Red ring = out of natural position. Orange ring = low game form. Tap any tag for why.'+(oManual?' <button class=\"btn tiny\" style=\"margin-left:6px\" onclick=\"resetLineup(\'off\')\">Reset to Auto</button>':'')+'</p>';
     s += depthChartSVG(oForm, oLu, false, 'off') + depthTableHTML(me, oForm, oLu, 'off');
     s += '<div class="sub" style="margin-top:8px">Unit ratings — Pass O <b style="color:var(--chalk)">'+Math.round(offPass(me))+'</b> · Run O <b style="color:var(--chalk)">'+Math.round(offRush(me))+'</b></div></div>';
   } else {
@@ -14633,13 +15094,6 @@ function otaHTML(){
     '<button class="btn primary" onclick="runOTA(\'run\')">9-on-7 — run game (RB/OL/DL/LB)</button>' +
     '<button class="btn primary" onclick="runOTA(\'team\')">11-on-11 — full team</button>' +
     '</div><div style="text-align:center;margin-top:10px"><button class="btn" onclick="simOTAs()">Sim Remaining OTAs →</button></div></div>';
-  return s;
-}
-function campHTML(){
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Training Camp — '+fmtDate(campDate(G.year))+'</div>' +
-    '<p class="sub">Pads come on in late July. Full-team practices, full contact, tackling drills — the roster gets hardened for August. Running camp earns <b style="color:var(--gold)">+4 training points</b> and a couple of camp risers.</p>' +
-    '<div style="text-align:right;margin-top:10px"><button class="btn primary" onclick="runCamp()">Run Training Camp → Preseason</button></div></div>';
-  s += posNeedsHTML(meT());
   return s;
 }
 function playerTrainCost(rating){
