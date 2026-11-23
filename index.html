@@ -3733,7 +3733,7 @@ function repositionPlayer(pid, newSpot){
   const me = meT();
   const p = me.roster.find(x => x.id === pid);
   if(!p || SPOT_GROUP[newSpot] !== p.pos || newSpot === p.spot) return;
-  p.rating = repositionPreview(p, newSpot);
+  p.rating = Math.ceil(repositionPreview(p, newSpot));
   p.spot = newSpot;
   save(); closeModal();
 }
@@ -3750,7 +3750,7 @@ function repositionHTML(pid){
       '<p class="sub" style="margin-bottom:8px">This is what he\'d give you at the new spot right away — no retraining period, no separate rating per position, just the honest fit hit.</p>' +
       '<table class="tbl"><tr><th>New Spot</th><th>Preview OVR</th><th>vs Today</th><th></th></tr>';
     alts.forEach(sp => {
-      const prev = repositionPreview(p, sp);
+      const prev = Math.ceil(repositionPreview(p, sp));
       const delta = prev - p.rating;
       s += '<tr><td><b>'+sp+'</b></td><td style="color:var(--gold);font-weight:700">'+prev+'</td>' +
         '<td style="color:'+(delta<0?'var(--red)':(delta>0?'var(--green)':'var(--muted)'))+'">'+(delta>=0?'+':'')+delta+'</td>' +
@@ -9337,8 +9337,19 @@ function syncTenure(){
 }
 function yrsLeague(p){ const n = G.year - (p.leagueSince==null ? G.year - Math.max(0,(p.age||22)-22) : p.leagueSince); return n <= 0 ? 'R' : n; }
 function yrsTeam(p){ return p.teamSince == null ? 1 : Math.max(1, G.year - p.teamSince + 1); }
+const OVR_INT_FIELDS = ['rating','potential','proScoutLo','proScoutHi','ceilingLo','ceilingHi','ceiling','scoutLo','scoutHi','estLo','estHi'];
+function ovrInts(){
+  if(!G) return;
+  const fix = p => { if(!p) return; for(const f of OVR_INT_FIELDS){ const v = p[f]; if(typeof v === 'number' && v % 1 !== 0) p[f] = Math.ceil(v); } };
+  try {
+    (G.teams||[]).forEach(t => (t.roster||[]).forEach(fix));
+    (G.fa||[]).forEach(fix);
+    const dc = G.draftClass; if(Array.isArray(dc)) dc.forEach(fix); else if(dc && Array.isArray(dc.players)) dc.players.forEach(fix);
+  } catch(e){}
+}
 function render(){
   migrateSpots();
+  ovrInts();
   try{ syncTenure(); }catch(e){ console.error('tenure', e); }
   applyTeamBrand();
   applyTeamTheme();
@@ -13176,9 +13187,9 @@ function depthTableHTML(t, form, lu, side){
       .sort((a,b) => b.e - a.e)
       .filter(x => !starters.has(x.p.id))
       .slice(0,2);
-    const cell = x => x ? esc(x.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+x.e+'</b>'+(x.e < x.p.rating ? ' <span class="oop" title="out of natural position/scheme">▾</span>' : '') : '<span class="sub">—</span>';
+    const cell = x => x ? esc(x.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(x.e)+'</b>'+(x.e < x.p.rating ? ' <span class="oop" title="out of natural position/scheme">▾</span>' : '') : '<span class="sub">—</span>';
     const manualTag = sl.manual ? ' <span class="tag up" title="manually assigned">SET</span>' : '';
-    const sCell = sl.p ? esc(sl.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+sl.eff+'</b>'+manualTag+(sl.eff < sl.p.rating ? ' <span class="oop" title="'+sl.p.spot+' playing '+sl.spot+(sl.p.scheme!=='any'&&form.scheme&&sl.p.scheme!==form.scheme?' in a '+SCHEME_TAG[form.scheme]+' scheme':'')+'">▾ nat '+sl.p.rating+'</span>' : '') : '<span class="oop">EMPTY</span>';
+    const sCell = sl.p ? esc(sl.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(sl.eff)+'</b>'+manualTag+(sl.eff < sl.p.rating ? ' <span class="oop" title="'+sl.p.spot+' playing '+sl.spot+(sl.p.scheme!=='any'&&form.scheme&&sl.p.scheme!==form.scheme?' in a '+SCHEME_TAG[form.scheme]+' scheme':'')+'">▾ nat '+sl.p.rating+'</span>' : '') : '<span class="oop">EMPTY</span>';
     const assignBtn = side ? '<td><button class=\"btn tiny\" onclick=\"openModal(\'assign\',{side:\''+side+'\',i:'+i+'})\">Set</button></td>' : '';
     s += '<tr class="depthrow"><td><b>'+sl.spot+'</b></td><td>'+sCell+'</td><td>'+cell(cands[0])+'</td><td>'+cell(cands[1])+'</td>'+assignBtn+'</tr>';
   });
@@ -14010,7 +14021,7 @@ function assignHTML(arg){
     const isCurrent = current && c.p.id === current.id;
     const elsewhere = usedElsewhere.has(c.p.id);
     s += '<tr'+(isCurrent?' style="background:rgba(255,212,71,.08)"':'')+'><td>'+pn(c.p)+(isCurrent?' <span class="tag w">STARTING</span>':'')+(elsewhere?' <span class="tag l">ELSEWHERE</span>':'')+'</td>' +
-      '<td>'+c.p.spot+'</td><td style="color:var(--gold);font-weight:700">'+c.eff+'</td>' +
+      '<td>'+c.p.spot+'</td><td style="color:var(--gold);font-weight:700">'+Math.ceil(c.eff)+'</td>' +
       '<td><button class="btn tiny primary" '+(isCurrent?'disabled':'')+' onclick="setAssign(\''+side+'\','+i+','+c.p.id+')">Start Here</button></td></tr>';
   });
   s += '</table></div>';
@@ -16630,7 +16641,7 @@ function gdDepthRender(){
   lu.forEach((x,i) => {
     const p = x.p, ln = p ? gdLine(p, side) : null, sh = side==='off' && p && totTgt && ln.tgt ? Math.round(ln.tgt/totTgt*100) : 0;
     rows += '<div class="gdd-row'+(gdDepthSlot===i?' on':'')+'" onclick="gdDepthPick('+i+')"><span class="gdd-spot">'+x.spot+'</span>' +
-      (p ? '<span class="gdd-nm">#'+jerseyOf(p)+' '+esc(shortName(p.name))+' <b class="gdd-ovr">'+effRating(p, x.spot, form.scheme)+'</b>'+(x.manual?' <span class="gdd-man">SET</span>':'')+'</span><span class="gdd-ln">'+ln.txt+(sh?' · <b style="color:var(--gold)">'+sh+'% tgts</b>':'')+'</span><span class="gdd-fat" title="Fatigue"><i style="width:'+ln.fat+'%;background:'+(ln.fat>60?'var(--red)':ln.fat>35?'var(--gold)':'var(--green)')+'"></i></span>' : '<span class="gdd-nm sub">Empty</span>') + '</div>';
+      (p ? '<span class="gdd-nm">#'+jerseyOf(p)+' '+esc(shortName(p.name))+' <b class="gdd-ovr">'+Math.ceil(effRating(p, x.spot, form.scheme))+'</b>'+(x.manual?' <span class="gdd-man">SET</span>':'')+'</span><span class="gdd-ln">'+ln.txt+(sh?' · <b style="color:var(--gold)">'+sh+'% tgts</b>':'')+'</span><span class="gdd-fat" title="Fatigue"><i style="width:'+ln.fat+'%;background:'+(ln.fat>60?'var(--red)':ln.fat>35?'var(--gold)':'var(--green)')+'"></i></span>' : '<span class="gdd-nm sub">Empty</span>') + '</div>';
   });
   let bench = '';
   if(gdDepthSlot != null){
@@ -16640,7 +16651,7 @@ function gdDepthRender(){
     bench = '<div class="gdd-hd">Put in at '+spot+(cur?' for #'+jerseyOf(cur)+' '+esc(shortName(cur.name)):'')+'</div>';
     if(!cands.length) bench += '<p class="sub" style="padding:6px">No one else on the roster plays '+SPOT_GROUP[spot]+'.</p>';
     cands.forEach(c => { const ln = gdLine(c.p, side), el = used.has(c.p.id) ? lu[used.get(c.p.id)].spot : '';
-      bench += '<div class="gdd-row" onclick="gdDepthSwap('+gdDepthSlot+','+c.p.id+')"><span class="gdd-nm">#'+jerseyOf(c.p)+' '+esc(shortName(c.p.name))+' <b class="gdd-ovr">'+c.eff+'</b>'+(el?' <span class="gdd-man">AT '+el+'</span>':'')+'</span><span class="gdd-ln">'+(ln.txt||'Hasn\'t played')+'</span><span class="gdd-fat"><i style="width:'+ln.fat+'%;background:'+(ln.fat>60?'var(--red)':ln.fat>35?'var(--gold)':'var(--green)')+'"></i></span><span class="gdd-go">Sub in</span></div>'; });
+      bench += '<div class="gdd-row" onclick="gdDepthSwap('+gdDepthSlot+','+c.p.id+')"><span class="gdd-nm">#'+jerseyOf(c.p)+' '+esc(shortName(c.p.name))+' <b class="gdd-ovr">'+Math.ceil(c.eff)+'</b>'+(el?' <span class="gdd-man">AT '+el+'</span>':'')+'</span><span class="gdd-ln">'+(ln.txt||'Hasn\'t played')+'</span><span class="gdd-fat"><i style="width:'+ln.fat+'%;background:'+(ln.fat>60?'var(--red)':ln.fat>35?'var(--gold)':'var(--green)')+'"></i></span><span class="gdd-go">Sub in</span></div>'; });
   } else bench = '<div class="gdd-hint">Tap a position to see who can come in.<br><br>Drops, targets and fatigue are from this game. Changes last for this game only. Your saved depth chart is untouched.</div>';
   const html = '<div class="gdd-card"><div class="gdd-top"><span class="disp" style="color:var(--gold)">Sideline · Lineup</span>' +
     '<button class="btn tiny'+(side==='off'?' on':'')+'" onclick="gdDepthSide=\'off\';gdDepthSlot=null;gdDepthRender()">Offense</button><button class="btn tiny'+(side==='def'?' on':'')+'" onclick="gdDepthSide=\'def\';gdDepthSlot=null;gdDepthRender()">Defense</button>' +
@@ -16998,7 +17009,8 @@ function trCall(ti){ trThread(ti); trPhoneSel = 't'+ti; if(!trThread(ti).msgs.le
 function trHubHTML(){
   const me = meT(), un = trUnread();
   const dl = G.phase === 'hub' ? Math.max(0, 9 - (G.week||0)) : null;
-  let s = '<div class="tr-hub"><div class="tr-top"><button class="tr-tab tr-x" onclick="closePage()" title="Back to hub">✕</button>' +
+  let s = '<div class="tr-hub"><div class="tr-top"><button class="tr-tab tr-x" onclick="gmTab=\'fa\';closePage()" title="Back to hub">✕</button>' +
+    (G.activePage === 'gm' ? '<button class="tr-tab" onclick="setGMTab(\'fa\')" title="Back to the free agent list">← Free Agents</button>' : '') +
     '<button class="tr-tab'+(trView==='market'?' on':'')+'" onclick="trSetView(\'market\')">🔎 Market</button>' +
     '<button class="tr-tab'+(trView==='deal'?' on':'')+'" onclick="trSetView(\'deal\')">🤝 Deal Table</button>' +
     '<button class="tr-tab'+(trView==='phone'?' on':'')+'" onclick="trSetView(\'phone\')">📞 Phone'+(un?'<span class="tr-badge">'+un+'</span>':'')+'</button>' +
