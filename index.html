@@ -296,7 +296,7 @@ th.sorth.on{color:var(--gold)}
 .modal-hd{position:sticky;top:0;background:var(--modalbg);border-bottom:1px solid var(--line);border-radius:14px 14px 0 0;padding:11px 15px;display:flex;align-items:center;justify-content:space-between;z-index:2}
 .modal-hd .disp{font-size:16px}
 .modal-body{padding:11px 15px 0}
-.modal-panel.wide{max-width:min(1040px,96vw)!important;width:96vw}
+.modal-panel.wide{max-width:min(1040px,calc(var(--stw,100vw) * .96))!important;width:calc(var(--stw,100vw) * .96)}
 .pc-wrap{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:10px}
 @media (max-width:640px){.pc-wrap{grid-template-columns:1fr}}
 .pc-card{position:relative;border-radius:14px;padding:10px;background:linear-gradient(160deg,color-mix(in srgb,var(--cc) 55%,#0E1726),#0E1726 65%);border:2px solid var(--gold);overflow:hidden}
@@ -564,6 +564,14 @@ th.sorth.on{color:var(--gold)}
 .navbtn .k{opacity:.65;font-weight:600}
 .finalscore{font-size:40px;color:var(--gold);font-weight:700;margin:10px 0}
 .bracket{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.ros-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.ros-left{display:flex;flex-direction:row;align-items:center;gap:10px;min-width:0;flex:1;flex-wrap:wrap}
+.ros-possel{max-width:200px}
+.ros-left .filterbar{margin:0}
+.ros-pos{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
+.ros-pos .fbtn{flex:0 0 auto}
+.ros-right{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.ros-team{background:var(--panel2,#1b2231);color:var(--chalk,#eee);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:6px 8px;font:600 13px Inter,system-ui,sans-serif;max-width:220px}
 .brk-tro{display:flex;justify-content:center;align-items:flex-end;gap:10px;margin-bottom:6px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.5))}
 .brk-col h3{font-size:12px;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:8px;text-align:center}
 .matchup{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:8px;font-size:13px}
@@ -630,6 +638,7 @@ th.sorth.on{color:var(--gold)}
 
 /* ===== landscape everywhere: phones held upright get the whole game turned sideways ===== */
 @media (orientation:portrait) and (pointer:coarse){
+  :root{--sh:var(--rh,100vw);--stw:var(--rw,100vh)}
   html,body{position:fixed;top:0;left:0;width:100%;height:100%;overflow:hidden;touch-action:pan-x pan-y}
   #rot{position:fixed;top:0;left:0;width:var(--rw,100vh);height:var(--rh,100vw);transform:rotate(90deg) translateY(-100%);transform-origin:top left;overflow:hidden}
   #app{height:100%;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -859,10 +868,150 @@ th.sorth.on{color:var(--gold)}
 .gd .gamectl .btn{padding:8px 5px!important;font-size:12.5px!important}
 .gd .gamectl .btn.gc-final{padding:3px 6px!important;font-size:10.5px!important}
 @media (max-height:430px){.gd .play{padding:3px 6px!important;font-size:11.5px!important}.gd .play small{font-size:9px!important}.gd .gamectl .btn{padding:6px 4px!important;font-size:11.5px!important}}
+
+/* gameday call sheet: fixed header (title, side, Lineup), plays flow in columns and scroll sideways */
+.gd .callsheet{overflow:hidden!important;display:flex!important;flex-direction:column!important;flex:1.7 1 0!important;min-height:120px!important}
+.gd .callsheet .cs-hd{flex:0 0 auto;margin-bottom:5px!important}
+.gd .playgrid{display:flex!important;flex-direction:column!important;flex-wrap:wrap!important;align-content:flex-start!important;flex:1 1 0!important;min-height:0!important;overflow-x:auto!important;overflow-y:hidden!important;gap:5px!important;padding-bottom:4px;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;overscroll-behavior-x:contain}
+.gd .playgrid > .play{flex:0 0 auto!important;width:150px!important;height:calc((100% - 10px)/3)!important;min-height:0!important;scroll-snap-align:start;justify-content:center}
+.gd .playgrid > .cs-sec{flex:0 0 auto;height:100%!important;width:16px;writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;border-bottom:none;border-left:1px solid rgba(0,0,0,.15);padding:0 2px;font-size:9.5px;align-self:auto}
+@media (min-height:600px){ .gd .playgrid > .play{height:calc((100% - 15px)/4)!important;width:170px!important} }
+@media (max-height:430px){ .gd .playgrid > .play{width:116px!important} }
+.gd .callsheet .cs-hd #cs-title{flex:0 0 auto;white-space:nowrap}
+.gd .callsheet .cs-hd #cs-side{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.gd .playgrid::-webkit-scrollbar{height:5px}.gd .playgrid::-webkit-scrollbar-thumb{background:rgba(0,0,0,.25);border-radius:3px}
+
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.fo-setup{display:flex;flex-direction:column;gap:5px}
+.fo-top{display:flex;align-items:center;gap:10px}.fo-top .sub{flex:1;margin:0;line-height:1.35}.fo-done{flex:0 0 auto;padding:6px 16px}
+.fo-pre{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:3px}
+.fo-pb{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 9px;text-align:left;color:var(--chalk);cursor:pointer}
+.fo-pb b{display:block;font-size:12px}.fo-pb span{display:block;font-size:10px;color:var(--muted);line-height:1.25;margin-top:1px}
+.fo-pb.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.fo-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.fo-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 8px;display:flex;flex-direction:column;justify-content:space-between;gap:4px;min-height:64px}
+.fo-card .n{font-weight:700;font-size:12px;color:var(--chalk)}.fo-card .d{color:var(--muted);font-size:10px;line-height:1.25;margin-top:1px}
+.fo-card.locked{border-style:dashed;opacity:.85}
+.fo-seg{display:inline-flex;align-self:flex-start;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+.fo-seg button{background:none;border:none;color:var(--muted);font:700 11px Inter,Arial,sans-serif;padding:4px 10px;cursor:pointer}
+.fo-seg button.on.me{background:var(--green);color:#0b1a10}.fo-seg button.on.gm{background:#B48CF0;color:#140b22}.fo-seg button.on.hc{background:#6FA8E8;color:#0b1422}
+.fo-seg button:disabled{opacity:.3}
+.fo-you{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;color:var(--chalk);align-self:flex-start}
+.fo-foot{display:flex;justify-content:space-between;gap:8px;font-size:10.5px;color:var(--muted);margin-top:3px;padding-bottom:4px;flex-wrap:wrap}
+
+.dd{position:relative;flex:0 0 auto}
+.dd-btn{display:flex;align-items:center;gap:8px;background:var(--panel2);color:var(--chalk);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:9px;padding:5px 10px;font:600 13px Inter,system-ui,sans-serif;cursor:pointer;max-width:260px}
+.dd-btn .dd-txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd-car{color:var(--muted);font-size:11px;margin-left:2px}
+.dd-code{display:inline-block;min-width:34px;text-align:center;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.06em;color:#10131a;background:var(--c);border-radius:5px;padding:2px 5px}
+.dd-pop{display:none;position:absolute;top:calc(100% + 4px);z-index:80;min-width:240px;max-height:min(300px,calc(var(--sh,100vh) - 150px));overflow-y:auto;background:#121a28;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:4px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.dd-left .dd-pop{left:0}.dd-right .dd-pop{right:0}
+.dd.open .dd-pop{display:block}
+.dd-opt{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-left:3px solid var(--c);border-radius:6px;color:var(--chalk);padding:6px 8px;margin:1px 0;font:500 12.5px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
+.dd-opt.sub{padding-left:16px}
+.dd-opt:hover{background:rgba(255,255,255,.05)}
+.dd-opt.on{background:rgba(255,255,255,.09)}
+.dd-opt .dd-txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dd-grp{font:700 10px Oswald,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--c);padding:7px 8px 2px}
+
+.fod-tools{margin-left:auto;display:flex;gap:4px;align-items:center}
+.fod-more{color:var(--red)!important;border-color:#5a2a2a!important}
+.fod{display:grid;grid-template-columns:1.05fr 1.15fr 1fr;gap:8px;align-items:stretch}
+.fod-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fod-h{display:flex;justify-content:space-between;align-items:center;gap:6px;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.fod-h em{font:600 10px Inter,system-ui,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none;white-space:nowrap}
+.fod-conf{display:flex;align-items:flex-end;gap:8px}.fod-conf .sub{flex:1;line-height:1.3}
+.fod-big{font:700 28px Oswald,Arial,sans-serif;line-height:1;color:var(--chalk)}.fod-big small{font:600 11px Inter,sans-serif;color:var(--muted)}
+.fod-bar{height:7px;background:#0c121d;border-radius:5px;overflow:hidden}.fod-bar i{display:block;height:100%;border-radius:5px}
+.fod-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:auto}
+.fod-tiles div{background:var(--panel2);border-radius:7px;padding:5px 4px;text-align:center}
+.fod-tiles b{display:block;font:700 16px Oswald,Arial,sans-serif;color:var(--chalk)}.fod-tiles span{font-size:8.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.fod-row{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 0;border-bottom:1px solid var(--line)}
+.fod-row:last-child{border-bottom:none}
+.fod-row .n{font-size:11.5px;font-weight:700;color:var(--chalk)}.fod-row .d{font-size:10px;color:var(--muted)}
+.fod-act{flex:0 0 auto;white-space:nowrap}
+.fod-pips{display:inline-flex;gap:2px;margin-left:5px;vertical-align:middle}.fod-pips i{width:7px;height:7px;border-radius:2px;background:#2a3548}.fod-pips i.on{background:var(--green)}
+.fod-stad{display:flex;gap:8px;align-items:center}.fod-stad .n{font-size:12px;font-weight:700;color:var(--chalk)}
+.fod-thumb{width:70px;height:44px;border-radius:6px;flex:0 0 auto;position:relative;background:linear-gradient(180deg,#1b2648 0,#1b2648 34%,var(--c1) 34%,var(--c1) 40%,#2a7e44 40%,#2f8a4b 100%)}
+.fod-thumb:after{content:'';position:absolute;left:8px;right:8px;top:21px;bottom:5px;border:1px solid rgba(255,255,255,.55);border-radius:2px}
+.fod-res{display:flex;flex-direction:column}
+
+.panel:has(.dd){overflow:visible}
+.dd-warn{flex:0 0 auto;font:700 9px Inter,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#ffb3b3;background:rgba(226,85,85,.18);border:1px solid rgba(226,85,85,.45);border-radius:9px;padding:1px 6px}
+
+.stf{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:stretch}
+.stf-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;min-width:0}
+.stf-h{display:flex;justify-content:space-between;align-items:center;gap:6px;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:2px}
+.stf-h em{font:600 10px Inter,system-ui,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none;white-space:nowrap}
+.stf-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid var(--line);min-height:26px;cursor:pointer}
+.stf-row:last-of-type{border-bottom:none}
+.stf-row .ab{flex:0 0 32px;font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.06em;color:var(--c)}
+.stf-row .nm{flex:1;min-width:0;font-size:11.5px;font-weight:700;color:var(--chalk);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stf-row .nm small{font-weight:400;color:var(--muted);font-size:10px}
+.stf-row .ov{flex:0 0 auto;font:700 14px Oswald,Arial,sans-serif;color:var(--gold);min-width:20px;text-align:right}
+.stf-row .rl{flex:0 0 auto;width:6px;height:6px;border-radius:50%}
+.stf-row.vac{cursor:default}.stf-row.vac .nm{color:var(--muted);font-weight:600}
+.stf-row .btn{padding:2px 9px}
+.stf-pts{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:2px 0 3px}
+.stf-pts div{background:var(--panel2);border-radius:6px;text-align:center;padding:2px}.stf-pts b{display:block;font:700 15px Oswald,Arial,sans-serif;color:var(--chalk)}.stf-pts span{font-size:8.5px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.stf-bar{height:7px;background:#0c121d;border-radius:5px;overflow:hidden;margin:2px 0}.stf-bar i{display:block;height:100%;border-radius:5px}
+.stf-budrow{display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:var(--muted);margin:3px 0 2px}
+
+.pcx-head .pf-face{width:50px!important;height:50px!important}
+.pcx-head{display:flex!important;flex-wrap:nowrap!important;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px!important;padding:6px 12px!important;border-left:4px solid var(--cc)!important}
+.pcx-head .pc-tags{margin-top:3px;gap:4px}
+.modal-panel.wide{margin-top:8px!important;margin-bottom:8px!important;padding-bottom:8px!important}
+.pcx-head .pc-tg{font-size:10.5px;padding:1px 7px}
+.pcx-head .hd{font-size:17px!important;margin-bottom:0}
+.pcx-head p.sub{margin:0}
+.pcx-right{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.pcx-grade{width:50px;height:50px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 24px Oswald,Arial,sans-serif;color:#0b1410;line-height:1}
+.pcx-grade small{font:700 8px Inter,sans-serif;letter-spacing:.12em;margin-top:2px}
+.pcx-grid{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.pcx-col{display:flex;flex-direction:column;gap:3px;margin:0!important;padding:6px 10px!important;min-width:0}
+.pcx-sh{font-size:12px!important;margin-bottom:2px}
+.pcx-col .pc-tags{margin-top:5px}
+.pcx-radar{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+.pcx-radar{align-items:flex-start!important}
+.pcx-radar svg{height:132px;width:auto;max-width:100%}
+.pcx-kv{font-size:11.5px;row-gap:0!important;line-height:1.35}
+.pcx-foot{padding:7px 10px!important;margin:0!important}
+.pcx-act{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.pcx-act .btn{width:100%;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcx-act > div{display:contents}
+.pcx-log{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;font-size:10.5px;color:var(--chalk)}
+.pcx-act .btn{padding:2px 7px;font-size:10.5px}
+.pcx-grid{margin-bottom:0!important}
+
+.pg{display:flex;flex-direction:column;gap:7px}
+.pg-top{display:flex;align-items:center;gap:10px;padding:6px 12px;border-radius:10px;background:linear-gradient(90deg,var(--h),#13203a 42%,#13203a 58%,var(--a))}
+.pg-tm{display:flex;align-items:center;gap:8px;font-size:12.5px;flex:0 1 auto;min-width:0}.pg-tm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg-sc{font:700 26px Oswald,Arial,sans-serif;color:var(--chalk);opacity:.8}.pg-sc.w{color:var(--gold);opacity:1}
+.pg-mid{flex:1;text-align:center;min-width:0}.pg-mid b{display:block;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.18em}.pg-mid span{font-size:10.5px;color:#c9d4e4;white-space:nowrap}
+.pg-body{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:7px}
+.pg-box{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 9px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.pg-h{display:flex;justify-content:space-between;align-items:center;font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:2px}
+.pg-h em{font:600 9.5px Inter,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none}
+.pg-ts{display:grid;grid-template-columns:1fr auto 1fr;font-size:11.5px;row-gap:1px;align-items:center;margin-bottom:6px}
+.pg-ts span:nth-child(3n+1){text-align:right;font-weight:700}.pg-ts span:nth-child(3n+2){color:var(--muted);text-align:center;padding:0 7px;font-size:9.5px;letter-spacing:.06em}.pg-ts span:nth-child(3n){font-weight:700}
+.pg-ts .bt{color:var(--gold)}
+.pg-pl{display:flex;align-items:center;gap:6px;font-size:11px;padding:2px 0;border-bottom:1px solid var(--line);cursor:pointer;min-width:0}
+.pg-pl:last-child{border-bottom:none}
+.pg-pl .pos{flex:0 0 30px;font:700 9.5px Oswald,Arial,sans-serif;color:#0b1018;background:var(--c);border-radius:4px;text-align:center;padding:1px 0}
+.pg-pl b{white-space:nowrap;flex:0 0 auto;color:var(--chalk)}.pg-pl small{color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.pg-pl .tag{margin-left:auto;font:700 10px Inter,sans-serif;white-space:nowrap;background:none;border:none;padding:0}
+.pg .up{color:var(--green)}.pg .dn{color:var(--red)}
+.pg-chip{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;margin:1px 3px 1px 0;color:var(--chalk)}
+.pg-chip.up{color:var(--green)}.pg-chip.dn{color:var(--red)}
+.pg-foot{display:flex;justify-content:flex-end;gap:6px}.pg-foot .btn{padding:5px 22px}
 </style>
 </head>
 <body>
 <div id="rot"><div id="app"></div><div id="uiDlg"></div></div>
+<script>
+window.__bootErr=function(msg){ try{ var d=document.getElementById('bootErr'); if(!d){ d=document.createElement('div'); d.id='bootErr'; d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3a0d0d;color:#ffd6d6;border:1px solid #ff6b6b;border-radius:8px;padding:8px 10px;font:12px/1.35 -apple-system,Arial,sans-serif;max-height:40vh;overflow:auto'; (document.body||document.documentElement).appendChild(d); } d.textContent='Game error (screenshot this): '+msg; }catch(e){} };
+window.addEventListener('error',function(e){ window.__bootErr((e.message||'error')+(e.lineno?' @ line '+e.lineno:'')); });
+</script>
 <script>
 /* phones held upright: size the rotated stage to the real visible screen (Safari's 100vh includes hidden toolbars), and block pinch zoom */
 (function(){
@@ -3644,7 +3793,7 @@ function runCamp(){
   G.phase = 'preseason';
   save(); render();
 }
-function afterPreseasonGame(won, myScore, oppScore){
+function afterPreseasonGame(won, myScore, oppScore, liveBox){
   G.phaseDesk = null;
   const me = meT();
   const round = G.preWeek;
@@ -3665,9 +3814,13 @@ function afterPreseasonGame(won, myScore, oppScore){
   // light injury risk
   if(Math.random() < .12){
     const h = me.roster.filter(p => p.injWeeks === 0 && !SPEC[p.pos]);
-    if(h.length){ const p = pick(h); p.injWeeks = rollInjuryWeeks(1,2); G.lastInjury = p; logEv(p,'inj','Injured in preseason — out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''),0); report.injuries.push({name:p.name, pos:p.spot, weeks:p.injWeeks}); }
+    if(h.length){ const p = pick(h); p.injWeeks = rollInjuryWeeks(1,2); G.lastInjury = p; logEv(p,'inj','Injured in preseason — out '+p.injWeeks+' wk'+(p.injWeeks>1?'s':''),0); report.injuries.push({id:p.id, name:p.name, pos:p.spot, weeks:p.injWeeks}); }
   }
   G.preReport = report;
+  { const oppI = G.preOpps[round-1], homeMe = round !== 2, a = homeMe ? G.userTeam : oppI, b = homeMe ? oppI : G.userTeam;
+    const R = G.lastGameReport = { a, b, as: homeMe ? myScore : oppScore, bs: homeMe ? oppScore : myScore, devs: report.devs, injuries: report.injuries, phase:'pre', week:round };
+    if(liveBox){ R.teams = {}; [a, b].forEach(ti => { const lines = Object.values(liveBox[ti]||{}).map(l => { const d = Object.assign({}, l); delete d.gp; Object.keys(d).forEach(k => { if(d[k] === 0) delete d[k]; }); return d; });
+      lines.sort((x,y) => lineScore(y)-lineScore(x)); R.teams[ti] = { idx:ti, pts: ti===a?R.as:R.bs, passYd: lines.reduce((q,l)=>q+(l.py||0),0), rushYd: lines.reduce((q,l)=>q+(l.ry||0),0), lines }; }); } }
   if(G.preSchedule && G.preSchedule[round-1]){
     const entry = G.preSchedule[round-1].find(g => g.a===G.userTeam || g.b===G.userTeam);
     if(entry){
@@ -3676,6 +3829,8 @@ function afterPreseasonGame(won, myScore, oppScore){
       entry.done = true;
       entry.week = round; entry.year = G.year; entry.phase = 'pre';
       entry.report = { a:entry.a, b:entry.b, as:entry.as, bs:entry.bs, devs: report.devs, injuries: report.injuries, phase:'pre', week:round };
+      if(G.lastGameReport.teams) entry.report.teams = G.lastGameReport.teams;
+      G.lastGameReport = entry.report;
     }
     simAIPreseasonRound(round);
   }
@@ -3695,7 +3850,9 @@ function simPre(){
   const opp = G.preOpps[G.preWeek-1];
   const r = quickSim(G.userTeam, opp);
   LINEUP = 'full';
+  pgSnap();
   afterPreseasonGame(r.as > r.bs, r.as, r.bs);
+  if(G.mode !== 'owner') openPostgame();
 }
 function confirmCutdown(force){
   const me = meT();
@@ -4776,7 +4933,7 @@ function pressQuestion(){
   const me = meT(), g = userGame(), nextOpp = g ? (g.a === G.userTeam ? g.b : g.a) : null;
   const last = lastUserResult();
   const holdout = me.roster.find(p => p.holdout);
-  const H = G.pressHist || [], recentK = k => H.slice(-3).filter(h => h.k === k).length, recentP = id => H.slice(-6).some(h => h.pid === id);
+  const H = G.pressHist || [], recentK = k => H.slice(-3).filter(h => h.k === k).length, recentP = id => false;
   const pool = me.roster.filter(p => !p.ir && !(p.injWeeks > 0)).sort((a,b) => b.rating - a.rating);
   // last game's stat lines for our players: stand-outs, and good players who had a rough day
   const lastR = userResults().slice(-1)[0], rep0 = lastR && lastR.report && lastR.report.teams && lastR.report.teams[G.userTeam];
@@ -5282,7 +5439,7 @@ function fireHC(){
 function hcBoost(){ return (G && G.mode==='owner' && G.hc) ? (G.hc.rating - 75) / 12 : 0; }
 
 /* ---------- changing duties ---------- */
-function setDuty(k, v){
+function setDuty(k, v, quiet){
   if(isCoord()){ alert('As a coordinator, the head coach and his GM run the front office.'); return; }
   ensureDuties();
   const was = G.duties[k]; if(was === v) return;
@@ -5292,6 +5449,7 @@ function setDuty(k, v){
   if(was==='hc' && G.hc && (G.hc.promised||[]).includes(k)){ G.hc.broken = (G.hc.broken||0) + 1; G.hc.promised = G.hc.promised.filter(x => x!==k); logOwnerMove('Took '+DUTY_NAME[k]+' away from Coach '+G.hc.name+' · broke a promise.'); }
   if(v==='hc' && G.hc){ G.hc.bonus = (G.hc.bonus||0) + 2; }
   G.duties[k] = v;
+  if(quiet) return;
   if(G.mode==='coachgm' && v==='gm' && !G.gm){ G.gmHirePool = makeGMPool().slice(0,3).map(gmFill); G.gmHireReturn = k; openModal('gmhire'); return; }
   if(G.mode==='owner' && v==='gm' && !G.gm && !G.gmPool) G.gmPool = makeGMPool();
   if(G.mode==='owner' && v==='hc' && !G.hc && !G.hcPool) G.hcPool = [makeHCCandidate(),makeHCCandidate(),makeHCCandidate()].sort((a,b)=>b.rating-a.rating);
@@ -5324,8 +5482,8 @@ function dutiesBoardHTML(){
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Assignments</div><p class="sub" style="margin-bottom:6px">'+(owner
     ? 'Who runs each part of football ops. Take any duty yourself, hand it to the GM, or give it to the Head Coach. Duties given to the coach make top coaches easier to hire and keep.'
     : 'Duties you hand off go to a GM the owner hires and pays. Take them back any time. His contract still runs.')+'</p>';
-  s += '<table class="tbl"><tr><th>Duty</th><th>Handled by</th></tr>';
-  DUTY_DEF.forEach(d => {
+  s += dutiesGridHTML() + '</div>';
+  if(false) DUTY_DEF.forEach(d => {
     const v = G.duties[d.k];
     let cell;
     if(!owner && d.k==='coachstaff') cell = '<span class="tag w">You</span> <span class="sub">Head Coach picks his staff. Owner or GM can still fire them.</span>';
@@ -5335,7 +5493,7 @@ function dutiesBoardHTML(){
     }
     s += '<tr><td><b>'+d.n+'</b><div class="sub" style="font-size:12px">'+d.d+'</div></td><td>'+cell+'</td></tr>';
   });
-  s += '<tr><td><b>Game day, depth chart, practice</b></td><td>'+(owner?'<span class="tag">Head Coach</span>':'<span class="tag w">You</span>')+'</td></tr></table></div>';
+
   // GM card
   if(G.gm){
     const g = G.gm, hp = gmHappy(), n = dutiesOf('gm').length;
@@ -5376,9 +5534,52 @@ function hireBoardsHTML(){
   }
   return s;
 }
+function dutyPresets(){
+  const all = v => { const o = {}; DUTY_DEF.forEach(d => o[d.k] = v); return o; };
+  if(G.mode === 'owner'){
+    const def = all('gm'); def.coachstaff = 'hc';
+    const coach = all('gm'); DUTY_DEF.forEach(d => { if(d.hc) coach[d.k] = 'hc'; });
+    return [['mine','I run it all','Every duty is yours. No GM needed.', all('me')],
+            ['default','GM + Coach','GM runs football ops. Coach picks his staff.', def],
+            ['coach','Coach power','Coach gets every duty he can take. Lands better coaches.', coach]];
+  }
+  const split = all('me'); split.scout = 'gm'; split.scoutstaff = 'gm'; split.cuts = 'gm';
+  const gm = all('gm'); gm.coachstaff = 'me';
+  return [['mine','I run it all','Every duty stays with you. No GM.', all('me')],
+          ['split','Split','GM handles scouting, scout staff and cuts. You keep the deals.', split],
+          ['gm','GM runs it','GM takes every front-office duty. You coach the team.', gm]];
+}
+function applyDutyPreset(key){
+  ensureDuties();
+  const pr = dutyPresets().find(x => x[0] === key); if(!pr) return;
+  const target = pr[3]; let firstGM = null;
+  DUTY_DEF.forEach(d => { const v = target[d.k]; if(G.mode!=='owner' && d.k==='coachstaff') return; if(G.duties[d.k] !== v){ setDuty(d.k, v, true); if(v==='gm' && !firstGM) firstGM = d.k; } });
+  if(G.mode==='coachgm' && firstGM && !G.gm){ G.gmHirePool = makeGMPool().slice(0,3).map(gmFill); G.gmHireReturn = firstGM; openModal('gmhire'); return; }
+  if(G.mode==='owner' && DUTY_DEF.some(d=>G.duties[d.k]==='gm') && !G.gm && !G.gmPool) G.gmPool = makeGMPool();
+  if(G.mode==='owner' && DUTY_DEF.some(d=>G.duties[d.k]==='hc') && !G.hc && !G.hcPool) G.hcPool = [makeHCCandidate(),makeHCCandidate(),makeHCCandidate()].sort((a,b)=>b.rating-a.rating);
+  save(); render();
+}
+function dutiesGridHTML(){
+  ensureDuties();
+  const owner = G.mode === 'owner', P = dutyPresets();
+  const cur = k => G.duties[k];
+  const on = P.find(x => DUTY_DEF.every(d => (G.mode!=='owner' && d.k==='coachstaff') || cur(d.k) === x[3][d.k]));
+  let s = '<div class="fo-pre">' + P.map(x => '<button class="fo-pb'+(on&&on[0]===x[0]?' on':'')+'" onclick="applyDutyPreset(\''+x[0]+'\')"><b>'+x[1]+'</b><span>'+x[2]+'</span></button>').join('') + '</div>';
+  s += '<div class="fo-grid">';
+  DUTY_DEF.forEach(d => {
+    const v = cur(d.k);
+    if(!owner && d.k==='coachstaff'){ s += '<div class="fo-card locked"><div><div class="n">'+d.n+'</div><div class="d">Head Coach picks his staff. Owner or GM can still fire them.</div></div><span class="fo-you">You</span></div>'; return; }
+    const b = (who, lbl, ok) => '<button class="'+(v===who?'on '+who:'')+'" '+(ok?'':'disabled')+' onclick="setDuty(\''+d.k+'\',\''+who+'\')">'+lbl+'</button>';
+    s += '<div class="fo-card"><div><div class="n">'+d.n+'</div><div class="d">'+d.d+'</div></div><div class="fo-seg">'+b('me','Me',true)+b('gm','GM',true)+(owner?b('hc','Coach',!!d.hc):'')+'</div></div>';
+  });
+  s += '</div>';
+  const nGM = DUTY_DEF.filter(d => cur(d.k)==='gm').length, nHC = DUTY_DEF.filter(d => cur(d.k)==='hc').length;
+  s += '<div class="fo-foot"><span>Game day, depth chart, practice: <span class="fo-you">'+(owner?'Head Coach':'You')+'</span></span><span>Handed to GM <b style="color:#B48CF0">'+nGM+' of '+DUTY_DEF.length+'</b>'+(owner?' · Coach <b style="color:#6FA8E8">'+nHC+'</b>':'')+'</span></div>';
+  return s;
+}
 function dutiesSetupHTML(){
   const owner = G.mode === 'owner';
-  return '<div class="panel" style="margin-bottom:10px"><div class="hd disp">'+(owner?'How hands-on are you?':'Who handles what')+'</div><p class="sub">'+(owner?'Default: the GM runs football ops and the Head Coach runs the team. Take any duty yourself, or give some to the coach to land a better one.':'Default: you keep every front-office duty, same as before. Hand any of them to a GM and the owner hires one.')+' You can change this any time in Front Office › Assignments.</p><button class="btn primary" style="margin-top:8px" onclick="G.dutiesSetupDone=true;closeModal();save();render()">Done</button></div>' + dutiesBoardHTML();
+  return '<div class="fo-setup"><div class="fo-top"><p class="sub">'+(owner?'GM runs football ops and the Head Coach runs the team by default. Take duties yourself, or give some to the coach to land a better one.':'You keep every duty by default. Hand any to a GM and the owner hires and pays one. Take them back any time.')+' Change later in Front Office › Assignments.</p><button class="btn primary fo-done" onclick="G.dutiesSetupDone=true;closeModal();save();render()">Done</button></div>' + dutiesGridHTML() + '</div>';
 }
 function ownerHireGMDirect(id){
   const c = (G.gmPool||[]).find(x=>x.id===id); if(!c) return; gmFill(c);
@@ -6679,7 +6880,7 @@ function timelineHTML(){
     '</div>';
 }
 /* ---------- global quick-access nav + pages + modal ---------- */
-const PAGE_TITLES = {prospects:'Draft Prospects', roster:'Roster', depth:'Depth Chart', staff:'Coaching Staff', front:'Front Office', gm:'GM\'s Office', league:'League'};
+const PAGE_TITLES = {prospects:'Draft Prospects', roster:'Rosters', depth:'Depth Chart', staff:'Coaching Staff', front:'Front Office', gm:'Scouting', league:'League'};
 function pageBodyHTML(v){
   if(v === 'roster') return rosterHTML();
   if(v === 'depth') return depthHTML();
@@ -6691,8 +6892,7 @@ function pageBodyHTML(v){
   return '';
 }
 function pageChromeHTML(v){
-  return '<div class="page-chrome"><div class="page-hd"><button class="btn tiny" onclick="closePage()">← Hub</button>' +
-    '<span class="disp page-title">'+(PAGE_TITLES[v]||'')+'</span></div><div class="page-body">'+pageBodyHTML(v)+'</div></div>';
+  return '<div class="page-chrome"><div class="page-body">'+pageBodyHTML(v)+'</div></div>';
 }
 function openPage(v){ if(v === 'hub') return closePage(); G.activePage = v; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function closePage(){ G.activePage = null; save(); render(); }
@@ -6779,6 +6979,81 @@ function gameLineText(l){
   if(l.kr) bits.push(l.kr+' KR, '+(l.kry||0)+' yds'+(l.krtd?' '+l.krtd+' TD':''));
   if(l.pr) bits.push(l.pr+' PR, '+(l.pry||0)+' yds'+(l.prtd?' '+l.prtd+' TD':''));
   return bits.length ? bits.join(' · ') : '<span class="sub">—</span>';
+}
+/* ===== Postgame card: shown over the office right after a game is played or simmed ===== */
+function pgSnap(){ G.pgSnap = { conf:G.confidence, fan:(G.fanApproval==null?50:G.fanApproval), cash:G.cash||0, tp:G.trainPts||0 }; }
+function openPostgame(){
+  const r = G.lastGameReport; if(!r){ return; }
+  const S = G.pgSnap;
+  if(S){ r.fo = { conf:G.confidence-S.conf, fan:Math.round(((G.fanApproval==null?50:G.fanApproval)-S.fan)*10)/10, cash:Math.round(((G.cash||0)-S.cash)*10)/10, tp:(G.trainPts||0)-S.tp }; G.pgSnap = null; }
+  r.seen = false; modalView = null; modalBack = null;
+  openModal('postgame', r);
+}
+function pgTeamTotals(T, O){
+  const L = (T && T.lines) || [], sum = k => L.reduce((a,l)=>a+(l[k]||0),0), oS = k => ((O && O.lines)||[]).reduce((a,l)=>a+(l[k]||0),0);
+  const py = T && T.passYd != null ? T.passYd : sum('py'), ry = T && T.rushYd != null ? T.rushYd : sum('ry');
+  return { tot:py+ry, py, ry, cmp:sum('cmp'), att:sum('att'), car:sum('car'), sk:oS('sk'), to:sum('pint')+oS('ff'), pen:sum('pen'), peny:sum('peny'), tk:sum('tk'), dsk:sum('sk'), dint:sum('int') };
+}
+function postgameHTML(){
+  const r = modalArg || G.lastGameReport; if(!r) return '<p class="sub">No game yet.</p>';
+  const me = G.userTeam, opp = r.a === me ? r.b : r.a, tM = G.teams[me], tO = G.teams[opp];
+  const ms = r.a === me ? r.as : r.bs, os = r.a === me ? r.bs : r.as, won = ms > os, tie = ms === os;
+  const home = r.a === me, pre = r.phase === 'pre';
+  const M = r.teams && r.teams[me], O = r.teams && r.teams[opp];
+  const hasStats = !!(M && M.lines && M.lines.length);
+  const tm = M ? pgTeamTotals(M, O) : null, to = O ? pgTeamTotals(O, M) : null;
+  const wkLbl = pre ? 'Preseason '+(r.week||'') : r.phase==='po' || r.playoff ? 'Playoffs' : 'Week '+(r.week||G.week);
+  const rec = pre ? 'Pre '+tM.preW+'–'+tM.preL : tM.w+'–'+tM.l+(tM.t?'–'+tM.t:'');
+  const side = (t, sc, win, right) => { const nm = '<b>'+esc(t.city+' '+t.name)+'</b>', lg = teamLogo(t,30,'filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))'), s = '<span class="pg-sc'+(win?' w':'')+'">'+sc+'</span>';
+    return '<div class="pg-tm'+(right?' r':'')+'">'+(right ? s+nm+lg : lg+nm+s)+'</div>'; };
+  let s = '<div class="pg">';
+  s += '<div class="pg-top" style="--h:'+tM.c1+';--a:'+tO.c1+'">' + side(tM, ms, won, false) +
+    '<div class="pg-mid"><b style="color:'+(won?'var(--green)':tie?'var(--gold)':'var(--red)')+'">FINAL · '+(won?'WIN':tie?'TIE':'LOSS')+'</b><span>'+wkLbl+' · '+(home?'vs ':'@ ')+esc(tO.city)+' · '+rec+'</span></div>' +
+    side(tO, os, !won && !tie, true) + '</div>';
+  // column 1: team stats
+  let c1 = '<div class="pg-box"><div class="pg-h">Team Stats<em>'+esc(tM.abbr)+' · '+esc(tO.abbr)+'</em></div>';
+  if(tm && to){
+    const row = (a, lbl, b, better) => '<span class="'+(better===0?'bt':'')+'">'+a+'</span><span>'+lbl+'</span><span class="'+(better===1?'bt':'')+'">'+b+'</span>';
+    const cmpN = (a, b, hi) => a===b ? -1 : ((a>b) === hi ? 0 : 1);
+    c1 += '<div class="pg-ts">' +
+      row(tm.tot,'TOTAL YDS',to.tot,cmpN(tm.tot,to.tot,true)) + row(tm.py,'PASS',to.py,cmpN(tm.py,to.py,true)) + row(tm.ry,'RUSH',to.ry,cmpN(tm.ry,to.ry,true)) +
+      row(tm.cmp+'/'+tm.att,'COMP/ATT',to.cmp+'/'+to.att,-1) + row(tm.car,'CARRIES',to.car,-1) + row(tm.sk,'SACKED',to.sk,cmpN(tm.sk,to.sk,false)) +
+      row(tm.to,'TURNOVERS',to.to,cmpN(tm.to,to.to,false)) + (tm.pen||to.pen ? row(tm.pen+'-'+tm.peny,'PENALTIES',to.pen+'-'+to.peny,cmpN(tm.peny,to.peny,false)) : '') + '</div>';
+  } else c1 += '<p class="sub" style="font-size:11px">Simmed exhibition. Starters played a series, backups did the rest. No stats kept.</p>';
+  if(hasStats) c1 += '<button class="btn tiny" style="margin-top:auto;align-self:flex-start" onclick="openModal(\'gamereport\', G.lastGameReport)">Full Box Score →</button>';
+  c1 += '</div>';
+  // column 2: performers
+  let c2 = '<div class="pg-box"><div class="pg-h">Top Performers<em>tap a name</em></div>';
+  if(hasStats){
+    const mine = M.lines.filter(l => { const f = findPlayer(l.id); return f && f.t && f.t.idx === me; });
+    mine.slice(0,5).forEach((l,i) => { const f = findPlayer(l.id), p = f && f.p; const g = p ? (SPOT_GROUP[l.pos]||p.pos) : l.pos;
+      c2 += '<div class="pg-pl" style="--c:'+(POS_COL[g]||POS_COL[p&&p.pos]||'#9AA5B1')+'" onclick="openModal(\'player\','+l.id+')"><span class="pos">'+esc(p?PL(p):l.pos)+'</span><b>'+esc(l.name)+'</b><small>'+gameLineText(l).replace(/<[^>]+>/g,'')+'</small>'+(i===0&&lineScore(l)>=10?'<span class="tag up">★ Game ball</span>':'')+'</div>'; });
+    const rough = mine.map(l => ({l, p:(findPlayer(l.id)||{}).p})).filter(x => x.p && x.p.rating >= 72 && roughGame(x.p, x.l)).slice(0,2);
+    if(rough.length){ c2 += '<div class="pg-h" style="margin-top:4px">Struggled</div>';
+      rough.forEach(x => c2 += '<div class="pg-pl" style="--c:'+(POS_COL[x.p.pos]||'#9AA5B1')+'" onclick="openModal(\'player\','+x.p.id+')"><span class="pos">'+esc(PL(x.p))+'</span><b>'+esc(x.p.name)+'</b><small>'+esc(roughText(x.p, x.l))+'</small></div>'); }
+  } else c2 += '<p class="sub" style="font-size:11px">No individual stats for a simmed preseason game. Coach it live to see who stood out.</p>';
+  c2 += '</div>';
+  // column 3: injuries, progression, front office
+  const inj = []; if(r.injury && r.injury.name) inj.push(r.injury); (r.injuries||[]).forEach(x => inj.push(x));
+  let c3 = '<div class="pg-box"><div class="pg-h">Injuries<em>'+meT().roster.filter(p=>p.injWeeks>0).length+' on report</em></div>';
+  if(inj.length) inj.forEach(x => { const f = findPlayer(x.id), p = f ? f.p : null, wk = p ? p.injWeeks : (x.weeks||x.injWeeks||0);
+    c3 += '<div class="pg-pl" style="--c:'+(POS_COL[p?p.pos:SPOT_GROUP[x.pos]||x.pos]||'#9AA5B1')+'"'+(p?' onclick="openModal(\'player\','+p.id+')"':'')+'><span class="pos">'+esc(p?PL(p):x.pos)+'</span><b>'+esc(x.name)+'</b><span class="tag '+(wk>1?'dn':'')+'" style="'+(wk<=1?'color:var(--gold)':'')+'">'+(wk>0?wk+' wk'+(wk>1?'s':''):'Day-to-day')+'</span></div>'; });
+  else c3 += '<p class="sub" style="font-size:11px;margin-bottom:2px">Came out healthy.</p>';
+  const prog = (r.progressions||[]).concat(r.devs||[]);
+  c3 += '<div class="pg-h" style="margin-top:4px">Progression</div>';
+  if(prog.length) prog.slice(0,3).forEach(x => { const f = findPlayer(x.id), p = f ? f.p : null;
+    c3 += '<div class="pg-pl" style="--c:'+(POS_COL[p?p.pos:SPOT_GROUP[x.pos]||x.pos]||'#9AA5B1')+'"'+(p?' onclick="openModal(\'player\','+p.id+')"':'')+'><span class="pos">'+esc(p?PL(p):x.pos)+'</span><b>'+esc(x.name)+'</b>'+(p?'<small>age '+p.age+'</small>':'')+'<span class="tag up">+'+(x.delta||1)+' → '+(p?p.rating:x.ovr)+'</span></div>'; });
+  else c3 += '<p class="sub" style="font-size:11px">Nobody moved this week.</p>';
+  const fo = r.fo;
+  if(fo && !pre && G.mode !== 'player'){
+    const chip = (v, lbl, unit) => v ? '<span class="pg-chip '+(v>0?'up':'dn')+'">'+lbl+' '+(v>0?'+':'')+(unit==='$'?money(v):v)+'</span>' : '';
+    let place = ''; try{ const div = sortStand(G.teams.filter(t=>t.conf===tM.conf&&t.div===tM.div)); const k = div.findIndex(t=>t.idx===me)+1; place = '<span class="pg-chip">Div '+ordinal(k)+'</span>'; }catch(e){}
+    c3 += '<div class="pg-h" style="margin-top:4px">Front Office</div><div>'+chip(fo.conf,'Owner')+chip(fo.fan,'Fans')+chip(fo.cash,'Cash','$')+(fo.tp?'<span class="pg-chip up">+'+fo.tp+' train pts</span>':'')+place+'</div>';
+  }
+  c3 += '</div>';
+  s += '<div class="pg-body">'+c1+c2+c3+'</div>';
+  s += '<div class="pg-foot"><button class="btn primary" onclick="closeModal()">Done</button></div></div>';
+  return s;
 }
 function gameReportHTML(){
   const r = modalArg || G.lastGameReport;
@@ -7101,7 +7376,7 @@ function relBarHTML(v){
 }
 function goToHub(){ G.activePage = null; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function navHTML(){
-  const items = [['roster','📋 Roster'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','💼 GM\'s Office'],['league','🏆 League']];
+  const items = [['roster','📋 Rosters'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','🔭 Scouting'],['league','🏆 League']];
   let s = '<div class="navbar"><button class="navbtn'+(!G.activePage?' on':'')+'" onclick="goToHub()">🏠 Hub</button>';
   if(G.mode === 'coachgm' && G.officeOff) s += '<button class="navbtn" onclick="setOfficeView(true)">🏢 Office</button>';
   if(G.mode === 'coachgm' || G.mode === 'owner'){ const fr = freshReports(); items.push(['prospects','🎓 Prospects'+(fr?' <span class="tag l">'+fr+'</span>':'')]); }
@@ -7611,9 +7886,10 @@ function poachCoach(ti, role){
   save(); render();
 }
 
-function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); return {gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
+function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
+  if(v === 'postgame') return postgameHTML();
   if(v === 'player') return profileHTML(modalArg);
   if(v === 'office') return officeModalBody(modalArg);
   if(v === 'extend') return extendHTML(modalArg);
@@ -7631,6 +7907,8 @@ function modalBodyHTML(v){
   if(v === 'coach') return coachBioHTML(modalArg);
   if(v === 'hof') return hofModalHTML();
   if(v === 'dutysetup') return dutiesSetupHTML();
+  if(v === 'coachInfo') return coachCardHTML(modalArg.role, modalArg.pos, staffLabel(modalArg.role, modalArg.pos), staffBoost(modalArg.role, modalArg.pos));
+  if(v === 'poachAll') return poachPanelHTML();
   if(v === 'bringstaff') return bringStaffHTML(modalArg);
   if(v === 'prospect') return prospectCardHTML(modalArg);
   if(v === 'tradeup') return tradeUpHTML(modalArg);
@@ -7658,7 +7936,7 @@ function modalHTML(){
   if(!modalView) return '';
   const closeLabel = modalBack ? '← Back' : '✕ Close';
   return '<div class="modal-wrap" onclick="if(event.target===this)closeModal()">' +
-    '<div class="modal-panel'+(modalView==='prospect'?' wide':'')+'">' +
+    '<div class="modal-panel'+(modalView==='prospect'||modalView==='postgame'?' wide':'')+'">' +
     '<div class="modal-hd"><span class="disp">'+modalTitle(modalView)+'</span><span><button class="btn tiny" onclick="closeModal()">'+closeLabel+'</button></span></div>' +
     '<div class="modal-body">'+modalBodyHTML(modalView)+'</div>' +
     '</div></div>';
@@ -8078,7 +8356,7 @@ function drawRoom(t){
       {k:'wb', x:305,y:14,w:76,h:92, n:'WHITEBOARD', o: phase==='playoffs'?'Playoff bracket':'Depth Chart', below:1, pk: me.roster.filter(p=>p.injWeeks>0).length+' injured'},
       {k:'mon1', x:121,y:90,w:63,h:32, n:'COMPUTER', o:'Roster · Scouting', bd: freshReports()?String(freshReports()):'', pk: me.roster.length+' players · '+teamOverall(me)+' OVR'+(freshReports()?' · '+freshReports()+' scout reports':'')},
       {k:'mon2', x:200,y:90,w:63,h:32, n:'FILM SCREEN', o:'Scout next opponent', pk: opp ? opp.city+' · '+teamOverall(opp)+' OVR · '+opp.w+'-'+opp.l : 'No opponent yet'},
-      {k:'phone', x:274,y:120,w:28,h:14, n:'PHONE', o:"GM's Office", pk: tradesOpen() ? 'Trade market open' : 'Trades closed · '+(G.fa||[]).length+' free agents'},
+      {k:'phone', x:274,y:120,w:28,h:14, n:'PHONE', o:"Scouting", pk: tradesOpen() ? 'Trade market open' : 'Trades closed · '+(G.fa||[]).length+' free agents'},
       {k:'journal', x:33,y:138,w:45,h:24, n:'JOURNAL', o:'This Week', bd: fcnt?String(fcnt):'', pk: fcnt ? fcnt+' update'+(fcnt>1?'s':'') : 'Quiet week'},
       {k:'clip', x:79,y:133,w:33,h:27, n:'CLIPBOARD', o: OFFICE_PHASE_INFO[phase]?OFFICE_PHASE_INFO[phase][0]:ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : 'Notes'},
       {k:'pad', x:117,y:133,w:148,h:26, n:'GAME PLAN', o:'Staff recommendations', bd: pr?String(pr):'', pk: pr ? pr+' call'+(pr>1?'s':'')+' to make' : 'All calls made'},
@@ -8109,7 +8387,7 @@ function drawRoom(t){
     } else if(OFFICE_PHASE_INFO[phase]){
       const pi=OFFICE_PHASE_INFO[phase];
       b+='<span class="of-m" style="font-size:4.2em;color:var(--chalk)"><b style="color:var(--of-accent)">'+E(pi[0].toUpperCase())+'</b> · '+E(pi[1])+'</span><div class="of-acts">' +
-        '<button class="pri" onclick="officeOpenDesk()">'+pi[2]+'</button>'+(tradesOpen()?'<button onclick="openPage(\'gm\')">💼 GM\'s Office</button>':'')+'</div>';
+        '<button class="pri" onclick="officeOpenDesk()">'+pi[2]+'</button>'+(tradesOpen()?'<button onclick="openPage(\'gm\')">🔭 Scouting</button>':'')+'</div>';
     } else {
       const pg=playoffUserGame();
       b+='<span class="of-m" style="font-size:4.2em;color:var(--chalk)"><b style="color:var(--of-accent)">PLAYOFFS</b> · '+E(roundName())+(pg?' · '+(pg.a===G.userTeam?'vs ':'@ ')+E(G.teams[pg.a===G.userTeam?pg.b:pg.a].abbr):' · watching from home')+'</span><div class="of-acts">';
@@ -8121,7 +8399,7 @@ function drawRoom(t){
     return t+b;
   }
   function drawerHTML(){
-    const nav=[['roster','📋 Roster'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','💼 GM\'s Office'],['league','🏆 League'],['prospects','🎓 Draft Prospects']];
+    const nav=[['roster','📋 Rosters'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','🔭 Scouting'],['league','🏆 League'],['prospects','🎓 Draft Prospects']];
     return '<div class="of-drawer'+(drawerOpen?' on':'')+'"><div class="of-drow"><b class="disp" style="color:var(--of-accent)">Menu</b><button class="btn tiny" onclick="officeDrawer()">✕</button></div>' +
       nav.map(n=>'<button class="btn of-nav" onclick="openPage(\''+n[0]+'\')">'+n[1]+'</button>').join('') +
       '<div class="of-sep"></div><button class="btn of-nav'+(labelsOn?' primary':'')+'" onclick="officeLabels()">🏷 '+(labelsOn?'Hide':'Show')+' all labels</button>' +
@@ -8167,7 +8445,7 @@ function drawRoom(t){
       case 'journal': return openModal('office','feed');
       case 'clip': { if(OFFICE_PHASE_INFO[phase]) return officeOpenDesk(); const ws=weekState(); if(phase==='season' && ws.canPractice) return enterPracticeScene(); return openModal('office','week'); }
       case 'pad': return openModal('office','recs');
-      case 'news': return openModal('office','news');
+      case 'news': return G.lastGameReport ? openModal('postgame', G.lastGameReport) : openModal('office','news');
       case 'books': return openModal('office','results');
       case 'keys': return quitToMenu();
     }
@@ -8585,8 +8863,20 @@ function officePop(k){
   st.appendChild(d);
 }
 
+function syncTenure(){
+  if(!G || !G.teams || G.year == null) return;
+  G.teams.forEach((t,ti) => t.roster.forEach(p => {
+    if(p.leagueSince == null) p.leagueSince = G.year - Math.max(0, (p.age||22) - 22);
+    if(p.teamSince == null){ const exp = G.year - p.leagueSince; p.teamSince = G._tenureInit ? G.year : G.year - Math.min(exp, Math.floor(Math.random()*Math.min(exp+1, 6))); p.tmIdx = ti; }
+    else if(p.tmIdx !== ti){ p.teamSince = G.year; p.tmIdx = ti; }
+  }));
+  G._tenureInit = 1;
+}
+function yrsLeague(p){ const n = G.year - (p.leagueSince==null ? G.year - Math.max(0,(p.age||22)-22) : p.leagueSince); return n <= 0 ? 'R' : n; }
+function yrsTeam(p){ return p.teamSince == null ? 1 : Math.max(1, G.year - p.teamSince + 1); }
 function render(){
   migrateSpots();
+  try{ syncTenure(); }catch(e){ console.error('tenure', e); }
   applyTeamBrand();
   applyTeamTheme();
   const app = $('#app');
@@ -8837,11 +9127,11 @@ function playerRow(p, actions, isOpponent){
     '<td>'+p.age+'</td><td>'+ratingCell+'</td>' +
     '<td>'+money(p.salary)+'</td><td>'+p.years+'yr</td><td>'+status+'</td><td>'+actions+'</td></tr>';
 }
-function rosterTable(t, actionFn){
+function rosterTable(t, actionFn, noPills){
   const isOpponent = t.idx !== G.userTeam;
   const cols = [['name','Player'],['spot','Pos'],['scheme','Scheme'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Years']];
-  let s = '<div class="filterbar">' + posFilterPillsHTML(t, rFilter, 'setRFilter');
-  s += '</div><table class="tbl"><tr>';
+  let s = noPills ? '' : '<div class="filterbar">' + posFilterPillsHTML(t, rFilter, 'setRFilter') + '</div>';
+  s += '<table class="tbl"><tr>';
   cols.forEach(c => {
     const on = rSort.key === c[0];
     s += '<th class="sorth'+(on?' on':'')+'" onclick="setRSort(\''+c[0]+'\')">'+c[1]+(on ? (rSort.dir>0?' ▲':' ▼') : '')+'</th>';
@@ -8952,9 +9242,7 @@ function gmFreeAgentsHTML(){
     '</div>' +
     '<p class="sub" style="margin-bottom:8px">'+(activeCount(me) < limit ? 'You have room to sign a free agent.' : 'Your roster is full — cut someone first.')+'</p>' +
     capBarHTML(me);
-  s += '<div class="filterbar" style="align-items:center;margin-top:12px">';
-  s += faPosFilterPillsHTML(me);
-  s += '</div>';
+  s += '<div class="filterbar" style="align-items:center;margin-top:12px">' + faPosDDHTML(me, G.fa) + '</div>';
   const faCols = [['name','Player'],['spot','Pos'],['team','Team'],['age','Age'],['rating','OVR'],['salary','Salary'],['askYears','Years']];
   s += '<table class="tbl"><tr>';
   faCols.forEach(c => {
@@ -9148,7 +9436,7 @@ function faHTML(){
       '<div style="margin-top:10px"><span class="countpill'+(me.roster.length>=limit?' over':'')+'">Roster <b>'+me.roster.length+'</b> / '+limit+'</span></div></div>';
   }
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">All Players</div><div class="filterbar" style="align-items:center">';
-  s += faPosFilterPillsHTML(me);
+  s += faPosDDHTML(me, faTeamFilter==='FA' ? G.fa : faTeamFilter==='ALL' ? G.fa.concat(...G.teams.map(t=>t.roster)) : ((G.teams[+faTeamFilter]||{}).roster||[]));
   s += '<select class="fselect" onchange="setFATeamFilter(this.value)">' +
     '<option value="ALL"'+(faTeamFilter==='ALL'?' selected':'')+'>All Teams</option>' +
     '<option value="FA"'+(faTeamFilter==='FA'?' selected':'')+'>Free Agents</option>' +
@@ -9201,6 +9489,12 @@ function posFilterPillsHTML(t, active, setter){
   return s;
 }
 function faPosFilterPillsHTML(t){ return posFilterPillsHTML(t, faFilter, 'setFAFilter'); }
+function faPosDDHTML(me, pool){
+  return posDDHTML(faFilter, 'setFAFilter', (pos, sp) => {
+    const av = pool.filter(p => p.pos===pos && (sp===pos || p.spot===sp)), mine = me.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1);
+    return { txt: av.length+' avail · you have '+mine.length+' of '+min+' min', warn: mine.length < min };
+  }, pool.length+' players');
+}
 function setFAFilter(f){ faFilter = f; render(); }
 function setFASort(k){
   if(faSort.key === k) faSort.dir *= -1;
@@ -9702,35 +9996,35 @@ function prospectCardHTML(id){
   const proj = rank <= 16 ? 'Rd 1' : 'Rd '+Math.min(6, Math.ceil(rank/16))+(rank>96?'+ (UDFA risk)':'');
   const potShown = pr.rev && pr.rev.potential;
   const bar = (lo, hi, col) => { const L = clamp((lo-50)/49*100,0,100), Wd = Math.max(2, (hi-lo)/49*100); return '<div style="position:relative;height:9px;background:#202A3C;border-radius:5px;margin-top:3px"><i style="position:absolute;top:0;bottom:0;left:'+L+'%;width:'+Wd+'%;border-radius:5px;background:'+col+'"></i></div>'; };
-  let card = '<div class="pc-card" style="--cc:'+c1+';--cc2:'+c2+'">' +
-    '<div class="pc-grade" style="background:'+gradeColor(grade)+'">'+grade+'<small>GRADE</small></div>' +
-    '<img class="pc-face" src="'+faceURL(pr.id, c1, c2, pr.num)+'" alt="">' +
-    '<div class="pc-nm">'+esc(pr.name)+'</div>' +
-    '<div class="sub" style="color:#C9D4E4">'+pr.spot+' · '+esc(pr.college.name)+' · '+pr.age+' · '+ft+'\''+inch+'" · '+esc(pr.home.city)+', '+esc(pr.home.state)+'</div>' +
-    '<div style="margin-top:8px"><div class="sub" style="display:flex;justify-content:space-between"><span>Current OVR (your grade)</span><b style="color:var(--gold)">'+(pr.scoutLo===pr.scoutHi?pr.scoutLo:pr.scoutLo+' to '+pr.scoutHi)+'</b></div>'+bar(pr.scoutLo, pr.scoutHi, 'linear-gradient(90deg,#8C6A1E,#E8B84A)')+'</div>' +
-    '<div style="margin-top:6px"><div class="sub" style="display:flex;justify-content:space-between"><span>Potential</span><b style="color:var(--green)">'+(potShown?clamp(pr.pot-3,pr.trueRating,99)+' to '+clamp(pr.pot+3,pr.trueRating,99):'? <span class="sub">(Top-10 visit)</span>')+'</b></div>'+(potShown?bar(clamp(pr.pot-3,pr.trueRating,99), clamp(pr.pot+3,pr.trueRating,99), 'linear-gradient(90deg,#1E5A3A,#4FBF77)'):bar(50,99,'repeating-linear-gradient(45deg,#2A3548 0 4px,#202A3C 4px 8px)'))+'</div>' +
-    '<div class="pc-tags">'+(pr.traitsSeen?pr.traits.slice(0,pr.traitsSeen).map(t=>'<span class="pc-tg g">'+esc(t)+'</span>').join(''):'<span class="pc-tg q">Traits ? (live games)</span>') +
-      (pr.rev&&pr.rev.character?'<span class="pc-tg'+(pr.work==='Low'?' r':pr.work==='High'?' g':'')+'">'+pr.work+' work ethic</span><span class="pc-tg">Responds to '+(pr.style==='praise'?'praise':'tough love')+'</span>':'<span class="pc-tg q">Character ?</span>') +
-      (pr.rev&&pr.rev.medical?'<span class="pc-tg'+(pr.med==='Clean'?' g':' r')+'">Medical: '+pr.med+'</span>':'<span class="pc-tg q">Medical ?</span>')+'</div>' +
-    '<div class="pc-tags"><span class="pc-tg">Media #'+rank+'</span>'+stockHTML(pr).replace('class="sub"','class="pc-tg"')+'<span class="pc-tg" style="background:#3A2E14;color:var(--gold)">Your #'+myRank+'</span><span class="pc-tg">Proj. '+proj+'</span></div></div>';
   const cmb = pr.combine, cv = combineVisible();
   const row = (lbl, key, fmt) => { const v = cmb[key]; if(v == null) return '<span>'+lbl+'</span><b class="sub">—</b><span></span>'; const p = combinePct(pr, key);
     return '<span>'+lbl+'</span><b>'+(cv?fmt(v):'?')+'</b><span class="sub" style="text-align:right">'+(cv&&p!=null?ordinal(p):'')+'</span>'; };
-  let right = '<div class="pc-right">' +
-    '<div class="panel"><div class="hd disp" style="font-size:13px">Skills</div>'+skillRadarSVG(pr)+'</div>' +
-    '<div class="panel"><div class="hd disp" style="font-size:13px">Combine</div><div class="pc-kv">' +
-      row('40-yard','forty',v=>v.toFixed(2)) + row('Vertical','vert',v=>v+'"') + row('Broad jump','broad',v=>Math.floor(v/12)+'\''+(v%12)+'"') + row('3-cone','cone',v=>v.toFixed(2)) + row('Bench','bench',v=>v) +
-      '</div><p class="sub" style="margin-top:6px;font-size:11px">'+(cv?'Public. Every team sees these.':'Posted at the combine in March.')+'</p>' +
-      '<div class="hd disp" style="font-size:13px;margin-top:10px">'+(cls?cls.year-1:G.year-1)+' at '+esc(pr.college.name)+'</div><p style="font-size:12px;margin-top:4px">'+(csLine(pr)||'<span class="sub">Season not started</span>')+'</p>'+(pr.cs&&pr.cs.g?'<p class="sub" style="font-size:11px">'+pr.cs.g+' games</p>':'')+'</div>' +
-    '<div class="panel" style="grid-column:1/-1"><div class="hd disp" style="font-size:13px">Scout him · '+((G.scoutPoints&&G.scoutPoints.college)||0)+' pts</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+  const ovrTxt = pr.scoutLo===pr.scoutHi ? pr.scoutLo : pr.scoutLo+'–'+pr.scoutHi;
+  // header: same shape as the player profile
+  let s = '<div class="panel pf-head pcx-head" style="--cc:'+c1+'"><div style="display:flex;gap:12px;align-items:center;min-width:0;flex:1"><img class="pf-face" src="'+faceURL(pr.id, c1, c2, pr.num)+'" alt=""><div style="min-width:0">' +
+    '<div class="hd disp" style="font-size:19px">'+esc(pr.name)+'</div>' +
+    '<p class="sub"><b style="color:var(--chalk)">'+pr.spot+'</b> · '+esc(pr.college.name)+' · age '+pr.age+' · '+ft+'\''+inch+'" · '+esc(pr.home.city)+', '+esc(pr.home.state)+'</p>' +
+    '<div class="pc-tags"><span class="pc-tg">Media #'+rank+'</span>'+stockHTML(pr).replace('class="sub"','class="pc-tg"')+'<span class="pc-tg" style="background:#3A2E14;color:var(--gold)">Your #'+myRank+'</span><span class="pc-tg">Proj. '+proj+'</span>'+(pr.traitsSeen?pr.traits.slice(0,pr.traitsSeen).map(t=>'<span class="pc-tg g">'+esc(t)+'</span>').join(''):'<span class="pc-tg q">Traits ? (live games)</span>') +
+      (pr.rev&&pr.rev.character?'<span class="pc-tg'+(pr.work==='Low'?' r':pr.work==='High'?' g':'')+'">'+pr.work+' work ethic</span><span class="pc-tg">Responds to '+(pr.style==='praise'?'praise':'tough love')+'</span>':'<span class="pc-tg q">Character ?</span>') +
+      (pr.rev&&pr.rev.medical?'<span class="pc-tg'+(pr.med==='Clean'?' g':' r')+'">Medical: '+pr.med+'</span>':'<span class="pc-tg q">Medical ?</span>')+'</div>' +
+    '</div></div><div class="pcx-right"><div class="pcx-grade" style="background:'+gradeColor(grade)+'">'+grade+'<small>GRADE</small></div><div style="text-align:right"><div class="pf-ovr" style="font-size:30px">'+ovrTxt+'</div><div class="sub" style="font-size:10px;letter-spacing:.14em">YOUR OVR</div></div><div style="text-align:right" title="'+(potShown?'Revealed by Top-10 visit':'Top-10 visit reveals potential')+'"><div class="pf-ovr" style="font-size:30px;color:var(--green)">'+(potShown?clamp(pr.pot-3,pr.trueRating,99)+'–'+clamp(pr.pot+3,pr.trueRating,99):'?')+'</div><div class="sub" style="font-size:10px;letter-spacing:.14em">POTENTIAL</div></div></div></div>';
+  // body: scouting report · skills · combine + college
+  s += '<div class="pcx-grid">' +
+    '<div class="panel pcx-col"><div class="hd disp pcx-sh" title="'+esc(windowLabel(w))+'">Scout Him <span class="sub" style="font:600 11px Inter,sans-serif;letter-spacing:0;text-transform:none">· '+((G.scoutPoints&&G.scoutPoints.college)||0)+' college pts</span></div>' +
+      '<div><div class="pcx-act">' +
       Object.keys(CS_ACTIONS).map(k => { const a = CS_ACTIONS[k], why = canScout(k, pr);
-        return '<button class="btn tiny'+(why?'':' primary')+'" '+(why?'disabled title="'+esc(why)+'"':'title="'+esc(a.desc)+'"')+' onclick="doScout(\''+k+'\','+pr.id+')">'+a.icon+' '+a.name+(a.cost?' · '+a.cost:'')+'</button>'; }).join('') +
+      return '<button class="btn tiny'+(why?'':' primary')+'" '+(why?'disabled title="'+esc(why)+'"':'title="'+esc(a.desc)+'"')+' onclick="doScout(\''+k+'\','+pr.id+')">'+a.icon+' '+a.name+(a.cost?' · '+a.cost:'')+'</button>'; }).join('') +
       (cls?'<button class="btn tiny" onclick="toggleWatch('+pr.id+')">'+(watch?'★ Watching':'☆ Watchlist')+'</button>':'') +
       (G.phase==='draft' && (G.draftPool||[]).includes(pr) && (()=>{ const ci = currentDraftPickInfo(); return ci.pickObj && ci.pickObj.team === G.userTeam; })() ? '<button class="btn tiny primary" onclick="closeModal();userDraftPick('+pr.id+')">✅ Draft him</button>' : '') + '</div>' +
-      '<p class="sub" style="margin-top:6px;font-size:11px">'+windowLabel(w)+'.</p>' +
-      '<div class="hd disp" style="font-size:13px;margin-top:10px">Scouting Log</div>' + ((pr.log&&pr.log.length) ? pr.log.map(l => '<p style="margin:5px 0;font-size:12px"><b>'+esc(l.wk)+'</b> · '+esc(l.txt)+'</p>').join('') : '<p class="sub" style="margin-top:4px;font-size:12px">Nothing yet. Start with film.</p>') + '</div>' +
+      '<div class="pcx-log">'+((pr.log||[]).slice(-1).length ? (pr.log||[]).slice(-1).map(l => '<span><b>'+esc(l.wk)+'</b> · '+esc(l.txt)+'</span>').join('') : '<span class="sub">No scouting yet. Start with film.</span>')+(pr.log&&pr.log.length>1?'<span class="sub">+'+(pr.log.length-1)+' earlier</span>':'')+'</div>' +
+      '</div></div>' +
+    '<div class="panel pcx-col"><div class="hd disp pcx-sh">Skills</div><div class="pcx-radar">'+skillRadarSVG(pr)+'</div></div>' +
+    '<div class="panel pcx-col"><div class="hd disp pcx-sh">Combine</div><div class="pc-kv pcx-kv">' +
+      row('40-yard','forty',v=>v.toFixed(2)) + row('Vertical','vert',v=>v+'"') + row('Broad jump','broad',v=>Math.floor(v/12)+'\''+(v%12)+'"') + row('3-cone','cone',v=>v.toFixed(2)) + row('Bench','bench',v=>v) +
+      '</div>' + (cv ? '' : '<p class="sub" style="font-size:10px;margin-top:2px">Posted at the combine in March.</p>') +
+      '<div class="hd disp pcx-sh">'+(cls?cls.year-1:G.year-1)+' at '+esc(pr.college.name)+'</div><p style="font-size:11.5px;margin-top:2px">'+(csLine(pr)||'<span class="sub">Season not started</span>')+(pr.cs&&pr.cs.g?' <span class="sub">· '+pr.cs.g+' games</span>':'')+'</p>' + '</div>' +
     '</div>';
-  return '<div class="pc-wrap">'+card+right+'</div>';
+  return s;
 }
 /* draft grade vs how he turned out (player profile) */
 const SLOT_EXPECT = [82, 76, 72, 68, 65, 62];
@@ -12050,44 +12344,92 @@ function progressionRowHTML(p){
   const last = evs.length ? evs[evs.length-1] : null;
   const badge = last ? '<span class="tag '+(last.d>0?'w':'l')+'" style="cursor:pointer" onclick="toggleProgNote('+p.id+')" title="'+esc(last.t)+' ('+last.y+')">'+(last.d>0?'+':'')+last.d+'</span>' : '<span class="sub">—</span>';
   const note = (progNoteOpenId === p.id && last) ? '<div class="sub" style="margin-top:2px">'+esc(last.t)+' — '+last.y+'</div>' : '';
-  return '<tr><td>'+pn(p)+' '+badge+note+'</td><td><b>'+p.spot+'</b></td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+evs.length+' change'+(evs.length!==1?'s':'')+' on record</td></tr>';
+  return '<tr><td>'+pn(p)+' '+badge+note+'</td><td><b>'+PL(p)+'</b></td><td>'+p.age+'</td><td>'+yrsTeam(p)+'</td><td>'+yrsLeague(p)+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+evs.length+' change'+(evs.length!==1?'s':'')+' on record</td></tr>';
 }
+let progSort = {key:null, dir:-1};
+function setProgSort(k){ if(progSort.key === k) progSort.dir *= -1; else { progSort.key = k; progSort.dir = (k==='name'||k==='pos') ? 1 : -1; } render(); }
 function toggleProgNote(pid){ progNoteOpenId = progNoteOpenId === pid ? null : pid; render(); }
 function progressionTabHTML(){
-  const me = meT();
-  const list = me.roster.slice().sort((a,b) => {
-    const aLast = (a.history||[]).filter(e=>e.k==='dev').slice(-1)[0];
-    const bLast = (b.history||[]).filter(e=>e.k==='dev').slice(-1)[0];
-    const ay = aLast ? aLast.y : 0, by = bLast ? bLast.y : 0;
-    return by - ay || b.rating - a.rating;
-  });
+  const me = rosterTeamT();
+  const devs = p => (p.history||[]).filter(e=>e.k==='dev');
+  const key = {
+    name: p => p.name, pos: p => spotSortVal(p), age: p => p.age, team: p => yrsTeam(p),
+    exp: p => { const v = yrsLeague(p); return v==='R' ? 0 : v; }, ovr: p => p.rating,
+    hist: p => { const d = devs(p), l = d[d.length-1]; return d.length*1000 + (l ? l.y : 0); }
+  };
+  const base = me.roster.filter(p => rFilter==='ALL' || p.pos === rFilter || p.spot === rFilter);
+  const list = progSort.key ? base.sort((a,b) => { const va = key[progSort.key](a), vb = key[progSort.key](b);
+      return ((typeof va === 'string' ? va.localeCompare(vb) : (va - vb)) * progSort.dir) || (b.rating - a.rating); })
+    : base.sort((a,b) => { const al = devs(a).slice(-1)[0], bl = devs(b).slice(-1)[0]; return (bl?bl.y:0) - (al?al.y:0) || b.rating - a.rating; });
+  const th = (k, lbl, tip) => '<th class="sorth'+(progSort.key===k?' on':'')+'"'+(tip?' title="'+tip+'"':'')+' onclick="setProgSort(\''+k+'\')">'+lbl+(progSort.key===k?(progSort.dir>0?' ▲':' ▼'):'')+'</th>';
   let s = '<div class="panel"><div class="hd disp">Progression</div>' +
     '<p class="sub" style="margin-bottom:8px">Every rating change lands here — training, mentoring, camp reps, big games, injuries, and offseason development. Tap a badge to see why.</p>' +
-    '<table class="tbl"><tr><th>Player</th><th>Pos</th><th>OVR</th><th>History</th></tr>';
+    '<table class="tbl"><tr>'+th('name','Player')+th('pos','Pos')+th('age','Age')+th('team','Yrs w/ Team','Seasons with this team, counting this one')+th('exp','NGL Exp','Seasons in the NGL before this one. R = rookie')+th('ovr','OVR')+th('hist','History')+'</tr>';
   list.forEach(p => s += progressionRowHTML(p));
-  if(!list.length) s += '<tr><td colspan="4" class="sub">Nobody on the roster yet.</td></tr>';
+  if(!list.length) s += '<tr><td colspan="7" class="sub">Nobody here yet.</td></tr>';
   s += '</table></div>';
   return s;
 }
+let rosterTeamIdx = null;
+
+
+/* shared position dropdown (Rosters, Free Agents, All Players): colored by group, opens under its box */
+const POS_COL = {QB:'#E25555', RB:'#F2994A', WR:'#F2C94C', TE:'#A3D977', OL:'#4CAF6E', DL:'#56CCF2', LB:'#4A90E2', CB:'#9B6BE8', S:'#E06CB4', K:'#9AA5B1', P:'#9AA5B1', LS:'#9AA5B1'};
+function posDDHTML(cur, setter, rowFn, allTxt){
+  const grpName = {OL:'Offensive Line', DL:'Defensive Line', LB:'Linebackers', S:'Safeties'};
+  const row = (val, code, r, col, extra) => '<button class="dd-opt'+(cur===val?' on':'')+(extra||'')+'" style="--c:'+col+'" onclick="ddPick(this);'+setter+'(\''+val+'\')"><span class="dd-code">'+code+'</span><span class="dd-txt">'+r.txt+'</span>'+(r.warn?'<span class="dd-warn" title="Below minimum">short</span>':'')+'</button>';
+  let opts = row('ALL','ALL',{txt:'All positions · '+allTxt},'#FFD447');
+  POS_ORDER.forEach(pos => {
+    const col = POS_COL[pos]||'#9AA5B1';
+    if(SPOTS[pos].length > 1){
+      opts += '<div class="dd-grp" style="--c:'+col+'">'+(grpName[pos]||pos)+'</div>' + row(pos,'ALL '+pos,rowFn(pos,pos),col,' sub');
+      SPOTS[pos].forEach(sp => opts += row(sp,sp,rowFn(pos,sp),col,' sub'));
+    } else opts += row(pos,pos,rowFn(pos,pos),col);
+  });
+  const g = cur==='ALL' ? null : (SPOT_GROUP[cur] || cur), r = g ? rowFn(g, cur) : null;
+  const col = g ? (POS_COL[g]||'#9AA5B1') : '#FFD447';
+  return '<div class="dd dd-left"><button class="dd-btn" style="--c:'+col+'" onclick="ddToggle(this)"><span class="dd-code">'+(g&&SPOTS[cur]&&SPOTS[cur].length>1?'ALL '+cur:cur)+'</span><span class="dd-txt">'+(g?r.txt:'All positions')+'</span>'+(r&&r.warn?'<span class="dd-warn">short</span>':'')+'<span class="dd-car">▾</span></button><div class="dd-pop">'+opts+'</div></div>';
+}
+/* anchored dropdown: toggle, pick, close on outside tap */
+function ddToggle(btn){ const dd = btn.closest('.dd'), was = dd.classList.contains('open'); document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); if(!was){ dd.classList.add('open'); const on = dd.querySelector('.dd-opt.on'); const pop = dd.querySelector('.dd-pop'); if(on && pop) pop.scrollTop = Math.max(0, on.offsetTop - pop.clientHeight/2); } }
+function ddPick(el){ const dd = el.closest('.dd'); if(dd) dd.classList.remove('open'); }
+document.addEventListener('click', e => { if(!e.target.closest || !e.target.closest('.dd')) document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); }, true);
+function rosterTeamT(){ return (rosterTeamIdx != null && G.teams[rosterTeamIdx]) ? G.teams[rosterTeamIdx] : meT(); }
+function setRosterTeam(v){ rosterTeamIdx = (+v === G.userTeam) ? null : +v; render(); }
 function rosterHTML(){
-  const me = meT();
-  let tabs = '<div class="filterbar" style="margin-bottom:12px">' +
-    '<button class="fbtn'+(rosterTab==='roster'?' on':'')+'" onclick="setRosterTab(\'roster\')">Roster</button>' +
-    '<button class="fbtn'+(rosterTab==='prog'?' on':'')+'" onclick="setRosterTab(\'prog\')">Progression</button></div>';
+  const me = rosterTeamT(), mine = me.idx === G.userTeam;
+  // anchored dropdowns: open right under their box, scroll inside, colored by position group
+  const posSel = posDDHTML(rFilter, 'setRFilter', (pos, sp) => {
+    const list = me.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1);
+    return { txt: list.length+' of '+min+' min'+(list.length?' · best '+Math.max(...list.map(p=>p.rating)):''), warn: list.length < min, n: list.length };
+  }, me.roster.length+' players');
+  let teamOpts = '';
+  CONF_NAMES.forEach((cn,ci) => { [0,1].forEach(dv => {
+    const ts = G.teams.filter(t=>t.conf===ci && t.div===dv).sort((a,b)=>a.city.localeCompare(b.city)); if(!ts.length) return;
+    teamOpts += '<div class="dd-grp" style="--c:#FFD447">'+cn+' '+DIV_NAMES[dv]+'</div>';
+    ts.forEach(t => teamOpts += '<button class="dd-opt'+(t.idx===me.idx?' on':'')+'" style="--c:'+t.c2+'" onclick="ddPick(this);setRosterTeam('+t.idx+')">'+teamLogo(t,22)+'<span class="dd-txt"><b>'+esc(t.city+' '+t.name)+'</b>'+(t.idx===G.userTeam?' <span class="sub">(you)</span>':'')+' <span class="sub">'+t.w+'-'+t.l+'</span></span></button>');
+  }); });
+  const teamSel = '<div class="dd dd-right"><button class="dd-btn" style="--c:'+me.c2+'" onclick="ddToggle(this)">'+teamLogo(me,24)+'<span class="dd-txt"><b>'+esc(me.city+' '+me.name)+'</b></span><span class="dd-car">▾</span></button><div class="dd-pop">'+teamOpts+'</div></div>';
+  let tabs = '<div class="ros-top"><div class="ros-left">' + posSel +
+    '<div class="filterbar ros-tabs"><button class="fbtn'+(rosterTab==='roster'?' on':'')+'" onclick="setRosterTab(\'roster\')">Roster</button>' +
+    '<button class="fbtn'+(rosterTab==='prog'?' on':'')+'" onclick="setRosterTab(\'prog\')">Progression</button></div></div>' +
+    '<div class="ros-right">'+teamSel+'</div></div>';
   if(rosterTab === 'prog') return tabs + progressionTabHTML();
   const dc = dressedCount(me);
   const limit = rosterLimit();
   const label = limit === LIMIT_OFF ? (limit+'-Man Camp Roster') : (limit+'-Man Roster');
-  let s = '<div class="panel" style="margin-bottom:12px">'+capBarHTML(me)+
+  let s = '<div class="panel" style="margin-bottom:12px">'+(mine?'':'<div class="hd disp" style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+teamLogo(me,26)+esc(me.city+' '+me.name)+' <span class="sub" style="font-family:inherit">'+me.w+'-'+me.l+(me.t?'-'+me.t:'')+' · '+teamOverall(me)+' OVR</span></div>')+capBarHTML(me)+
     '<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">' +
     '<span class="countpill'+(activeCount(me)>limit?' over':'')+'">Roster <b>'+activeCount(me)+'</b> / '+limit+'</span>' +
     (me.roster.some(p=>p.ir) ? '<span class="countpill">IR <b>'+me.roster.filter(p=>p.ir).length+'</b></span>' : '') +
     (G.phase==='hub' ? '<span class="countpill'+(dc>LIMIT_DRESS?' over':'')+'">Dressed <b>'+dc+'</b> / '+LIMIT_DRESS+'</span>' : '') +
-    (G.phase==='hub' ? '<button class="btn" onclick="autoDress(meT(),false);save();render()">Auto-dress best 46</button>' : '') +
+    (G.phase==='hub' && mine ? '<button class="btn" onclick="autoDress(meT(),false);save();render()">Auto-dress best 46</button>' : '') +
+    '<span class="countpill">Avg age <b>'+(me.roster.length? (me.roster.reduce((a,p)=>a+p.age,0)/me.roster.length).toFixed(1) : '—')+'</b></span>' +
     '</div>' +
-    '<p class="sub" style="margin-top:8px">Train: 2 pts = +1 OVR (max +5/season).'+(G.phase==='hub' ? ' Dress/Sit toggles who suits up Sunday — extras above 46 are healthy scratches.' : '')+' Need a body? Open Players above.</p></div>';
+    (mine ? '<p class="sub" style="margin-top:8px">Train: 2 pts = +1 OVR (max +5/season).'+(G.phase==='hub' ? ' Dress/Sit toggles who suits up Sunday. Extras above 46 are healthy scratches.' : '')+' Need a body? Open Players above.</p>' : '<p class="sub" style="margin-top:8px">Viewing another team. Tap a name for the player card. Trades live in Front Office.</p>')+'</div>';
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+label+'</div>' +
     rosterTable(me, p => {
+      if(!mine) return '';
       if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">—</span>';
       let a = trainBtnHTML(p);
       a += '<button class="btn tiny" onclick="openModal(\'extend\','+p.id+')">Extend</button> ';
@@ -12096,9 +12438,9 @@ function rosterHTML(){
       if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR — frees his roster spot">IR</button> ';
       a += '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>';
       return a;
-    }) +
+    }, true) +
     '<div style="margin-top:10px" class="sub">Unit ratings (healthy starters) — Pass O <b>'+Math.round(offPass(me))+'</b> · Run O <b>'+Math.round(offRush(me))+'</b> · Pass D <b>'+Math.round(defPass(me))+'</b> · Run D <b>'+Math.round(defRush(me))+'</b> · K <b>'+Math.round(kRating(me))+'</b></div></div>';
-  if(activeCount(me) < limit && !rosterFrozen()){
+  if(mine && activeCount(me) < limit && !rosterFrozen()){
     s += '<div class="panel"><p class="sub">Roster spot open — hit <b>Players</b> above to sign a free agent off the wire.</p></div>';
   }
   return tabs + s;
@@ -12652,44 +12994,50 @@ function pricingHTML(){
     '<span class="sub">'+(pr.bundles?'+8% ticket/parking/concessions revenue, small ongoing fan drag':'Off — turn on for a revenue bump at the cost of some fan goodwill')+'</span></div></div>';
   return s;
 }
+function staffLabel(role, pos){ return role === 'POS' ? POS_LABEL[pos]+' Coach' : ({OC:'Offensive Coordinator', DC:'Defensive Coordinator', STC:'Special Teams Coordinator', PS:'Pro Scout', CS:'College Scout', SNC:'Strength & Conditioning'}[role] || COACH_ROLE_LABEL[role] || role); }
+function staffBoost(role, pos){
+  const c = currentCoach(role, pos); if(!c) return null;
+  if(role==='OC') return ocBoost() ? (ocBoost()>0?'+':'')+ocBoost().toFixed(1)+' Pass O / Run O' : null;
+  if(role==='DC') return dcBoost() ? (dcBoost()>0?'+':'')+dcBoost().toFixed(1)+' Pass D / Run D' : null;
+  if(role==='STC') return stcBoost() ? (stcBoost()>0?'+':'')+stcBoost().toFixed(1)+' Kicking' : null;
+  if(role==='PS'||role==='CS') return weeklyScoutPoints(role)+' pts/wk';
+  if(role==='SNC') return 'Injuries ~'+Math.round((1-sncDurationMult())*100)+'% shorter';
+  return c.rating>=88 ? 'Elite · 1pt training, 2x gain' : c.rating>=78 ? 'Good · 1pt training' : 'Standard training';
+}
+/* Staff page: three columns (coordinators + scouting & medical · position coaches · budget + poach) */
+function staffRowHTML(role, pos, ab, col){
+  const c = currentCoach(role, pos), arg = "{role:'"+role+"',pos:"+(pos?"'"+pos+"'":'null')+"}";
+  if(!c) return '<div class="stf-row vac" style="--c:'+col+'"><span class="ab">'+ab+'</span><span class="nm">Vacant</span><button class="btn tiny primary" onclick="openModal(\'hireCoach\','+arg+')">Hire</button></div>';
+  const bst = staffBoost(role, pos), rv = c.rel ?? 50;
+  return '<div class="stf-row" style="--c:'+col+'" onclick="openModal(\'coachInfo\','+arg+')" title="Tap for details"><span class="ab">'+ab+'</span><span class="nm">'+esc(c.name)+' <small>'+(bst?bst+' · ':'')+money(c.salary)+'</small></span>' +
+    '<span class="rl" style="background:'+(rv>=65?'var(--green)':rv>=40?'var(--gold)':'var(--red)')+'" title="Relationship '+Math.round(rv)+'"></span><span class="ov">'+c.rating+'</span></div>';
+}
 function staffHTML(){
   ensureCoachPoolDepth();
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Coaching Staff</div>' +
-    '<p class="sub" style="margin-bottom:8px">Coordinators boost your unit ratings on Sundays. Position coaches speed up training and nudge development at their group every offseason. Staff has its own budget, separate from the player cap.</p>' +
-    staffBarHTML();
-  const askedThisYear = G.budgetAskYear === G.year;
-  s += '<div style="margin-top:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
-    '<button class="btn tiny" '+(askedThisYear?'disabled':'')+' onclick="doAskOwner()">💰 Ask Owner for More Budget</button>' +
-    '<span class="sub">'+(askedThisYear ? 'Already asked this year — try again next season.' : 'Once a year · pulled from cash reserves ('+money(G.cash||0)+' on hand) · odds depend on owner confidence ('+G.confidence+'/100)')+'</span></div></div>';
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="margin-bottom:6px">Coordinators</div>';
-  s += coachCardHTML('OC', null, 'Offensive Coordinator', ocBoost() ? (ocBoost()>0?'+':'')+ocBoost().toFixed(1)+' Pass O / Run O' : null);
-  s += coachCardHTML('DC', null, 'Defensive Coordinator', dcBoost() ? (dcBoost()>0?'+':'')+dcBoost().toFixed(1)+' Pass D / Run D' : null);
-  s += coachCardHTML('STC', null, 'Special Teams Coordinator', stcBoost() ? (stcBoost()>0?'+':'')+stcBoost().toFixed(1)+' Kicking' : null);
-  s += '</div>';
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="margin-bottom:6px">Scouting Department</div>' +
-    '<p class="sub" style="margin-bottom:8px">Pro Scouts narrow the OVR range on opponent rosters and free agents. College Scouts do the same for draft prospects. Better facility tier speeds up points for both.</p>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:8px">' +
-    '<div><div class="sub">Pro Scouting Points</div><div style="font-size:18px;font-weight:700;color:var(--gold)">'+((G.scoutPoints&&G.scoutPoints.pro)||0)+'</div></div>' +
-    '<div><div class="sub">College Scouting Points</div><div style="font-size:18px;font-weight:700;color:var(--gold)">'+((G.scoutPoints&&G.scoutPoints.college)||0)+'</div></div>' +
-    '</div>';
-  s += coachCardHTML('PS', null, 'Pro Scout', currentCoach('PS') ? weeklyScoutPoints('PS')+' pts/wk' : null);
-  s += coachCardHTML('CS', null, 'College Scout', currentCoach('CS') ? weeklyScoutPoints('CS')+' pts/wk' : null);
-  s += '</div>';
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="margin-bottom:6px">Medical & Conditioning</div>' +
-    '<p class="sub" style="margin-bottom:8px">A strong Strength & Conditioning coach gets injured players back on the field faster and cuts down on setbacks/re-injuries.</p>';
-  const sncC = currentCoach('SNC');
-  const sncNote = sncC ? 'Injuries ~'+Math.round((1-sncDurationMult())*100)+'% shorter, setbacks ~'+Math.round((1-sncSetbackMult())*100)+'% less likely' : null;
-  s += coachCardHTML('SNC', null, 'Strength & Conditioning', sncNote);
-  s += '</div>';
-  s += '<div class="panel"><div class="hd disp" style="margin-bottom:6px">Position Coaches</div>';
-  COACH_POS.forEach(pos => {
-    const c = currentCoach('POS', pos);
-    const boost = c ? (c.rating>=88 ? 'Elite — 1pt training, 2x gain' : (c.rating>=78 ? 'Good — 1pt training' : 'Standard training cost')) : null;
-    s += coachCardHTML('POS', pos, POS_LABEL[pos]+' Coach', boost);
-  });
-  s += '</div>';
-  s += poachPanelHTML();
-  return s;
+  const CO = '#E2A24A', SU = '#56CCF2', PO = '#9B6BE8';
+  const pr = staffPayroll(), tot = staffCapTotal(), room = staffCapRoom(), asked = G.budgetAskYear === G.year;
+  let c1 = '<div class="stf-card"><div class="stf-h">Coordinators<em>unit boosts</em></div>' +
+    staffRowHTML('OC',null,'OC',CO) + staffRowHTML('DC',null,'DC',CO) + staffRowHTML('STC',null,'STC',CO) +
+    '<div class="stf-h" style="margin-top:5px">Scouting &amp; Medical<em></em></div>' +
+    '<div class="stf-pts"><div><b>'+((G.scoutPoints&&G.scoutPoints.pro)||0)+'</b><span>Pro pts</span></div><div><b>'+((G.scoutPoints&&G.scoutPoints.college)||0)+'</b><span>College pts</span></div></div>' +
+    staffRowHTML('PS',null,'PRO',SU) + staffRowHTML('CS',null,'COL',SU) + staffRowHTML('SNC',null,'S&amp;C',SU) + '</div>';
+  let c2 = '<div class="stf-card"><div class="stf-h">Position Coaches<em>training speed</em></div>';
+  COACH_POS.forEach(pos => c2 += staffRowHTML('POS', pos, pos, PO));
+  c2 += '</div>';
+  let c3 = '<div class="stf-card"><div class="stf-h">Staff Budget<em>room <b style="color:'+(room>2?'var(--green)':'var(--red)')+'">'+money(room)+'</b></em></div>' +
+    '<div class="stf-bar"><i style="width:'+clamp(pr/tot*100,0,100)+'%;background:'+(pr/tot>.92?'var(--red)':'var(--gold)')+'"></i></div>' +
+    '<div class="stf-budrow"><span>'+money(pr)+' of '+money(tot)+'</span><button class="btn tiny" '+(asked?'disabled':'')+' title="'+(asked?'Already asked this year':'Once a year · from cash ('+money(G.cash||0)+') · odds follow owner confidence ('+G.confidence+')')+'" onclick="doAskOwner()">💰 '+(asked?'Asked':'Ask Owner')+'</button></div>';
+  if(G.mode === 'coachgm' && !G.unemployed){
+    ensureLeagueStaffs();
+    const open = POACH_PHASES.includes(G.phase), rows = [];
+    G.teams.forEach(t => { if(t.idx === G.userTeam || !t.staff) return; COORD_ROLES.forEach(r => { const c = t.staff[r]; if(c) rows.push({t, r, c}); }); });
+    rows.sort((a,b) => b.c.rating - a.c.rating);
+    c3 += '<div class="stf-h" style="margin-top:5px">Poach Targets<em>'+(open?'+20% raise':'<span style="color:var(--red)">window closed</span>')+'</em></div>';
+    rows.slice(0,5).forEach(x => { c3 += '<div class="stf-row" style="--c:'+CO+'" onclick="openModal(\'poachAll\')"><span class="ab">'+x.r+'</span><span class="nm">'+esc(x.c.name)+' <small>'+x.t.abbr+' · '+money(Math.round(x.c.salary*1.2*10)/10)+' · '+chanceLabel(poachChance(x.t, x.c))+'</small></span><span class="ov">'+x.c.rating+'</span></div>'; });
+    c3 += '<button class="btn tiny" style="align-self:flex-start;margin-top:auto" onclick="openModal(\'poachAll\')">See all '+Math.min(15, rows.length)+' →</button>';
+  } else c3 += '<p class="sub" style="margin-top:6px">Coordinators boost Sunday unit ratings. Position coaches speed up training. Staff budget is separate from the player cap.</p>';
+  c3 += '</div>';
+  return '<div class="stf">'+c1+c2+c3+'</div>';
 }
 function ensureCoachPoolDepth(){
   if(!G.coachPool) G.coachPool = [];
@@ -13697,27 +14045,58 @@ function careerHTML(){
   let s = '<div class="filterbar" style="margin-bottom:12px">' +
     '<button class="fbtn'+(frontTab==='summary'?' on':'')+'" onclick="setFrontTab(\'summary\')">Summary</button>' +
     (G.mode!=='player'&&!G.unemployed?'<button class="fbtn'+(frontTab==='duties'?' on':'')+'" onclick="setFrontTab(\'duties\')">Assignments</button><button class="fbtn'+(frontTab==='demands'?' on':'')+'" onclick="setFrontTab(\'demands\')">Demands'+(meT().roster.some(p=>p.demand)?' <span class="tag l">'+meT().roster.filter(p=>p.demand).length+'</span>':'')+'</button>':'') +
-    '<button class="fbtn'+(frontTab==='finances'?' on':'')+'" onclick="setFrontTab(\'finances\')">Finances</button>'+(!G.unemployed?'<button class="fbtn'+(frontTab==='stadium'?' on':'')+'" onclick="setFrontTab(\'stadium\')">Stadium</button>':'')+'</div>';
+    '<button class="fbtn'+(frontTab==='finances'?' on':'')+'" onclick="setFrontTab(\'finances\')">Finances</button>'+(!G.unemployed?'<button class="fbtn'+(frontTab==='stadium'?' on':'')+'" onclick="setFrontTab(\'stadium\')">Stadium</button>':'') +
+    '<div class="fod-tools"><button class="btn tiny" onclick="save();uiAlert(\'Career saved.\')" title="Save now">💾 Save</button><button class="btn tiny" onclick="exportSave()" title="Export save file">⬇ Export</button><button class="btn tiny" onclick="triggerImport()" title="Import save file">⬆ Import</button><button class="btn tiny" onclick="quitToMenu()" title="Quit to menu">🚪 Quit</button>' +
+    '<div class="dd dd-right"><button class="btn tiny fod-more" onclick="ddToggle(this)" title="More">⋯</button><div class="dd-pop" style="min-width:190px"><button class="dd-opt" style="--c:var(--red);color:var(--red)" onclick="ddPick(this);uiAsk(\'Abandon this career and start over?\',function(){store.clear();G=null;render();})">'+(G.mode==='coachgm'?'Abandon Career':'Resign / New Career')+'</button></div></div></div></div>';
   if(frontTab === 'finances') return s + financesSummaryHTML();
   if(frontTab === 'stadium' && !G.unemployed) return s + stadiumTabHTML();
   if(frontTab === 'duties' && G.mode!=='player' && !G.unemployed) return s + dutiesBoardHTML();
   if(frontTab === 'demands' && G.mode!=='player' && !G.unemployed) return s + demandsHTML();
-  return s + '<div class="panel"><div class="hd disp">Front Office</div>' +
-    '<p class="sub" style="margin-bottom:6px">'+confDesc+'</p>' +
-    '<div class="conf-meter"><i style="width:'+G.confidence+'%;background:'+confColor()+'"></i></div>' +
-    '<p class="sub" style="margin-top:4px">'+confDetail+'</p>' +
-    '<div style="margin-top:14px">'+capBarHTML(me)+'</div>' +
-    '<table class="tbl" style="margin-top:14px"><tr><th>Career Record</th><th>Seasons</th><th>Playoff Berths</th><th>NGL Titles</th></tr>' +
-    '<tr><td>'+c.w+'–'+c.l+'</td><td>'+(c.seasons + 1)+'</td><td>'+c.berths+'</td><td style="color:var(--gold);font-weight:700">'+c.titles+'</td></tr></table>' +
-    '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">' +
-    '<button class="btn" onclick="save();alert(\'Career saved.\')">💾 Save Now</button>' +
-    '<button class="btn" onclick="exportSave()">⬇️ Export Save</button>' +
-    '<button class="btn" onclick="triggerImport()">⬆️ Import Save</button>' +
-    '<button class="btn" onclick="quitToMenu()">🚪 Quit to Menu</button>' +
-    '<button class="btn danger" style="margin-left:auto" onclick="uiAsk(\'Abandon this career and start over?\',function(){store.clear();G=null;render();})">'+(G.mode==='coachgm'?'Abandon Career':'Resign / New Career')+'</button></div>' +
-    (G.mode==='coachgm' ? '<div style="margin-top:14px"><div class="sub" style="margin-bottom:4px">Coaching Résumé · Reputation <b style="color:var(--gold)">'+coachRep()+'</b> ('+repLabel(coachRep())+') · Contract '+(ensureStints(),G.coachYears)+' yr'+(G.coachYears===1?'':'s')+' left'+(G.phase==='offseason'?' · <button class="btn tiny" onclick="openJobMarket(\'explore\')">📞 Explore Job Market</button>':'')+'</div>'+resumeHTML()+'</div>' : '') +
-    '<p class="sub" style="margin-top:8px">Progress auto-saves in this browser. Export a save file to back it up or move it to another device/browser.</p></div>' +
-    facilitiesHTML() + fanRelationsHTML() + stadiumSummaryCardHTML();
+  return s + foDashHTML(confDesc, confDetail);
+}
+/* Front Office summary: one-screen dashboard (job security · facilities & fans · stadium & résumé) */
+function foDashHTML(confDesc, confDetail){
+  const c = G.career, me = meT(), owner = G.mode === 'owner', player = G.mode === 'player';
+  const pr = payroll(me), cap = capNow(), room = capRoom(me), dead = deadCapFor(me);
+  // column 1: job security
+  let c1 = '<div class="fod-card"><div class="fod-h">'+(player?'Standing':'Job Security')+(G.mode==='coachgm'?'<em>Contract '+(ensureStints(),G.coachYears)+' yr'+(G.coachYears===1?'':'s')+'</em>':'')+'</div>' +
+    '<div class="fod-conf"><div class="fod-big">'+G.confidence+'<small>/100</small></div><div class="sub">'+(player?confDesc.replace(/^Owner confidence — /,'Owner confidence. '):'Owner confidence. Zero at season\'s end and you\'re out.')+'</div></div>' +
+    '<div class="fod-bar"><i style="width:'+G.confidence+'%;background:'+confColor()+'"></i></div>' +
+    '<div class="sub">'+confDetail.replace(/^\d+\/100 · /,'')+'</div>' +
+    '<div class="fod-h" style="margin-top:4px">Cap<em>room <b style="color:'+(room>10?'var(--green)':'var(--red)')+'">'+money(room)+'</b></em></div>' +
+    '<div class="fod-bar"><i style="width:'+clamp(pr/cap*100,0,100)+'%;background:'+(pr/cap>.92?'var(--red)':'var(--gold)')+'"></i></div>' +
+    '<div class="sub">Payroll '+money(pr)+' of '+money(cap)+(dead>0?' · dead <b style="color:var(--red)">'+money(dead)+'</b>':'')+'</div>' +
+    '<div class="fod-tiles"><div><b>'+c.w+'–'+c.l+'</b><span>Record</span></div><div><b>'+(c.seasons+1)+'</b><span>Seasons</span></div><div><b>'+c.berths+'</b><span>Playoffs</span></div><div><b style="color:var(--gold)">'+c.titles+'</b><span>Titles</span></div></div></div>';
+  // column 2: facilities + fan relations
+  const market = me.market || 3;
+  const labels = {practice:'Practice Facility', scouting:'Scouting Dept', concourse:'Concourse'};
+  const effects = { practice: t => '×'+t.mult.toFixed(2)+' training pts', scouting: t => (t.spreadMult<1 ? Math.round((1-t.spreadMult)*100)+'% tighter reports' : 'baseline reports'), concourse: t => t.fanBoost>0 ? '+'+t.fanBoost+' fans/season' : 'no ongoing boost' };
+  let c2 = '<div class="fod-card"><div class="fod-h">Facilities<em>Cash '+money(G.cash||0)+'</em></div>';
+  (owner?['scouting']:['practice','scouting','concourse']).forEach(key => {
+    const level = facilityLevel(key), tiers = FACILITY_TIERS[key], tier = tiers[level];
+    const pips = tiers.map((_,i)=>'<i'+(i<=level?' class="on"':'')+'></i>').join('');
+    let btn = '<span class="sub">Max tier</span>';
+    if(level+1 < tiers.length){ const nt = tiers[level+1], cost = facilityCost(key, level+1, market), ok = (G.cash||0) >= cost;
+      btn = '<button class="btn tiny primary fod-act" '+(ok?'':'disabled')+' title="Upgrade to '+esc(nt.name)+'" onclick="upgradeFacility(\''+key+'\')">Upgrade · '+money(cost)+'</button>'; }
+    c2 += '<div class="fod-row"><div><div class="n">'+labels[key]+'<span class="fod-pips">'+pips+'</span></div><div class="d">'+esc(tier.name.replace(/ Facility| Scouting| Concourse/,''))+' · '+effects[key](tier)+'</div></div>'+btn+'</div>';
+  });
+  const oc = Math.round(market * 1.5 * 10) / 10, used = G.outreachYear === G.year, okO = (G.cash||0) >= oc;
+  c2 += '<div class="fod-h" style="margin-top:4px">Fan Relations<em>Approval '+Math.round(G.fanApproval==null?50:G.fanApproval)+'</em></div>' +
+    '<div class="fod-row"><div><div class="n">Community Outreach</div><div class="d">+4 fans once · '+money(oc)+'</div></div><button class="btn tiny fod-act" '+(okO&&!used?'':'disabled')+' onclick="doOutreachEvent()">'+(used?'Done this year':'Host')+'</button></div>' +
+    '<div class="fod-row"><div><div class="n">Loyalty Program</div><div class="d">+1 fans/season · small cost</div></div><button class="btn tiny fod-act'+(G.loyaltyProgram?' primary':'')+'" onclick="toggleLoyaltyProgram()">'+(G.loyaltyProgram?'✓ Active':'Launch')+'</button></div></div>';
+  // column 3: stadium + résumé
+  const ti = G.userTeam, st = stadiumOf(ti), g = owner ? (G.stadiumLevel||0) : stadiumGradeIdx(partsOf(ti));
+  let c3 = '<div class="fod-card"><div class="fod-h">Stadium<em>Grade '+esc(STADIUM_TIERS[g].name)+'</em></div>' +
+    '<div class="fod-stad"><div class="fod-thumb" style="--c1:'+me.c1+'"></div><div style="min-width:0"><div class="n">'+esc(stadiumName(ti))+'</div><div class="sub">'+st.cap+'k · '+stadiumTypeLabel(st.type)+((G.stadiumBuild||[]).length?' · 🚧 '+G.stadiumBuild.length:'')+'</div>' +
+    '<button class="btn tiny" style="margin-top:4px" onclick="setFrontTab(\'stadium\')">'+(owner?'Stadium Builder':'View in 3D')+'</button></div></div>';
+  if(G.mode==='coachgm'){
+    ensureStints();
+    c3 += '<div class="fod-h" style="margin-top:4px">Résumé<em>Rep <b style="color:var(--gold)">'+coachRep()+'</b> '+repLabel(coachRep())+'</em></div><div class="fod-res">';
+    G.stints.map(x => stintLine(x)).slice(-3).reverse().forEach(L => { c3 += '<div class="fod-row"><div style="min-width:0"><div class="n" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(L.name)+'</div><div class="d">'+L.fromYear+'–'+(L.toYear||'now')+' · '+({current:'current',fired:'fired',resigned:'left',retired:'retired','not renewed':'not renewed'}[L.exit]||L.exit)+'</div></div><div class="d" style="text-align:right;white-space:nowrap">'+L.w+'–'+L.l+' · '+L.berths+' PO · '+L.titles+' 🏆</div></div>'; });
+    c3 += '</div>' + (G.phase==='offseason' ? '<button class="btn tiny" style="align-self:flex-start" onclick="openJobMarket(\'explore\')">📞 Job Market</button>' : '');
+  }
+  c3 += '<div class="sub" style="margin-top:auto">Auto-saves in this browser. Export to back up or move devices.</div></div>';
+  return '<div class="fod">'+c1+c2+c3+'</div>';
 }
 function setFrontTab(t){ frontTab = t; save(); render(); }
 function financeChartSVG(values, color, W, H){
@@ -13769,10 +14148,11 @@ function financesSummaryHTML(){
 function playWeek(){ startGame({game: userGame()}); }
 function simWeek(){
   const g = userGame();
+  pgSnap();
   finishWeek(quickSim(g.a, g.b, g, weekDate(G.year, G.week)));
   if(G.phase !== 'playoffs') G.phase = 'hub';
   save();
-  if(G.mode !== 'owner') openModal('gamereport');
+  if(G.mode !== 'owner') openPostgame();
 }
 
 /* ---------- game day ---------- */
@@ -13819,7 +14199,7 @@ function gameHTML(){
     '<div class="situation" id="situation"></div></div>' +
     '<div class="gd-main"><div class="gd-field">' +
     '<div id="fieldwrap">'+fieldSVG()+'<div id="wxfx" class="wxfx '+wxOverlayClass()+'"></div><div id="playbanner"></div></div>' + gameConditionsHTML() + '</div>' +
-    '<div class="gd-side">' + recMeterHTML() +
+    '<div class="gd-side">' +
     '<div class="callsheet"><div class="cs-hd"><span id="cs-title">Call Sheet</span><span id="cs-side"></span><button class="cs-lu" onclick="gdDepthOpen()">🔄 Lineup</button></div><div class="playgrid" id="playgrid"></div></div>' +
     '<div class="gamectl">' +
     '<button class="btn" onclick="simDrive()">▶︎ Sim Drive</button>' +
@@ -14471,16 +14851,18 @@ function afterGame(){
   const my = meHome ? GM.hs : GM.as, op = meHome ? GM.as : GM.hs;
   const liveBox = GM.liveBox;
   GM = null; LINEUP = 'full';
-  if(wasPre){ afterPreseasonGame(my > op, my, op); return; }
+  pgSnap();
+  if(wasPre){ afterPreseasonGame(my > op, my, op, liveBox); if(G.mode !== 'owner') openPostgame(); return; }
   if(wasPlayoff){
     G.phase = 'playoffs';
     recordPlayoffUserResult(res, liveBox);
+    if(G.lastGameReport) G.lastGameReport.playoff = true;
   } else {
     finishWeek(res, liveBox);
     if(G.phase !== 'playoffs') G.phase = 'hub';
   }
   save();
-  openModal('gamereport');
+  openPostgame();
 }
 
 /* ---------- playoffs ---------- */
@@ -14526,9 +14908,11 @@ function playoffsHTML(){
 function playPlayoffGame(){ startGame({game: playoffUserGame(), playoff:true}); }
 function simPlayoffUser(){
   const g = playoffUserGame();
+  pgSnap();
   recordPlayoffUserResult(quickSim(g.a, g.b, g, currentDate()));
+  if(G.lastGameReport) G.lastGameReport.playoff = true;
   save();
-  if(G.mode !== 'owner') openModal('gamereport');
+  if(G.mode !== 'owner') openPostgame();
 }
 
 /* ---------- offseason summary (re-sign window) ---------- */
