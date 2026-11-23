@@ -866,8 +866,9 @@ th.sorth.on{color:var(--gold)}
 <script>
 /* phones held upright: size the rotated stage to the real visible screen (Safari's 100vh includes hidden toolbars), and block pinch zoom */
 (function(){
-  function fitRot(){ var vv=window.visualViewport, w=Math.round(vv?vv.width*vv.scale:innerWidth), h=Math.round(vv?vv.height*vv.scale:innerHeight);
-    w=Math.min(w,innerWidth)||innerWidth; h=Math.min(h,innerHeight)||innerHeight;
+  /* measure the real screen in CSS px with a fixed probe: works with Safari's aA page zoom, where vh/vw and visualViewport disagree */
+  var probe=document.createElement('div'); probe.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;visibility:hidden;pointer-events:none;z-index:-1';
+  function fitRot(){ if(!probe.parentNode) document.body.appendChild(probe); var r0=probe.getBoundingClientRect(), w=Math.round(r0.width)||innerWidth, h=Math.round(r0.height)||innerHeight;
     var r=document.documentElement.style; r.setProperty('--rw',h+'px'); r.setProperty('--rh',w+'px'); }
   fitRot(); addEventListener('resize',fitRot); addEventListener('orientationchange',function(){ setTimeout(fitRot,250); });
   if(window.visualViewport) visualViewport.addEventListener('resize',fitRot);
@@ -4736,26 +4737,67 @@ function rivalChip(a, b){ const h = rivalHeat(a, b), tr = rivalTier(h); return t
 function rivalryFanSwing(won, opp){ const h = rivalHeat(G.userTeam, opp); if(h >= 25 && G.mode !== 'player') bumpFan(won ? (h>=45?4:2) : (h>=45?-4:-2)); }
 
 /* ---------- press conferences ---------- */
+// G.results holds one array of games per week
+function userResults(){ const out = []; (G.results||[]).forEach(wk => { if(Array.isArray(wk)) wk.forEach(x => { if(x && x.as != null && (x.a === G.userTeam || x.b === G.userTeam)) out.push(x); }); else if(wk && wk.as != null && (wk.a === G.userTeam || wk.b === G.userTeam)) out.push(wk); }); return out; }
 function lastUserResult(){
-  const r = (G.results||[]).filter(x => x.a === G.userTeam || x.b === G.userTeam).slice(-1)[0];
+  const r = userResults().slice(-1)[0];
   if(!r) return null;
   const me = r.a === G.userTeam, my = me ? r.as : r.bs, op = me ? r.bs : r.as;
   return { opp: me ? r.b : r.a, my, op, won: my > op };
+}
+function statLineText(p, l){
+  const n = (v, w) => v+' '+(v===1?w:(w==='catch'?'catches':w+'s')), out = [];
+  if(l.att){ out.push(l.cmp+' of '+l.att+' for '+(l.py||0)+' yards'); if(l.ptd) out.push(n(l.ptd,'TD')); }
+  if(l.car && p.pos !== 'QB') out.push((l.ry||0)+' rushing yards'); if(l.car && p.pos === 'QB' && l.ry >= 30) out.push(l.ry+' yards on the ground');
+  if(l.rtd) out.push(n(l.rtd,'rushing TD'));
+  if(l.rec){ out.push(n(l.rec,'catch')+(l.rec===1?'':'')+' for '+(l.cy||0)+' yards'); if(l.ctd) out.push(n(l.ctd,'TD')); }
+  if(l.tk && !l.att && !l.rec && !l.car) out.push(n(l.tk,'tackle'));
+  if(l.sk) out.push(n(l.sk,'sack')); if(l.int) out.push(n(l.int,'interception'));
+  if(l.fga) out.push((l.fgm||0)+' of '+l.fga+' on field goals');
+  if((l.krtd||0)+(l.prtd||0)) out.push('a return touchdown');
+  const s = out.slice(0,3), txt = s.length > 1 ? s.slice(0,-1).join(', ')+' and '+s[s.length-1] : (s[0]||'a big game');
+  return (l.att ? 'went ' : 'had ')+txt;
+}
+function roughGame(p, l){
+  if(p.pos === 'QB') return (l.pint||0) >= 2 || ((l.att||0) >= 15 && (l.cmp||0)/(l.att||1) < .5) || ((l.att||0) >= 20 && (l.py||0) < 150);
+  if(p.pos === 'WR' || p.pos === 'TE') return (l.drp||0) >= 2 || ((l.tgt||0) >= 5 && (l.cy||0) < 30);
+  if(p.pos === 'RB') return (l.car||0) >= 10 && (l.ry||0)/(l.car||1) < 3;
+  if(p.pos === 'K') return (l.fga||0) - (l.fgm||0) >= 2;
+  return false;
+}
+function roughText(p, l){
+  if(p.pos === 'QB'){ if((l.pint||0) >= 2) return 'threw '+l.pint+' interceptions'; return 'went '+(l.cmp||0)+' of '+(l.att||0)+' for '+(l.py||0)+' yards'; }
+  if(p.pos === 'WR' || p.pos === 'TE'){ if((l.drp||0) >= 2) return 'dropped '+l.drp+' passes'; return 'had '+(l.cy||0)+' yards on '+(l.tgt||0)+' targets'; }
+  if(p.pos === 'RB') return 'managed '+(l.ry||0)+' yards on '+l.car+' carries';
+  if(p.pos === 'K') return 'missed '+((l.fga||0)-(l.fgm||0))+' field goals';
+  return 'had a rough day';
 }
 function pressQuestion(){
   const me = meT(), g = userGame(), nextOpp = g ? (g.a === G.userTeam ? g.b : g.a) : null;
   const last = lastUserResult();
   const holdout = me.roster.find(p => p.holdout);
-  const star = me.roster.filter(p => !p.ir).sort((a,b) => b.rating - a.rating)[0];
+  const H = G.pressHist || [], recentK = k => H.slice(-3).filter(h => h.k === k).length, recentP = id => H.slice(-6).some(h => h.pid === id);
+  const pool = me.roster.filter(p => !p.ir && !(p.injWeeks > 0)).sort((a,b) => b.rating - a.rating);
+  // last game's stat lines for our players: stand-outs, and good players who had a rough day
+  const lastR = userResults().slice(-1)[0], rep0 = lastR && lastR.report && lastR.report.teams && lastR.report.teams[G.userTeam];
+  const lines = rep0 ? rep0.lines.map(l => ({l, f:findPlayer(l.id)})).filter(x => x.f && x.f.t && x.f.t.idx === G.userTeam).map(x => ({l:x.l, p:x.f.p})) : [];
+  const standout = lines.filter(x => lineScore(x.l) >= 12 && !recentP(x.p.id)).sort((a,b) => lineScore(b.l)-lineScore(a.l)).slice(0,3)[Math.floor(Math.random()*2)] || null;
+  const rough = lines.filter(x => x.p.rating >= 75 && !recentP(x.p.id) && roughGame(x.p, x.l)).sort((a,b) => b.p.rating-a.p.rating)[0] || null;
   const qb = depthAt(me, 'QB')[0];
+  const hurt = me.roster.filter(p => p.injWeeks > 1 && p.rating >= 70 && !recentP(p.id)).sort((a,b)=>b.rating-a.rating)[0];
+  let streak = 0; { const rs = userResults(); for(let i = rs.length-1; i >= 0; i--){ const r = rs[i], w = (r.a===G.userTeam ? r.as>r.bs : r.bs>r.as); if(i === rs.length-1) streak = w ? 1 : -1; else if((streak>0) === w) streak += w ? 1 : -1; else break; } }
   const opts = [];
+  if(streak >= 3) opts.push({k:'streak', w:3, n:streak});
+  if(hurt) opts.push({k:'injury', w:3, pid:hurt.id});
+  if(standout) opts.push({k:'standout', w:5, pid:standout.p.id, line:statLineText(standout.p, standout.l), young: standout.p.age <= 23});
+  if(rough) opts.push({k:'rough', w:5, pid:rough.p.id, line:roughText(rough.p, rough.l)});
   if(nextOpp != null && rivalHeat(G.userTeam, nextOpp) >= 25) opts.push({k:'rival', w:5, opp:nextOpp});
   if(holdout) opts.push({k:'holdout', w:4, pid:holdout.id});
   if(last && !last.won) opts.push({k:'loss', w:4, opp:last.opp, margin:last.op-last.my});
   if(last && last.won) opts.push({k:'win', w:3, opp:last.opp});
   if(qb && last && !last.won && me.l >= me.w + 2) opts.push({k:'qb', w:3, pid:qb.id});
-  if(star) opts.push({k:'star', w:1, pid:star.id});
   if(!opts.length) return null;
+  opts.forEach(o => { const r = recentK(o.k); if(r) o.w *= (o.k === 'holdout' ? .15 : .04) / r; if(o.pid && recentP(o.pid)) o.w *= .1; });
   let tot = opts.reduce((s,o)=>s+o.w,0), x = Math.random()*tot;
   for(const o of opts){ x -= o.w; if(x <= 0) return o; }
   return opts[0];
@@ -4768,7 +4810,7 @@ const PRESS = {
   win:{ q:o => 'Big win over '+G.teams[o.opp].city+'. Is this a contender?', a:[
     ['One week at a time.', 'Safe. Nothing changes.'],
     ['We are the best team in this league. Period.', 'Team fired up and fans buzzing. A loss next week will sting.'],
-    ['Credit to our star. He carried us.', 'Your star loves it. Others notice.']]},
+    ['Credit to our best player today. He carried us.', 'Game\'s top performer loves it. Others notice.']]},
   rival:{ q:o => G.teams[o.opp].city+' this week. Thoughts on the rivalry?', a:[
     ['Lot of respect for them. Just another game.', 'Cools the rivalry a little.'],
     ['We owe them one. Circle the date.', 'Team motivated. Rivalry heats up.'],
@@ -4781,6 +4823,26 @@ const PRESS = {
     ['Absolutely. He is our guy.', 'QB confidence up. Fans grumble.'],
     ['Everybody is being evaluated.', 'QB stung. Backup perks up.'],
     ['We will see on Wednesday.', 'Media runs with it. Locker room uneasy.']]},
+  standout:{ q:o => { const p = findPlayer(o.pid), nm = p ? p.p.name : 'He'; return (o.young?'Young ':'')+nm+' '+o.line+'. What got into him?'; }, a:[
+    ['He put the work in all week. It showed.', 'He loves the credit.'],
+    ['That is the standard. We expect it every week.', 'He feels the bar rise. Form up, slight pressure.'],
+    ['Great game, but it took all 53 of us.', 'Starters appreciate it. He shrugs.']]},
+  rough:{ q:o => { const p = findPlayer(o.pid), nm = p ? p.p.name : 'Your starter'; return nm+' '+o.line+'. Is he still your guy?'; }, a:[
+    ['He is our guy. One game does not change that.', 'He feels backed. Fans grumble.'],
+    ['He knows he has to be better. So do I.', 'Balanced. Owner likes the accountability.'],
+    ['Everybody is being evaluated. That includes him.', 'He is stung. Team gets the message.']]},
+  streak:{ q:o => o.n > 0 ? 'That is '+o.n+' straight wins. Any pressure to keep it going?' : o.n+' straight losses. How do you stop the slide?'.replace(/^-/, ''), a:[
+    ['We do not talk about streaks in this building.', 'Locker room stays even keeled.'],
+    ['We expect to win every single week.', 'Team form up. Fans buzzing. Owner watching closely.'],
+    ['Credit the players. They are locked in.', 'Starters appreciate it.']]},
+  injury:{ q:o => { const p = findPlayer(o.pid); return 'How big a loss is '+(p?p.p.name:'your starter')+'?'; }, a:[
+    ['Next man up. We have depth for a reason.', 'Backups step up. He notices the shrug.'],
+    ['You do not replace a player like him.', 'He feels valued. Team form dips a little.'],
+    ['He will be back sooner than people think.', 'Fans hopeful. He may rush back.']]},
+  young:{ q:o => { const p = findPlayer(o.pid); return (p?p.p.name:'Your young player')+' is coming on fast. What is next for him?'; }, a:[
+    ['Sky is the limit. He is just getting started.', 'He loves it. Confidence boost.'],
+    ['Still a lot to learn. Stay humble.', 'Keeps him hungry.'],
+    ['He has to earn every snap like everyone else.', 'Veterans nod. He is a bit stung.']]},
   star:{ q:o => { const p = findPlayer(o.pid); return 'What makes '+(p?p.p.name:'your star')+' special?'; }, a:[
     ['His work ethic. First one in, last one out.', 'He appreciates it.'],
     ['Talent like his comes along once a decade.', 'He loves it. Slight ego risk.'],
@@ -4810,7 +4872,7 @@ function pressAnswer(i){
     if(i===2){ bumpFan(3); G.confidence = clamp(G.confidence-2,0,100); res.push('Fans +3','Owner −2'); }
   } else if(q.k === 'win'){
     if(i===1){ teamForm(5); bumpFan(3); G.boastWk = G.week; res.push('Team form +5','Fans +3','A loss next week costs extra'); }
-    if(i===2){ const st = me.roster.slice().sort((a,b)=>b.rating-a.rating)[0]; if(st){ bumpRel(st,'coach',5); res.push(st.name+' relationship +5'); } starters().filter(p=>p!==st).forEach(p=>bumpRel(p,'coach',-1)); res.push('Other starters −1'); }
+    if(i===2){ const lr = userResults().slice(-1)[0], ln = lr && lr.report && lr.report.teams && lr.report.teams[G.userTeam] && lr.report.teams[G.userTeam].lines[0]; const st = (ln && me.roster.find(p=>p.id===ln.id)) || me.roster.slice().sort((a,b)=>b.rating-a.rating)[0]; if(st){ bumpRel(st,'coach',5); res.push(st.name+' relationship +5'); } starters().filter(p=>p!==st).forEach(p=>bumpRel(p,'coach',-1)); res.push('Other starters −1'); }
     if(i===0) res.push('Nothing changes');
   } else if(q.k === 'rival'){
     if(i===0){ bumpRival(G.userTeam, q.opp, -4); res.push('Rivalry heat −4'); }
@@ -4830,6 +4892,30 @@ function pressAnswer(i){
     if(i===1){ bumpRel(pl,'coach',5); if(pl.demand) pl.demand.ask = Math.round(pl.demand.ask*1.05*10)/10; res.push(pl.name+' relationship +5'+(pl.demand?' · his asking price ticks up':'')); }
     if(i===2){ starters().forEach(p=>bumpRel(p,'coach',1)); bumpRel(pl,'coach',-1); res.push('Starters +1',pl.name+' −1'); }
   }
+  else if(q.k === 'streak'){
+    if(i===0){ teamForm(1); res.push('Team form +1'); }
+    if(i===1){ teamForm(3); bumpFan(2); G.boastWk = G.week; res.push('Team form +3','Fans +2','A loss next week costs extra'); }
+    if(i===2){ starters().forEach(p=>bumpRel(p,'coach',1)); res.push('Starters relationship +1'); }
+  } else if(q.k === 'injury' && pl){
+    const bk = me.roster.filter(p=>p.pos===pl.pos && p!==pl && !(p.injWeeks>0)).sort((a,b)=>b.rating-a.rating)[0];
+    if(i===0){ if(bk){ bumpRel(bk,'coach',4); res.push(bk.name+' relationship +4'); } bumpRel(pl,'coach',-2); res.push(pl.name+' relationship −2'); }
+    if(i===1){ bumpRel(pl,'coach',5); teamForm(-2); res.push(pl.name+' relationship +5','Team form −2'); }
+    if(i===2){ bumpFan(2); bumpRel(pl,'coach',2); res.push('Fans +2',pl.name+' relationship +2'); }
+  } else if(q.k === 'young' && pl){
+    if(i===0){ bumpRel(pl,'coach',5); pl.form = clamp((pl.form==null?80:pl.form)+6,0,100); res.push(pl.name+' relationship +5','His form +6'); }
+    if(i===1){ bumpRel(pl,'coach',1); res.push(pl.name+' relationship +1'); }
+    if(i===2){ bumpRel(pl,'coach',-3); starters().filter(p=>p.age>=29).forEach(p=>bumpRel(p,'coach',1)); res.push(pl.name+' relationship −3','Veterans +1'); }
+  }
+  else if(q.k === 'standout' && pl){
+    if(i===0){ bumpRel(pl,'coach',5); res.push(pl.name+' relationship +5'); }
+    if(i===1){ bumpRel(pl,'coach',2); pl.form = clamp((pl.form==null?80:pl.form)+5,0,100); res.push(pl.name+' relationship +2','His form +5'); }
+    if(i===2){ starters().forEach(p=>bumpRel(p,'coach',1)); bumpRel(pl,'coach',-1); res.push('Starters +1',pl.name+' −1'); }
+  } else if(q.k === 'rough' && pl){
+    if(i===0){ bumpRel(pl,'coach',5); bumpFan(-1); res.push(pl.name+' relationship +5','Fans −1'); }
+    if(i===1){ bumpRel(pl,'coach',1); G.confidence = clamp(G.confidence+1,0,100); res.push(pl.name+' relationship +1','Owner +1'); }
+    if(i===2){ bumpRel(pl,'coach',-5); teamForm(2); res.push(pl.name+' relationship −5','Team form +2'); }
+  }
+  if(q) G.pressHist = (G.pressHist||[]).concat([{k:q.k, pid:q.pid||null}]).slice(-8);
   G.pressLog = (G.pressLog||[]).concat([{y:G.year, w:G.week, q: q ? PRESS[q.k].q(q) : 'Skipped', a: i>=0 && q ? PRESS[q.k].a[i][0] : 'Skipped', res}]).slice(-20);
   G.pressQ = null;
   modalView = null; modalArg = null;
@@ -6518,13 +6604,15 @@ function animatePlay(res, cb){
     const u2 = tk && t>=1 ? clamp((el - dur)/tkDur, 0, 1) : null;
     const FP = framePos(t, u2), PP = FP.P;
     bpLegacy = () => (u2 != null && tk && carrier===tk.car) ? PP[actors.indexOf(tk.car)] : ballPos(t);
-    if(qbOn && qbWrap){ try { const rel=posAt(QB,tThrow); S3D.qbFrame(qbWrap,{fallHd: tk ? Math.atan2(tk.vy/8.63, tk.vx/8.5) : 0, fall:FP.fall, pos:PP, ball:bpLegacy(), t, tThrow, tCatch, isPass:isPassBall, oc:res.oc, carrier: carrier?actors.indexOf(carrier):-1, tCarry, air:[xAir,yAir], rel:[rel.x,rel.y], hideBall:false, art:qbArt, artKey:qbArtKey}); } catch(e){ console.error('qb frame', e); } }
+    const heldDown = u2 != null && tk && res.type!=='fumble' && (carrier===tk.car || res.type==='sack');
+    const holder = heldDown ? actors.indexOf(tk.car) : (carrier && t>=tCarry ? actors.indexOf(carrier) : (!isPassBall && !carrier && t>.05 ? actors.indexOf(QB) : -1));
+    if(qbOn && qbWrap){ try { const rel=posAt(QB,tThrow); S3D.qbFrame(qbWrap,{fallHd: tk ? Math.atan2(tk.vy/8.63, tk.vx/8.5) : 0, fall:FP.fall, pos:PP, ball:bpLegacy(), t, tThrow, tCatch, isPass:isPassBall, oc:res.oc, carrier: carrier?actors.indexOf(carrier):-1, holder, tCarry, air:[xAir,yAir], rel:[rel.x,rel.y], hideBall:false, art:qbArt, artKey:qbArtKey}); } catch(e){ console.error('qb frame', e); } }
     const carNow = carrier && t>=tCarry ? carrier : (!isPassBall && !carrier ? QB : null);
     plyG.innerHTML = actors.map((a,i)=>{ const w=PP[i], p=legacyToIso(w.x,w.y,0); const dx=p.x-a.prev.x, mvd=Math.hypot(dx,p.y-a.prev.y); if(Math.abs(dx)>.15 && !FP.fall[i]) a.face = dx<0?-1:1; a.prev=p; return {a,p,mv:mvd>.05,fl:FP.fall[i]||0,i}; })
       .sort((m,n)=>m.p.y-n.p.y).map(({a,p,mv,fl,i})=>{ const svg=vinylSVG(p.x,p.y,a.team,a.num,a.face,ts,{k:vk,moving:mv&&t<1&&!fl,carrier:a===carNow,pose:a.lineman&&t>.06&&t<1?'block':'run'});
         if(!fl) return svg; const q=legacyToIso(PP[i].x+tk.vx*10,PP[i].y+tk.vy*10,0), sg=(q.x-p.x)>=0?1:-1; return '<g transform="rotate('+(sg*84*fl).toFixed(1)+' '+p.x.toFixed(1)+' '+p.y.toFixed(1)+')">'+svg+'</g>'; }).join('');
     const bp0 = (u2 != null && tk && carrier===tk.car) ? PP[actors.indexOf(tk.car)] : ballPos(t), bp=legacyToIso(bp0.x,bp0.y,.55);
-    ball.setAttribute('cx',bp.x); ball.setAttribute('cy',bp.y); ball.setAttribute('visibility', carrier && t>=tCarry ? 'hidden' : 'visible');
+    ball.setAttribute('cx',bp.x); ball.setAttribute('cy',bp.y); ball.setAttribute('visibility', (carrier && t>=tCarry) || heldDown ? 'hidden' : 'visible');
     trailD += (trailD?' L':'M')+Math.round(bp.x)+' '+Math.round(bp.y);
     trail.setAttribute('d',trailD);
     if(isPassBall && t>=tThrow && !throwLine){
@@ -15205,6 +15293,7 @@ function qbFrame(wrap, d){
   }
   else if(d.t<.05) by=.25;
   qBall.position.set(b[0]+(inAir?0:.2),by,b[1]+(inAir?0:.25)); qBall.visible=!d.hideBall;
+  if(!inAir && d.holder!=null && d.holder>=0 && qFig[d.holder]){ const f=qFig[d.holder]; f.g.updateMatrixWorld(true); const v=new THREE.Vector3(.28,1.2,.22); f.g.localToWorld(v); qBall.position.copy(v); }
   qBall.rotation.set(0,-yaw,inAir?pitch:0);
   let focus;
   if(d.carrier>=0&&d.t>=d.tCarry) focus=qFig[d.carrier];
