@@ -989,6 +989,9 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ow-stat b{font:700 18px Oswald,Arial,sans-serif;color:var(--chalk);line-height:1.1}.ow-stat small{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .ow-btns{display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;justify-content:center}
 .ow-foot{display:flex;align-items:center;gap:8px;margin-top:5px}.ow-foot .minstrip{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.ow-foot .minstrip>*{flex:0 0 auto}.ow-foot .minstrip .mc{padding:1px 5px}.ow-foot .btn.primary{flex:0 0 auto;padding:6px 12px;font-size:12px}
+.ra-acts{display:flex;gap:2px;align-items:center}.ra-acts .btn.tiny{padding:2px 4px;font-size:10px;letter-spacing:0;white-space:nowrap}
+table.tbl.lt-tbl td,table.tbl.lt-tbl th{padding:3px 4px}
+.lt-tbl td:first-child{max-width:148px;overflow:hidden;text-overflow:ellipsis}.ra-acts .btn[disabled]{opacity:.38}
 .dd-pop.wh{padding:0;width:270px;height:200px;max-height:none;overflow:hidden}
 .wh-band{position:absolute;left:5px;right:5px;top:5px;height:32px;border:1.5px solid var(--gold);border-radius:8px;background:rgba(255,212,71,.08);pointer-events:none;z-index:2}
 .wh-band:after{content:'FILTER';position:absolute;right:7px;top:9px;font:800 8px Inter,sans-serif;letter-spacing:.12em;color:var(--gold)}
@@ -8747,7 +8750,7 @@ function trainBtnHTML(p){
   const canTrain = G.trainPts >= cost && p.trained < 5 && p.rating < 99;
   const title = G.mode === 'player' ? 'Costs '+cost+' train pts for +1 OVR at his current '+p.rating+' OVR tier — earned from your own game performance' :
     'Costs '+cost+' train pt'+(cost>1?'s':'')+(posCoachOf(p.pos)&&posCoachOf(p.pos).rating>=88?' · elite coach doubles the gain':'');
-  return '<button class="btn tiny" '+(canTrain?'':'disabled')+' onclick="trainPlayer('+p.id+')" title="'+title+'">🏋️ Train</button> ';
+  return '<button class="btn tiny" '+(canTrain?'':'disabled')+' onclick="trainPlayer('+p.id+')" title="'+title+'">Train</button> ';
 }
 function extendBtnHTML(p){
   if(!meT().roster.includes(p)) return '';
@@ -10757,25 +10760,25 @@ function schemeCell(p){
   return '<span class="tag '+(p.scheme==='any'?'up':'w')+'">'+SCHEME_TAG[p.scheme]+'</span>';
 }
 function playerRow(p, actions, isOpponent){
-  const status = p.ir ? '<span class="tag inj">IR</span>' : p.injWeeks > 0 ? '<span class="tag inj">OUT '+p.injWeeks+'wk</span>'
-    : (G.phase==='hub' ? (p.dressed !== false ? '<span class="tag w">ACTIVE</span>' : '<span class="tag l">SCRATCH</span>') : '<span class="sub">OK</span>');
+  const status = p.ir ? ' <span class="tag inj">IR</span>' : p.injWeeks > 0 ? ' <span class="tag inj">OUT '+p.injWeeks+'wk</span>'
+    : (G.phase==='hub' && p.dressed === false ? ' <span class="tag l">SCRATCH</span>' : '');
+  const sch = (p.pos==='DL' || p.pos==='LB') ? ' <span class="tag '+(p.scheme==='any'?'up':'w')+'" style="font-size:8.5px">'+SCHEME_TAG[p.scheme]+'</span>' : '';
   const ratingCell = isOpponent ? scoutRangeHTML(p, 10) + (p.proScoutLo===p.proScoutHi ? '' : ' <button class="btn tiny" onclick="scoutPlayer('+p.id+')" title="Costs '+proScoutCost(p)+' scouting pts">🔍</button>') : '<span style="color:var(--gold);font-weight:700">'+p.rating+'</span>';
-  return '<tr'+(p.dressed===false && G.phase==='hub' ? ' class="dim"':'')+'><td>'+pn(p)+(p.trained?' <span class="tag up">+'+p.trained+'</span>':'')+'</td>' +
-    '<td><b>'+p.spot+'</b></td>' +
-    '<td>'+schemeCell(p)+'</td>' +
+  return '<tr'+(p.dressed===false && G.phase==='hub' ? ' class="dim"':'')+'><td>'+pn(p)+(p.trained?' <span class="tag up">+'+p.trained+'</span>':'')+status+'</td>' +
+    '<td><b>'+p.spot+'</b>'+sch+'</td>' +
     '<td>'+p.age+'</td><td>'+ratingCell+'</td>' +
-    '<td>'+money(p.salary)+'</td><td>'+p.years+'yr</td><td>'+status+'</td><td>'+actions+'</td></tr>';
+    '<td>'+money(p.salary)+'</td><td>'+p.years+'yr</td><td><div class="ra-acts">'+actions+'</div></td></tr>';
 }
 function rosterTable(t, actionFn, noPills){
   const isOpponent = t.idx !== G.userTeam;
-  const cols = [['name','Player'],['spot','Pos'],['scheme','Scheme'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Years']];
+  const cols = [['name','Player'],['spot','Pos'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Yrs']];
   let s = noPills ? '' : '<div class="filterbar">' + posDDHTML(rFilter, 'setRFilter', (pos, sp) => { const l = t.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1); return {txt: l.length+' of '+min+' min'+(l.length?' · best '+Math.max(...l.map(p=>p.rating)):''), warn: l.length < min}; }, t.roster.length+' players') + '</div>';
   s += '<table class="tbl"><tr>';
   cols.forEach(c => {
     const on = rSort.key === c[0];
     s += '<th class="sorth'+(on?' on':'')+'" onclick="setRSort(\''+c[0]+'\')">'+c[1]+(on ? (rSort.dir>0?' ▲':' ▼') : '')+'</th>';
   });
-  s += '<th>Status</th><th></th></tr>';
+  s += '<th>'+(t.idx === G.userTeam ? 'Actions' : '')+'</th></tr>';
   const list = t.roster
     .filter(p => rFilter==='ALL' || p.pos === rFilter || p.spot === rFilter)
     .sort((a,b) => {
@@ -14350,7 +14353,7 @@ function rosterTeamT(){ return (rosterTeamIdx != null && G.teams[rosterTeamIdx])
 function setRosterTeam(v){ rosterTeamIdx = (+v === G.userTeam) ? null : +v; render(); }
 function capPillHTML(t){
   const pct = clamp(payroll(t)/capNow()*100, 0, 100), rm = capRoom(t);
-  return '<span class="fz-pill cpp" title="Payroll '+money(payroll(t))+' of '+money(capNow())+' cap">Cap room <b style="color:'+(rm>=0?'var(--green)':'var(--red)')+'">'+money(rm)+'</b><i><u style="width:'+pct+'%;'+(pct>92?'background:var(--red)':'')+'"></u></i></span>';
+  return '<span class="fz-pill cpp" title="Payroll '+money(payroll(t))+' of '+money(capNow())+' cap">Cap <b style="color:'+(rm>=0?'var(--green)':'var(--red)')+'">'+money(rm)+'</b><i><u style="width:'+pct+'%;'+(pct>92?'background:var(--red)':'')+'"></u></i></span>';
 }
 function rosterHTML(){
   const me = rosterTeamT(), mine = me.idx === G.userTeam;
@@ -14369,21 +14372,24 @@ function rosterHTML(){
   if(rosterTab === 'prog') return '<div class="lt-bar">'+tabs+'<div class="lt-info"></div><div class="lt-filt">'+teamSel+'</div></div>' + progressionTabHTML();
   const dc = dressedCount(me), limit = rosterLimit();
   let info = (!mine ? '<span class="fz-pill">'+teamLogo(me,14)+' '+me.w+'-'+me.l+(me.t?'-'+me.t:'')+' · <b>'+teamOverall(me)+'</b> OVR</span>' : '') +
-    '<span class="fz-pill">Roster <b style="color:'+(activeCount(me)>limit?'var(--red)':'var(--chalk)')+'">'+activeCount(me)+'</b>/'+limit+'</span>' +
-    (me.roster.some(p=>p.ir) ? '<span class="fz-pill">IR <b>'+me.roster.filter(p=>p.ir).length+'</b></span>' : '') +
-    (G.phase==='hub' ? '<span class="fz-pill">Dressed <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+dc+'</b>/'+LIMIT_DRESS+'</span>' : '') +
+    '<span class="fz-pill">Roster <b style="color:'+(activeCount(me)>limit?'var(--red)':'var(--chalk)')+'">'+activeCount(me)+'</b>/'+limit +
+    (me.roster.some(p=>p.ir) ? ' · IR <b>'+me.roster.filter(p=>p.ir).length+'</b>' : '') +
+    (G.phase==='hub' ? ' · Dressed <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+dc+'</b>/'+LIMIT_DRESS : '') + '</span>' +
     capPillHTML(me) +
-    (G.phase==='hub' && mine ? '<button class="btn tiny" onclick="autoDress(meT(),false);save();render()">Auto-dress</button>' : '') +
-    '<span class="fz-pill" title="Unit ratings, healthy starters">PO <b>'+Math.round(offPass(me))+'</b> RO <b>'+Math.round(offRush(me))+'</b> PD <b>'+Math.round(defPass(me))+'</b> RD <b>'+Math.round(defRush(me))+'</b></span>';
-  let s = '<div class="fit-page"><div class="lt-bar">'+tabs+'<div class="lt-info">'+info+'</div><div class="lt-filt">'+posSel+teamSel+'</div></div>';
+''; const autoD = (G.phase==='hub' && mine ? '<button class="btn tiny" onclick="autoDress(meT(),false);save();render()">Auto-dress</button>' : '');
+  let s = '<div class="fit-page"><div class="lt-bar">'+tabs+'<div class="lt-info">'+info+'</div><div class="lt-filt">'+autoD+posSel+teamSel+'</div></div>';
   s += '<div class="lt-card"><div class="fit-box" style="--fit-off:178px">' +
     rosterTable(me, p => {
       if(!mine) return '';
       if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">-</span>';
       let a = trainBtnHTML(p);
-      if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button> ';
-      if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR. Frees his roster spot">IR</button> ';
-      a += '<button class="btn tiny" title="More actions" onclick="openModal(\'pacts\','+p.id+')">⋯</button>';
+      if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button>';
+      if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR. Frees his roster spot">IR</button>';
+      a += '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">Extend</button>';
+      a += '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">Position</button>';
+      const rsOk = typeof rsEligible === 'function' && rsEligible(p);
+      a += '<button class="btn tiny" '+(rsOk?'':'disabled title="Not eligible to restructure"')+' onclick="openRestructure('+p.id+')">Restructure</button>';
+      a += '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>';
       return a;
     }, true).replace('<table class="tbl">','<table class="tbl lt-tbl">') + '</div></div></div>';
   return s;
