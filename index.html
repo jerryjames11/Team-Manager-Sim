@@ -27,7 +27,7 @@ header.top .meta{text-align:right;font-size:11px;color:var(--muted);line-height:
 header.top .meta b{color:var(--chalk)}
 
 /* league calendar strip — progress bar */
-.timeline{margin-bottom:10px}
+.timeline{margin-bottom:6px}
 .tl-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:8px}
 .tl-now{font-size:11.5px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
 .tl-date{font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap}
@@ -212,6 +212,43 @@ th.sorth:hover{color:var(--chalk)}
 th.sorth.on{color:var(--gold)}
 .dchart{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line);background:#0A0F18;margin:10px 0}
 .minsgrid{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.fit-box{max-height:calc(100dvh - var(--fit-off,200px));min-height:130px;overflow:auto;border-radius:6px}
+.fit-box th{position:sticky;top:0;background:var(--panel);z-index:2}
+.minstrip{display:flex;flex-wrap:wrap;gap:3px;align-items:center}
+.minstrip .mt{font:700 10px Oswald,Arial,sans-serif;letter-spacing:.12em;color:var(--gold);margin-right:3px}
+.minstrip .mc{font:600 10px Inter,system-ui,sans-serif;border:1px solid var(--line);border-radius:9px;padding:1px 6px;color:var(--muted);cursor:pointer;background:none}
+.minstrip .mc b{color:var(--chalk)}.minstrip .mc.short{border-color:var(--red);color:#ff9a9a}.minstrip .mc.short b{color:#ff9a9a}
+.fit-cols{display:grid;gap:6px;align-items:stretch}
+.fit-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 8px;display:flex;flex-direction:column;gap:3px;min-width:0;min-height:0}
+.fit-bar{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px}.fit-bar>*{flex:0 0 auto}.fit-seg{flex-wrap:nowrap}
+.fit-bar .ml{margin-left:auto}
+.fit-seg{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
+.fit-seg .fb{font:700 10.5px Inter,system-ui,sans-serif;border:1px solid var(--line);border-radius:12px;padding:2px 9px;color:var(--muted);background:none;cursor:pointer;white-space:nowrap}
+.fit-seg .fb.on{background:var(--team,var(--gold));border-color:var(--team,var(--gold));color:#14100a}
+.fit-seg select{font:600 10.5px Inter,system-ui,sans-serif;background:var(--panel2,#1C2536);color:var(--chalk);border:1px solid var(--line);border-radius:12px;padding:2px 6px}
+.cut-tbl{font-size:11px;width:100%}table.tbl.cut-tbl td,table.tbl.cut-tbl th{padding:2px 3px;white-space:nowrap}table.tbl.cut-tbl .btn{padding:1px 6px}
+table.tbl.cp-tbl td,table.tbl.cp-tbl th{padding:2px 4px}
+.dc-fit table.tbl td,.dc-fit table.tbl th{padding:2px 4px;font-size:11px}
+.fin-cols .cp-li{padding:1px 0;font-size:10.5px}.fin-cols .fin-st{padding:1px 0}.fin-cols .fin-st .btn{padding:1px 7px}
+.cp-top .btn{white-space:nowrap;flex:0 0 auto}.cp-seg span{white-space:nowrap}
+#app:has(.fit-page){padding-bottom:8px}
+.fit-fix{height:calc(100dvh - var(--fit-h,200px));min-height:190px}
+.fit-fix>.fit-card{overflow:auto}
+.fit-fix .fit-box{max-height:none;flex:1;min-height:0}
+.dc-fit.fit-fix{align-items:stretch}.dc-fit.fit-fix .dchart{max-height:none;flex:1;min-height:0;height:100%}
+.dc-fit.fit-fix>.fit-card:first-child{overflow:hidden}
+.tl-head .btn{margin-right:8px}.tl-head .tl-l{display:flex;align-items:center}
+.cut-tbl tr.bub td{background:rgba(242,162,74,.06)}
+.dc-fit{display:grid;grid-template-columns:1fr 1.15fr;gap:6px;align-items:start}
+.dc-fit .dchart{margin:0;max-height:calc(100dvh - 190px)}
+.dc-fit .fit-card{padding:4px 6px}
+.dc-hint{font-size:10px;color:var(--muted);padding:2px 2px 0}
+.fin-cols{grid-template-columns:.9fr .95fr 1fr 1fr}
+.fin-big{font:700 24px Oswald,Arial,sans-serif;line-height:1.05}
+.fin-st{display:flex;justify-content:space-between;align-items:center;font-size:11px;padding:2px 0;gap:6px}
+.fin-st .c{display:flex;align-items:center;gap:4px}.fin-st .c b{min-width:40px;text-align:center}
+.fin-chart svg{width:100%;height:36px;display:block}
+@media (max-width:700px){.dc-fit,.fin-cols{grid-template-columns:1fr 1fr}}
 .depthrow td{font-size:12px}
 .oop{color:var(--red);font-weight:700}
 
@@ -920,6 +957,38 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .dd-code{display:inline-block;min-width:34px;text-align:center;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.06em;color:#10131a;background:var(--c);border-radius:5px;padding:2px 5px}
 .dd-pop{display:none;position:absolute;top:calc(100% + 4px);z-index:80;min-width:240px;max-height:min(300px,calc(var(--sh,100vh) - 150px));overflow-y:auto;background:#121a28;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:4px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 .dd-left .dd-pop{left:0}.dd-right .dd-pop{right:0}
+.dd-pop.wh{padding:0;width:270px;height:200px;max-height:none;overflow:hidden}
+.wh-band{position:absolute;left:5px;right:5px;top:5px;height:32px;border:1.5px solid var(--gold);border-radius:8px;background:rgba(255,212,71,.08);pointer-events:none;z-index:2}
+.wh-band:after{content:'FILTER';position:absolute;right:7px;top:9px;font:800 8px Inter,sans-serif;letter-spacing:.12em;color:var(--gold)}
+.wh-list{position:absolute;inset:0;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-padding-top:5px;scrollbar-width:none;padding:5px 5px 165px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.wh-list::-webkit-scrollbar{display:none}
+.wh-it{height:32px;scroll-snap-align:start;display:flex;align-items:center;gap:8px;padding:0 9px;border-left:3px solid var(--c);border-radius:6px;font:500 11.5px Inter,system-ui,sans-serif;color:var(--muted);cursor:pointer;opacity:.5;white-space:nowrap;overflow:hidden}
+.wh-it.top{opacity:1;color:var(--chalk)}
+.wh-it .dd-code{flex:0 0 auto}.wh-it .dd-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.wh-it .dd-warn{margin-right:44px}
+.wh-fade{position:absolute;left:0;right:0;bottom:0;height:56px;background:linear-gradient(transparent,#121a28);pointer-events:none;z-index:2}
+.lt-bar{display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:nowrap}
+.lt-bar .lt-tabs{display:flex;gap:4px;flex:0 0 auto}
+.lt-bar .lt-info{display:flex;gap:5px;align-items:center;flex:1 1 auto;min-width:0;overflow:hidden;white-space:nowrap}
+.lt-bar .lt-info>*{flex:0 0 auto}
+.lt-bar .lt-filt{display:flex;gap:5px;align-items:center;flex:0 0 auto;margin-left:auto}
+.lt-bar .fbtn{padding:3px 10px;font-size:11px}
+.lt-bar .dd-btn,.fit-seg .dd-btn{padding:2px 8px;font-size:11px}
+.lt-bar .fselect{padding:3px 6px;font-size:11px}
+.cpp{display:inline-flex;align-items:center;gap:5px}.cpp i{display:inline-block;width:36px;height:4px;border-radius:2px;background:#0c121d;overflow:hidden;position:relative}.cpp i u{position:absolute;left:0;top:0;bottom:0;background:var(--gold)}
+.lt-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2px 6px}
+.lt-card .fit-box th{background:var(--panel)}
+table.tbl.lt-tbl td{padding:3px 5px}table.tbl.lt-tbl th{padding:4px 5px}
+.lt-tbl .btn.tiny{padding:1px 7px}
+.pr-mini{display:flex;align-items:center;gap:6px;font-size:10.5px;min-width:200px}
+.pr-mini .t{flex:1;height:4px;border-radius:2px;background:var(--line);position:relative;min-width:60px}.pr-mini .t i{position:absolute;left:0;top:0;bottom:0;background:var(--gold);border-radius:2px}
+.cp .cp-li{padding:1px 0}.cp{gap:5px}
+.cp-sw{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.cp-sw span{flex:1;text-align:center;font:700 10.5px Inter,sans-serif;padding:4px 0;color:var(--muted);cursor:pointer;border-right:1px solid var(--line)}.cp-sw span:last-child{border-right:none}
+.cp-sw span.on{background:var(--gold);color:#14100a}
+.cp-bt1{display:flex;align-items:center;gap:5px;font-size:10.5px;padding:3px 0;border-bottom:1px solid var(--line)}.cp-bt1:last-of-type{border-bottom:none}
+.cp-bt1 .n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cp-bt1 .ov{font-weight:800;color:var(--gold)}
 .dd.open .dd-pop{display:block}
 .dd-opt{display:flex;align-items:center;gap:8px;width:100%;background:none;border:none;border-left:3px solid var(--c);border-radius:6px;color:var(--chalk);padding:6px 8px;margin:1px 0;font:500 12.5px Inter,system-ui,sans-serif;text-align:left;cursor:pointer}
 .dd-opt.sub{padding-left:16px}
@@ -967,8 +1036,8 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .cp-int.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold);background:rgba(255,212,71,.06)}.cp-int b{font-size:12px}
 .cp-bars{display:grid;grid-template-columns:50px 1fr;gap:2px 6px;align-items:center;font-size:9.5px;color:var(--muted)}
 .cp-bar{height:5px;border-radius:3px;background:#0c121d;overflow:hidden}.cp-bar i{display:block;height:100%;max-width:100%}
-.cp-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
-.cp-chip{border:1px solid var(--line);border-radius:7px;padding:4px 6px;font-size:10.5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:4px}
+.cp-chips{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.cp-chip{border:1px solid var(--line);border-radius:7px;padding:2px 6px;font-size:10.5px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:4px}
 .cp-chip b{font:700 11px Oswald,Arial,sans-serif;letter-spacing:.06em}.cp-chip small{color:var(--muted);font-size:9px;white-space:nowrap}
 .cp-chip.on{border-color:var(--gold);background:rgba(255,212,71,.1)}
 .cp-li{display:flex;justify-content:space-between;gap:6px;font-size:11px;padding:2px 0;border-bottom:1px solid var(--line)}.cp-li:last-child{border-bottom:none}
@@ -4988,17 +5057,18 @@ function campHTML(){
   if(G.ota && G.ota.year === G.year && !G.ota.seen && campState().wk === 1 && G.mode !== 'player') return otaReportCardHTML();
   const C = campState(), me = meT(), tf = campTeamForm(), inj = me.roster.filter(p => p.injWeeks > 0).length;
   let s = (G.ota && G.ota.year === G.year && C.wk === 1 ? '<details class="cp-ota"><summary class="sub">OTA report card</summary>'+otaReportCardHTML()+'</details>' : '') + '<div class="cp">';
-  s += '<div class="cp-top"><span class="cp-t">TRAINING CAMP</span>'+campStripHTML('camp')+'<span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Injured <b style="color:'+(inj?'var(--red)':'var(--chalk)')+'">'+inj+'</b></span>' +
+  s += '<div class="cp-top"><span class="cp-t">TRAINING CAMP · WEEK '+C.wk+' OF 3</span><span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Injured <b style="color:'+(inj?'var(--red)':'var(--chalk)')+'">'+inj+'</b></span>' +
     '<span class="cp-go"><button class="btn tiny" onclick="runCamp()" title="Sim the rest of camp with these settings">⏩</button><button class="btn tiny primary" onclick="runCampWeek()">▶ Run camp week '+C.wk+'</button></span></div>';
   s += '<div class="cp-cols">';
   // intensity
-  s += '<div class="cp-card"><div class="cp-h">Intensity<em>this week</em></div>' + Object.keys(CAMP_INT).map(k => { const I = CAMP_INT[k];
-    return '<div class="cp-int'+(C.int===k?' on':'')+'" onclick="setCampInt(\''+k+'\')"><b>'+I.n+'</b><div class="cp-bars"><span>Form</span><div class="cp-bar"><i style="width:'+I.bars[0]+'%;background:var(--green)"></i></div><span>Develop</span><div class="cp-bar"><i style="width:'+I.bars[1]+'%;background:var(--gold)"></i></div><span>Injury</span><div class="cp-bar"><i style="width:'+I.bars[2]*(k==='padded'&&C.lastInt==='padded'?1.5:1)+'%;background:var(--red)"></i></div></div></div>'; }).join('') +
-    '<div class="sub" style="font-size:10px">'+(C.lastInt==='padded'?'<b style="color:var(--red)">Last week was padded. Another padded week doubles injury risk.</b>':'Two padded weeks in a row doubles injury risk.')+'</div></div>';
+  { const K = CAMP_INT[C.int];
+  s += '<div class="cp-card"><div class="cp-h">Intensity<em>this week</em></div><div class="cp-sw">' + Object.keys(CAMP_INT).map(k => '<span class="'+(C.int===k?'on':'')+'" onclick="setCampInt(\''+k+'\')">'+CAMP_INT[k].n+'</span>').join('') + '</div>' +
+    '<div class="cp-bars" style="margin-top:4px"><span>Form</span><div class="cp-bar"><i style="width:'+K.bars[0]+'%;background:var(--green)"></i></div><span>Develop</span><div class="cp-bar"><i style="width:'+K.bars[1]+'%;background:var(--gold)"></i></div><span>Injury</span><div class="cp-bar"><i style="width:'+Math.min(100,K.bars[2]*(C.int==='padded'&&C.lastInt==='padded'?1.5:1))+'%;background:var(--red)"></i></div></div>' + [].map(k => '').join('') +
+    '<div class="sub" style="font-size:10px">'+(C.lastInt==='padded'?'<b style="color:var(--red)">Last week was padded. Another padded week doubles injury risk.</b>':'Two padded weeks in a row doubles injury risk.')+'</div></div>'; }
   // focus
   const I = CAMP_INT[C.int];
   s += '<div class="cp-card"><div class="cp-h">Unit focus<em>pick 2 · coach boosts gains</em></div><div class="cp-chips">' + CAMP_GROUPS.map(g => { const c = posCoachOf(g);
-    return '<div class="cp-chip'+(C.focus.includes(g)?' on':'')+'" onclick="toggleCampFocus(\''+g+'\')"><b style="color:'+(POS_COL[g]||'#ccc')+'">'+g+'</b><small>'+(c?'coach '+c.rating:'no coach')+'</small></div>'; }).join('') + '</div>';
+    return '<div class="cp-chip'+(C.focus.includes(g)?' on':'')+'" onclick="toggleCampFocus(\''+g+'\')"><b style="color:'+(POS_COL[g]||'#ccc')+'">'+g+'</b><small title="'+(c?'Position coach '+c.rating:'No position coach')+'">'+(c?'👔'+c.rating:'')+'</small></div>'; }).join('') + '</div>';
   s += '<div class="cp-h" style="margin-top:3px">Focus preview<em>per week</em></div>';
   C.focus.forEach(g => { const c = posCoachOf(g), cb = c ? (c.rating >= 80 ? 2 : c.rating >= 70 ? 1 : 0) : 0, n = me.roster.filter(p => p.pos===g).length;
     s += '<div class="cp-li"><span>'+g+' room · '+n+'</span><span><span class="up">+'+(Math.round(I.form*1.6)+cb+1)+'</span> form · <span class="up">'+Math.round(.08*I.dev*(1+cb*.25)*100)+'%</span> +1 OVR</span></div>'; });
@@ -5018,30 +5088,30 @@ function campBattleCardsHTML(){
     const A = campP(b.a), B = campP(b.b); if(!A || !B) return '';
     const form = b.side === 'o' ? OFF_FORMS[b.fk] || offFormOf(meT()) : DEF_FORMS[b.fk] || defFormOf(meT());
     const ea = effRating(A, b.spot, form.scheme), eb = effRating(B, b.spot, form.scheme), pa = Math.round(clamp(.5 + (ea-eb)/16, .2, .8)*100);
-    const lead = b.wa === b.wb ? 'tied '+b.wa+'-'+b.wb : (b.wa > b.wb ? A.name.split(' ').pop()+' leads '+b.wa+'-'+b.wb : B.name.split(' ').pop()+' leads '+b.wb+'-'+b.wa);
-    const row = (p, e) => '<div class="r"><span class="fz-pos" style="--c:'+(POS_COL[p.pos]||'#ccc')+'">'+b.spot+'</span><span class="n"><b>'+esc(p.name.split(' ').pop())+'</b> <span class="sub">'+p.age+(p.draftInfo&&p.draftInfo.year===G.year?' · rookie':'')+'</span></span><div class="cp-form"><i style="width:'+(p.form==null?80:p.form)+'%;background:'+fcol(p.form==null?80:p.form)+'"></i></div><span class="ov">'+Math.ceil(e)+'</span></div>';
-    return '<div class="cp-bt">'+row(A, ea)+'<div class="vs">VS · '+(b.done ? '<b style="color:var(--green)">'+esc(campP(b.win).name.split(' ').pop())+' won</b>' : lead+' · '+pa+'%')+'</div>'+row(B, eb)+'</div>';
+    const st = b.done ? '<b style="color:var(--green)">'+esc(campP(b.win).name.split(' ').pop())+' won</b>' : (b.wa === b.wb ? 'tied '+b.wa+'-'+b.wb : (b.wa > b.wb ? esc(A.name.split(' ').pop()) : esc(B.name.split(' ').pop()))+' leads '+Math.max(b.wa,b.wb)+'-'+Math.min(b.wa,b.wb))+' · '+pa+'%';
+    const nm = p => '<span class="pname" onclick="openModal(\'player\','+p.id+')">'+esc(p.name.split(' ').pop())+'</span>';
+    return '<div class="cp-bt1"><span class="fz-pos" style="--c:'+(POS_COL[A.pos]||'#ccc')+'">'+b.spot+'</span><span class="n">'+nm(A)+' <span class="ov">'+Math.ceil(ea)+'</span> <span class="sub">vs</span> '+nm(B)+' <span class="ov">'+Math.ceil(eb)+'</span></span><span class="sub" style="font-size:10px;white-space:nowrap">'+st+'</span></div>';
   }).join('');
 }
 function preseasonPlanHTML(){
   const C = campState(), me = meT(), st = campStarters(me), opp = G.teams[G.preOpps[G.preWeek-1]], tf = campTeamForm();
-  let s = '<div class="cp"><div class="cp-top"><span class="cp-t">PRESEASON · GAME '+G.preWeek+'</span>'+campStripHTML('pre')+'<span class="fz-pill">'+(G.preWeek!==2?'vs':'@')+' <b>'+esc(opp.abbr)+'</b></span><span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Record <b>'+me.preW+'-'+me.preL+'</b></span>' +
+  let s = '<div class="cp"><div class="cp-top"><span class="cp-t">PRESEASON · GAME '+G.preWeek+' OF 3</span><span class="fz-pill">'+(G.preWeek!==2?'vs':'@')+' <b>'+esc(opp.abbr)+'</b></span><span class="fz-pill">Starter form <b style="color:'+fcol(tf)+'">'+tf+'</b></span><span class="fz-pill">Record <b>'+me.preW+'-'+me.preL+'</b></span><span class="fz-pill">Cap room <b style="color:'+(capRoom(me)>=0?'var(--green)':'var(--red)')+'">'+money(capRoom(me))+'</b></span><button class="btn tiny" onclick="openModal(\'camproster\')">📋 Roster '+me.roster.length+'</button>' +
     '<span class="cp-go"><button class="btn tiny" onclick="simPre()">Sim</button><button class="btn tiny primary" onclick="playPre()">▶ Coach game '+G.preWeek+'</button></span></div>';
-  s += '<div class="cp-cols" style="grid-template-columns:1.55fr 1fr">';
+  s += '<div class="cp-cols" style="grid-template-columns:2.1fr 1fr">';
   s += '<div class="cp-card"><div class="cp-h">Who plays<em>per group</em></div><table class="tbl cp-tbl"><tr><th>Group</th><th>Plan</th><th>Form</th><th>Dev</th><th>Injury</th></tr>';
   SNAP_GROUPS.forEach(([k, lbl]) => { const P = SNAP_PLANS[C.plan[k]];
     s += '<tr><td><b>'+lbl+'</b></td><td><div class="cp-seg">'+Object.keys(SNAP_PLANS).map(v => '<span class="'+(C.plan[k]===v?'on':'')+'" onclick="setSnapPlan(\''+k+'\',\''+v+'\')">'+SNAP_PLANS[v].n+'</span>').join('')+'</div></td>' +
       '<td class="'+(P.form?'up':'')+'">+'+P.form+'</td><td'+(P.dev>=.25?' class="up"':'')+'>'+(P.dev>=.3?'high':P.dev>=.15?'med':'low')+'</td><td'+(P.inj>=.06?' class="dn"':'')+'>'+Math.round(P.inj*220)+'%</td></tr>'; });
   const open = C.battles.filter(b => !b.done);
-  s += '<tr><td><b>Battles</b></td><td colspan="4" class="sub">'+(open.length ? open.map(b => { const A = campP(b.a), B = campP(b.b); return A&&B ? esc(A.name.split(' ').pop())+' vs '+esc(B.name.split(' ').pop())+' ('+b.wa+'-'+b.wb+')' : ''; }).join(' · ')+'. One round per game.' : 'None open.')+'</td></tr></table>';
-  s += '<div class="sub" style="font-size:10px">Starters gain form. Backups and rookies get development rolls. Battles settle after game 3.</div></div>';
+  s += '<tr><td><b>Battles</b></td><td colspan="4" class="sub" style="white-space:normal;font-size:10.5px">'+(open.length ? open.map(b => { const A = campP(b.a), B = campP(b.b); return A&&B ? esc(A.name.split(' ').pop())+' vs '+esc(B.name.split(' ').pop())+' ('+b.wa+'-'+b.wb+')' : ''; }).join(' · ')+'. One round per game.' : 'None open.')+'</td></tr></table>';
+  s += '<div class="sub" style="font-size:10px">Starters gain form. Backups and rookies develop. Battles settle after game 3.</div></div>';
   // readiness
   const starters = [...st.ids].map(campP).filter(Boolean);
   const proj = Math.round(starters.reduce((a,p) => { const k = SNAP_GROUPS.find(g => g[2].includes(p.pos)); const P = SNAP_PLANS[C.plan[k?k[0]:'DEF']]; return a + Math.min(100, (p.form==null?80:p.form) + P.form*(4-G.preWeek)); }, 0) / Math.max(1, starters.length));
   const rusty = starters.filter(p => (p.form==null?80:p.form) < 90).sort((a,b) => (a.form||0) - (b.form||0)).slice(0,5);
   s += '<div class="cp-card"><div class="cp-h">Week 1 readiness<em>projected</em></div><div style="display:flex;align-items:center;gap:10px"><span class="cp-big" style="color:'+fcol(proj)+'">'+proj+'</span><div class="sub">avg starter form if this plan holds<br>for the rest of preseason</div></div>' +
     '<div class="cp-h" style="margin-top:4px">Still rusty</div>' + (rusty.length ? rusty.map(p => '<div class="cp-li"><span>'+PL(p)+' '+esc(p.name.split(' ').pop())+(p.holdout?' (holdout)':'')+'</span><span style="color:'+fcol(p.form)+'">'+Math.round(p.form)+' form</span></div>').join('') : '<div class="sub">Every starter is 90+.</div>') +
-    '<div class="sub" style="font-size:10px;margin-top:auto">Tip: give rusty starters full snaps. Rest the sharp ones.</div></div>';
+    '</div>';
   s += '</div></div>';
   return s;
 }
@@ -8831,10 +8901,11 @@ function relBarHTML(v){
   return '<div class="capbar" style="margin-top:2px"><i style="width:'+v+'%;background:'+c+'"></i></div>' +
     '<p class="sub" style="margin-top:2px;font-size:11px">'+v+'/100 · <b style="color:'+c+'">'+relTier(v)+'</b></p>';
 }
-function goToHub(){ G.activePage = null; modalView = null; modalArg = null; modalBack = null; save(); render(); }
+function goToHub(){ if(G.mode === 'coachgm' && !G.officeOff) G.phaseDesk = null; G.activePage = null; modalView = null; modalArg = null; modalBack = null; save(); render(); }
 function navHTML(){
   const items = [['roster','📋 Rosters'],['depth','🏈 Depth Chart'],['staff','🧢 Staff'],['front','🏛️ Front Office'],['gm','🔭 Scouting'],['league','🏆 League']];
-  let s = '<div class="navbar"><button class="navbtn'+(!G.activePage?' on':'')+'" onclick="goToHub()">🏠 Hub</button>';
+  const offNav = G.mode === 'coachgm' && !G.officeOff && !G.unemployed;
+  let s = '<div class="navbar"><button class="navbtn'+(!G.activePage?' on':'')+'" onclick="goToHub()">'+(offNav?'🏢 Office':'🏠 Hub')+'</button>';
   if(G.mode === 'coachgm' && G.officeOff) s += '<button class="navbtn" onclick="setOfficeView(true)">🏢 Office</button>';
   if(G.mode === 'coachgm' || G.mode === 'owner'){ const fr = freshReports(); items.push(['prospects','🎓 Prospects'+(fr?' <span class="tag l">'+fr+'</span>':'')]); }
   items.forEach(it => {
@@ -9343,7 +9414,7 @@ function poachCoach(ti, role){
   save(); render();
 }
 
-function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', contract:'Contract', tvguide:'Trade Values', release:'Release', restructure:'Restructure', rspick:'Restructure a Contract', effwhy:'Why This Rating', campbattles:'Position Battles', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
+function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', contract:'Contract', tvguide:'Trade Values', release:'Release', restructure:'Restructure', rspick:'Restructure a Contract', effwhy:'Why This Rating', campbattles:'Position Battles', pacts:'Player Actions', scoutinfo:'Scouting Desk', campreport:'Camp Report Card', camproster:'Camp Roster', finledger:'Finance Ledger', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
   if(v === 'postgame') return postgameHTML();
@@ -9359,6 +9430,11 @@ function modalBodyHTML(v){
   if(v === 'rspick') return rsPickHTML();
   if(v === 'effwhy') return effWhyHTML(modalArg);
   if(v === 'campbattles') return campBattlesHTML();
+  if(v === 'pacts') return playerActsHTML(modalArg);
+  if(v === 'scoutinfo') return scoutInfoHTML();
+  if(v === 'campreport') return campReportCardHTML();
+  if(v === 'camproster') return campRosterHTML();
+  if(v === 'finledger') return financesHTML(true);
   if(v === 'fzcall') return fzCallHTML(modalArg);
   if(v === 'reposition') return repositionHTML(modalArg);
   if(v === 'assign') return assignHTML(modalArg);
@@ -9402,7 +9478,7 @@ function modalHTML(){
   if(!modalView) return '';
   const closeLabel = modalBack ? '← Back' : '✕ Close';
   return '<div class="modal-wrap" onclick="if(event.target===this)closeModal()">' +
-    '<div class="modal-panel'+(['prospect','postgame','contract','restructure','release','rspick','tvguide'].includes(modalView)?' wide':'')+'">' +
+    '<div class="modal-panel'+(['prospect','postgame','contract','restructure','release','rspick','tvguide','campreport','camproster','finledger','scoutinfo'].includes(modalView)?' wide':'')+'">' +
     '<div class="modal-hd"><span class="disp">'+modalTitle(modalView)+'</span><span><button class="btn tiny" onclick="closeModal()">'+closeLabel+'</button></span></div>' +
     '<div class="modal-body">'+modalBodyHTML(modalView)+'</div>' +
     '</div></div>';
@@ -9821,7 +9897,7 @@ function drawRoom(t){
       {k:'mon2', x:200,y:90,w:63,h:32, n:'FILM SCREEN', o:'Scout next opponent', pk: opp ? opp.city+' · '+teamOverall(opp)+' OVR · '+opp.w+'-'+opp.l : 'No opponent yet'},
       {k:'phone', x:274,y:120,w:28,h:14, n:'PHONE', o:"Scouting", pk: tradesOpen() ? 'Trade market open' : 'Trades closed · '+(G.fa||[]).length+' free agents'},
       {k:'journal', x:33,y:138,w:45,h:24, n:'JOURNAL', o:'This Week', bd: fcnt?String(fcnt):'', pk: fcnt ? fcnt+' new update'+(fcnt>1?'s':'') : 'All caught up'},
-      {k:'clip', x:79,y:133,w:33,h:27, n:'CLIPBOARD', o: OFFICE_PHASE_INFO[phase]?OFFICE_PHASE_INFO[phase][0]:ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : 'Notes'},
+      {k:'clip', x:79,y:133,w:33,h:27, n: OFFICE_PHASE_INFO[phase] ? OFFICE_PHASE_INFO[phase][0].toUpperCase() : 'CLIPBOARD', o: OFFICE_PHASE_INFO[phase] ? OFFICE_PHASE_INFO[phase][2].replace(/^\S+\s/,'')+' ›' : ws.canPractice?'Practice':'Week calendar', pk: phase==='season' ? (ws.canPractice ? DAYS[ws.today]+': drills open' : 'Game day') : clipStatus(phase)},
       {k:'pad', x:117,y:133,w:148,h:26, n:'GAME PLAN', o:'Staff recommendations', bd: pr?String(pr):'', pk: pr ? pr+' call'+(pr>1?'s':'')+' to make' : 'All calls made'},
       {k:'news', x:273,y:138,w:55,h:21, n:'NEWSPAPER', o:'League News', pk: L1 ? L1.name+' ('+L1.team+')' : 'Season preview'},
       {k:'books', x:316,y:121,w:27,h:15, n:'BINDERS', o:'Season results', pk: lr ? 'Last: '+lr : me.w+'-'+me.l},
@@ -9934,6 +10010,18 @@ const OFFICE_PHASE_INFO = { tag:['Franchise Tags','Tag or extend key players bef
   draft:['The Draft','Run the war room and make your picks.','🎓 Open War Room'], ota:['OTAs','Install the playbook and set early reps.','📋 Open OTAs'],
   camp:['Training Camp','Position battles and camp reps.','⛺ Open Camp'], preseason:['Preseason','Exhibition games and evaluations.','🏈 Open Preseason'], cutdown:['Final Cuts','Trim the roster to the limit.','✂️ Open Cutdown'] };
 function officeOffseason(){ return G && OFFICE_OFFSEASON.includes(G.phase); }
+function clipStatus(ph){
+  try {
+    if(ph === 'camp'){ const C = campState(); return 'Week '+C.wk+' of 3 · '+C.battles.filter(b=>!b.done).length+' battles open'; }
+    if(ph === 'preseason') return 'Game '+G.preWeek+' of 3 · '+meT().preW+'-'+meT().preL;
+    if(ph === 'cutdown'){ const n = meT().roster.length - LIMIT_REG; return n > 0 ? n+' cuts to make' : 'Roster set · ready'; }
+    if(ph === 'fa') return G.frenzy && !G.frenzy.done ? 'Frenzy day '+(G.frenzy.day||1) : 'Market open';
+    if(ph === 'draft') return 'War room ready';
+    if(ph === 'tag') return G.tagUsed ? 'Tag used' : 'Tag window open';
+    if(ph === 'ota') return 'Install the playbook';
+  } catch(e){}
+  return 'Tap to open';
+}
 function officeOpenDesk(){ G.phaseDesk = G.phase; G.activePage = null; save(); render(); }
 function officeBackFromDesk(){ G.phaseDesk = null; G.activePage = null; save(); render(); }
 function officeActive(){
@@ -10347,7 +10435,8 @@ function ovrInts(){
     const dc = G.draftClass; if(Array.isArray(dc)) dc.forEach(fix); else if(dc && Array.isArray(dc.players)) dc.players.forEach(fix);
   } catch(e){}
 }
-function render(){
+function render(){ renderCore(); try { whRestore(); } catch(e){ console.error(e); } }
+function renderCore(){
   migrateSpots();
   ovrInts();
   try{ syncTenure(); }catch(e){ console.error('tenure', e); }
@@ -10452,7 +10541,7 @@ function render(){
       '<p class="sub">No progress was lost — your last save is intact. Try a different page from the nav above, or use Quit to Menu in Front Office.</p></div>';
   }
   const nav = (G.phase === 'game' || G.phase === 'pregame' || G.phase === 'jobs' || G.unemployed || G.practiceScene || G.userTeam == null) ? '' : navHTML();
-  app.innerHTML = headerHTML() + nav + deskBar + body + modalHTML() + posPopupHTML();
+  app.innerHTML = headerHTML() + nav + body + modalHTML() + posPopupHTML();
   if(G.phase==='game'){ drawFormation(); renderLog(); updateGameUI(); }
 }
 
@@ -10604,7 +10693,7 @@ function playerRow(p, actions, isOpponent){
 function rosterTable(t, actionFn, noPills){
   const isOpponent = t.idx !== G.userTeam;
   const cols = [['name','Player'],['spot','Pos'],['scheme','Scheme'],['age','Age'],['rating','OVR'],['salary','Salary'],['years','Years']];
-  let s = noPills ? '' : '<div class="filterbar">' + posFilterPillsHTML(t, rFilter, 'setRFilter') + '</div>';
+  let s = noPills ? '' : '<div class="filterbar">' + posDDHTML(rFilter, 'setRFilter', (pos, sp) => { const l = t.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1); return {txt: l.length+' of '+min+' min'+(l.length?' · best '+Math.max(...l.map(p=>p.rating)):''), warn: l.length < min}; }, t.roster.length+' players') + '</div>';
   s += '<table class="tbl"><tr>';
   cols.forEach(c => {
     const on = rSort.key === c[0];
@@ -10709,14 +10798,17 @@ function faPoolRowsHTML(pool, me, limit){
 /* ---------- GM's Office (free agents + trades) ---------- */
 let gmTab = 'fa';
 function setGMTab(t){ gmTab = t; render(); }
-function gmFreeAgentsHTML(){
+function gmFreeAgentsHTML(tabs){
   const me = meT();
   const limit = rosterLimit();
-  let s = '<div class="panel">' + capBarHTML(me);
-  s += '<div class="filterbar" style="align-items:center;justify-content:space-between;margin-top:8px">' + faPosDDHTML(me, G.fa) +
-    '<span class="countpill'+(activeCount(me)>=limit?' over':'')+'" style="cursor:pointer;margin-left:auto" title="'+(activeCount(me) < limit ? 'Room to sign. Tap to view your roster' : 'Roster full. Cut someone first')+'" onclick="openModal(\'rosterPopup\')">Roster <b>'+activeCount(me)+'</b> / '+limit+'</span></div>';
+  let s = '<div class="fit-page"><div class="lt-bar">'+(tabs||'')+'<div class="lt-info">'+capPillHTML(me) +
+    '<span class="fz-pill" style="cursor:pointer" title="'+(activeCount(me) < limit ? 'Room to sign. Tap to view your roster' : 'Roster full. Cut someone first')+'" onclick="openModal(\'rosterPopup\')">Roster <b style="color:'+(activeCount(me)>=limit?'var(--red)':'var(--chalk)')+'">'+activeCount(me)+'</b>/'+limit+'</span><span class="fz-pill">'+G.fa.length+' available</span></div>' +
+    '<div class="lt-filt">'+posDDHTML(faFilter, 'setFAFilter', (pos, sp) => {
+      const av = G.fa.filter(p => p.pos===pos && (sp===pos || p.spot===sp)), mine = me.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1);
+      return { txt: av.length+' avail · you have '+mine.length+' of '+min+' min', warn: mine.length < min }; }, G.fa.length+' players', true)+'</div></div>';
+  s += '<div class="lt-card"><div class="fit-box" style="--fit-off:178px">';
   const faCols = [['name','Player'],['spot','Pos'],['team','Team'],['age','Age'],['rating','OVR'],['salary','Salary'],['askYears','Years']];
-  s += '<table class="tbl"><tr>';
+  s += '<table class="tbl lt-tbl"><tr>';
   faCols.forEach(c => {
     const on = faSort.key === c[0];
     s += '<th class="sorth'+(on?' on':'')+'" onclick="setFASort(\''+c[0]+'\')">'+c[1]+(on ? (faSort.dir>0?' ▲':' ▼') : '')+'</th>';
@@ -10736,7 +10828,7 @@ function gmFreeAgentsHTML(){
   });
   pool = pool.slice(0, 60);
   s += faPoolRowsHTML(pool, me, limit);
-  s += '</table></div>';
+  s += '</table></div></div></div>';
   return s;
 }
 function gmOfficeHTML(){
@@ -10753,12 +10845,10 @@ function gmOfficeHTML(){
       '<div><div class="sub">Spending</div><div class="capbar"><i style="width:'+G.gm.spending+'%;background:var(--gold)"></i></div><p class="sub" style="margin-top:2px">'+G.gm.spending+'/100 — how much of the cap he is willing to use</p></div>' +
       '</div><button class="btn danger" style="margin-top:10px" onclick="fireGM()">Fire GM</button></div>';
   }
-  s += '<div class="filterbar" style="margin-bottom:12px">';
-  [['fa','Free Agents'],['trades','Trades']].forEach(t => {
-    s += '<button class="fbtn'+(gmTab===t[0]?' on':'')+'" onclick="setGMTab(\''+t[0]+'\')">'+t[1]+'</button>';
-  });
-  s += '</div>';
-  if(gmTab==='fa') s += (G.mode!=='player' && !iRun('fa')) ? lockedDutyHTML('fa') : gmFreeAgentsHTML();
+  const gmTabs = '<div class="lt-tabs">'+[['fa','Free Agents'],['trades','Trades']].map(t => '<button class="fbtn'+(gmTab===t[0]?' on':'')+'" onclick="setGMTab(\''+t[0]+'\')">'+t[1]+'</button>').join('')+'</div>';
+  if(gmTab==='fa' && (G.mode==='player' || iRun('fa'))) return s + gmFreeAgentsHTML(gmTabs);
+  s += '<div class="lt-bar">'+gmTabs+'</div>';
+  if(gmTab==='fa') s += lockedDutyHTML('fa');
   else if(gmTab==='trades') s += (G.mode!=='player' && !iRun('trade')) ? lockedDutyHTML('trade') : tradeHTML();
   return s;
 }
@@ -11186,21 +11276,25 @@ function prospectsHTML(){
   const w = scoutWindow();
   const ranks = mediaRanks(cls.pool);
   const cs = currentCoach('CS');
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+cls.year+' Draft Class · 6 rounds</div>' +
-    '<p class="sub" style="margin:6px 0">'+windowLabel(w)+'. College scout: <b style="color:var(--chalk)">'+(cs?esc(cs.name)+' ('+cs.rating+')':'none, so points come in slowly')+'</b>. AI clubs scout too, so a sleeper you find stays yours only until they find him.</p>' +
-    '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px"><div><div class="sub">College pts</div><div style="font-size:18px;font-weight:800;color:var(--gold)">'+pts+'</div></div>' +
-    '<div><div class="sub">Earned per week</div><div style="font-size:18px;font-weight:800">+'+weeklyScoutPoints('CS')+'</div></div>' +
-    '<div><div class="sub">Top-10 visits left</div><div style="font-size:18px;font-weight:800">'+(TOP_VISITS - (cls.visits||[]).length)+'</div></div>' +
-    '<div><div class="sub">Prospects</div><div style="font-size:18px;font-weight:800">'+cls.pool.length+'</div></div></div>' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+Object.keys(CS_ACTIONS).map(k=>{ const a=CS_ACTIONS[k]; const open = a.when==='any' || a.when===w;
-      return '<span class="tag '+(open?'w':'l')+'" title="'+esc(a.desc)+'">'+a.icon+' '+a.name+(a.cost?' · '+a.cost:'')+'</span>'; }).join('')+'</div></div>';
-  s += draftCalendarHTML(cls) + boardTabsHTML(cls);
+  const stg = [['season','College season'],['bowl','Bowl games'],['combine','Combine'],['proday','Pro days'],['draft','Draft']];
+  const sIdx = G.phase==='draft' ? 4 : cls.proDayDone ? 3 : cls.combineDone ? 2 : cls.bowlDone ? 1 : 0;
+  const nNew = (cls.events||[]).length;
+  let s = '<div class="lt-bar"><b style="font:700 12px Oswald,Arial,sans-serif;letter-spacing:.1em;color:var(--gold);white-space:nowrap">'+cls.year+' CLASS · 6 RDS</b><div class="lt-info">' +
+    '<span class="fz-pill">College pts <b style="color:var(--gold)">'+pts+'</b> · <b class="up">+'+weeklyScoutPoints('CS')+'</b>/wk</span>' +
+    '<span class="fz-pill">Top-10 visits <b>'+(TOP_VISITS - (cls.visits||[]).length)+'</b></span><span class="fz-pill">'+cls.pool.length+' prospects</span>' +
+    '<span class="pr-mini"><b style="color:var(--gold)">'+stg[sIdx][1]+'</b><span class="t"><i style="width:'+Math.max(4, sIdx/4*100)+'%"></i></span><span class="sub">Draft '+fmtDate(draftDate(cls.year)).replace(/^\w+, /,'')+'</span></span></div>' +
+    '<div class="lt-filt"><button class="btn tiny" onclick="openModal(\'scoutinfo\')">ⓘ Costs'+(nNew?' · 📰':'')+'</button></div></div>';
+  boardTabsHTML._filters = '';
+  const btabs = boardTabsHTML(cls);
+  if(boardTab !== 'list') s += btabs;
   if(boardTab === 'forecast') return s + forecastHTML(cls);
   if(boardTab === 'tiers') return s + tiersHTML(cls);
   if(boardTab === 'map') return s + scoutMapHTML(cls);
-  s += '<div class="panel"><div class="rosterctl" style="margin-bottom:8px;display:flex;gap:8px;flex-wrap:wrap"><select class="fselect" onchange="prospectsFilter=this.value;render()">'+posFilterOptionsHTML(prospectsFilter)+'</select>' +
-    '<select class="fselect" onchange="prospectsScouted=this.value;render()">'+[['','All prospects'],['yes','🔍 Scouted by me ('+cls.pool.filter(isScouted).length+')'],['no','Not scouted yet'],['watch','★ Watchlist ('+(cls.watch||[]).length+')']].map(o=>'<option value="'+o[0]+'"'+(prospectsScouted===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>' +
-    '<select class="fselect" onchange="prospectsSort=this.value;render()">'+[['media','Media rank'],['mine','Your grade'],['stock','Stock'],['watch','Watchlist first']].map(o=>'<option value="'+o[0]+'"'+(prospectsSort===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></div>';
+  const prPos = posDDHTML(prospectsFilter||'ALL', 'setProsPos', (pos, sp) => { const l = cls.pool.filter(p => p.pos===pos && (sp===pos || p.spot===sp)); return {txt: l.length+' prospects'+(l.length?' · top media #'+Math.min(...l.map(p=>ranks[p.id])):'')}; }, cls.pool.length+' prospects', true);
+  s += '<div class="fit-page"><div class="lt-bar">'+btabs.replace('<div class="filterbar" style="margin:0 0 10px">','<div class="lt-tabs">')+'<div class="lt-filt">'+prPos+'<select class="fselect" onchange="prospectsScouted=this.value;render()">'+[['','All prospects'],['yes','🔍 Scouted ('+cls.pool.filter(isScouted).length+')'],['no','Not scouted'],['watch','★ Watchlist ('+(cls.watch||[]).length+')']].map(o=>'<option value="'+o[0]+'"'+(prospectsScouted===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select>' +
+    '<select class="fselect" onchange="prospectsSort=this.value;render()">'+[['media','Media rank'],['mine','Your grade'],['stock','Stock'],['watch','Watchlist first']].map(o=>'<option value="'+o[0]+'"'+(prospectsSort===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></div></div>';
+  if(false) s += '<div><select class="fselect" onchange="prospectsFilter=this.value;render()">'+posFilterOptionsHTML(prospectsFilter)+'</select>' +
+    '</div>';
   let pool = cls.pool.slice();
   if(prospectsFilter) pool = pool.filter(p => p.spot === prospectsFilter || p.pos === prospectsFilter);
   const watch = cls.watch || [];
@@ -11209,21 +11303,30 @@ function prospectsHTML(){
     : prospectsSort==='stock' ? (b.stock||0)-(a.stock||0)
     : prospectsSort==='watch' ? ((watch.includes(b.id)?1:0)-(watch.includes(a.id)?1:0)) || ranks[a.id]-ranks[b.id]
     : ranks[a.id]-ranks[b.id]);
-  s += '<div style="overflow-x:auto"><table class="tbl"><tr><th>Media</th><th>Prospect</th><th>Pos</th><th>Your grade</th><th>Stock</th><th>College stats</th><th>Pot</th><th>Char</th><th>Med</th><th>Scout</th></tr>';
+  s += '<div class="lt-card"><div class="fit-box" style="--fit-off:186px"><table class="tbl lt-tbl"><tr><th>Media</th><th>Prospect</th><th>Pos</th><th>Your grade</th><th>Stock</th><th>College stats</th><th>Pot</th><th>Char</th><th>Med</th><th>Scout</th></tr>';
   pool.slice(0, 80).forEach(pr => {
     const fb = (k) => { const why = canScout(k, pr); return '<button class="btn tiny" '+(why?'disabled title="'+esc(why)+'"':'title="'+esc(CS_ACTIONS[k].desc)+'"')+' onclick="doScout(\''+k+'\','+pr.id+')">'+CS_ACTIONS[k].icon+(CS_ACTIONS[k].cost?CS_ACTIONS[k].cost:'')+'</button>'; };
     const acts = w==='predraft' ? ['film','interview','medical','workout','visit'] : w==='season' ? ['film','live'] : ['film'];
     ensureProspectCard(pr); const cc = collegeColors(pr.college.name);
     const sc = isScouted(pr);
-    s += '<tr class="'+(sc?'pr-scouted':'')+'"><td><b>'+ranks[pr.id]+'</b>'+(sc?'<div class="pr-sc" title="'+pr.log.length+' scouting report'+(pr.log.length>1?'s':'')+'">🔍 '+pr.log.length+'</div>':'')+'</td><td><div style="display:flex;gap:8px;align-items:center"><img src="'+faceURL(pr.id,cc[0],cc[1],pr.num)+'" style="width:28px;height:32px;image-rendering:pixelated;border-radius:5px;flex:none" alt=""><div><a href="#" onclick="openModal(\'prospect\','+pr.id+');return false" style="color:var(--chalk);font-weight:700">'+esc(pr.name)+'</a>'+(watch.includes(pr.id)?' <span style="color:var(--gold)">★</span>':'')+
+    s += '<tr class="'+(sc?'pr-scouted':'')+'"><td><b>'+ranks[pr.id]+'</b>'+(sc?'<div class="pr-sc" title="'+pr.log.length+' scouting report'+(pr.log.length>1?'s':'')+'">🔍 '+pr.log.length+'</div>':'')+'</td><td><div style="display:flex;gap:8px;align-items:center"><img src="'+faceURL(pr.id,cc[0],cc[1],pr.num)+'" style="width:22px;height:25px;image-rendering:pixelated;border-radius:5px;flex:none" alt=""><div><a href="#" onclick="openModal(\'prospect\','+pr.id+');return false" style="color:var(--chalk);font-weight:700">'+esc(pr.name)+'</a>'+(watch.includes(pr.id)?' <span style="color:var(--gold)">★</span>':'')+
       (pr.traitsSeen?'<div class="sub" style="font-size:10px">'+pr.traits.slice(0,pr.traitsSeen).map(esc).join(' · ')+'</div>':'<div class="sub" style="font-size:10px">'+esc(pr.college.name)+'</div>')+'</div></div></td>' +
       '<td><b>'+pr.spot+'</b></td><td>'+rangeBarHTML(pr)+' <b style="color:'+gradeColor(letterGrade(Math.round((pr.scoutLo+pr.scoutHi)/2)))+'">'+letterGrade(Math.round((pr.scoutLo+pr.scoutHi)/2))+'</b></td><td>'+stockHTML(pr)+'</td><td class="sub" style="font-size:11px">'+(csLine(pr)||'–')+'</td>' +
       '<td>'+potLabel(pr)+'</td><td>'+charLabel(pr)+'</td><td>'+medLabel(pr)+'</td><td style="white-space:nowrap">'+acts.map(fb).join(' ')+'</td></tr>';
   });
-  s += '</table></div>'+(pool.length>80?'<p class="sub" style="margin-top:6px">Showing top 80. Filter by position to see more.</p>':'')+'</div>';
+  s += '</table>'+(pool.length>80?'<p class="sub" style="margin:6px 0">Showing top 80. Filter by position to see more.</p>':'')+'</div></div></div>';
   return s;
 }
 let prospectsScouted = '';
+function setProsPos(v){ prospectsFilter = v === 'ALL' ? '' : v; render(); }
+function scoutInfoHTML(){
+  const cls = ensureDraftClass(); if(!cls) return '<p class="sub">No class.</p>';
+  const w = scoutWindow(), cs = currentCoach('CS');
+  return '<p class="sub" style="margin-bottom:6px">'+windowLabel(w)+'. College scout: <b style="color:var(--chalk)">'+(cs?esc(cs.name)+' ('+cs.rating+')':'none, so points come in slowly')+'</b>. AI clubs scout too, so a sleeper you find stays yours only until they find him.</p>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+Object.keys(CS_ACTIONS).map(k=>{ const a=CS_ACTIONS[k]; const open = a.when==='any' || a.when===w;
+      return '<span class="tag '+(open?'w':'l')+'" title="'+esc(a.desc)+'">'+a.icon+' '+a.name+(a.cost?' · '+a.cost:'')+'</span>'; }).join('')+'</div>' +
+    '<div class="sub" style="font-size:10.5px;margin-bottom:6px">Green = open now. Hover or long-press for what each one reveals.</div>' + draftCalendarHTML(cls);
+}
 function isScouted(pr){ return !!(pr && pr.log && pr.log.length); }
 function toggleWatch(id){ const cls = ensureDraftClass(); cls.watch = cls.watch || []; const i = cls.watch.indexOf(id); if(i>=0) cls.watch.splice(i,1); else cls.watch.push(id); save(); render(); }
 function prospectModalHTML(id){
@@ -12232,6 +12335,7 @@ function draftHTML(){
   return draftReviewHTML();
 }
 function setDraftBoardFilter(pos){ G.draftBoardFilter = pos; save(); render(); }
+function setDraftBoardWheel(v){ setDraftBoardFilter(v === 'ALL' ? '' : v); }
 function setDraftBoardSort(key){
   const s = G.draftBoardSort;
   if(s.key === key) s.dir = -s.dir; else { s.key = key; s.dir = key==='name'||key==='college' ? 1 : -1; }
@@ -12281,9 +12385,9 @@ function draftBoardHTML(){
   if(!isMe) return s;
   s += posNeedsHTML(me);
   s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Big Board</div>' +
-    '<div class="rosterctl" style="margin:8px 0"><select class="fselect" onchange="setDraftBoardFilter(this.value)">' + posFilterOptionsHTML(G.draftBoardFilter) + '</select></div>';
+    '<div class="rosterctl" style="margin:8px 0">' + posDDHTML(G.draftBoardFilter||'ALL', 'setDraftBoardWheel', (pos, sp) => { const l = G.draftPool.filter(pr => pr.pos===pos && (sp===pos || pr.spot===sp)); return {txt: l.length+' on board'}; }, G.draftPool.length+' prospects') + '</div>';
   let pool = G.draftPool.slice();
-  if(G.draftBoardFilter) pool = pool.filter(pr => pr.spot === G.draftBoardFilter);
+  if(G.draftBoardFilter) pool = pool.filter(pr => pr.spot === G.draftBoardFilter || pr.pos === G.draftBoardFilter);
   const sortKey = G.draftBoardSort.key, sortDir = G.draftBoardSort.dir;
   pool.sort((a,b) => {
     let va, vb;
@@ -12347,47 +12451,76 @@ function draftReviewHTML(){
 /* ---------- preseason ---------- */
 function preseasonHTML(){
   const me = meT();
-  let s = preseasonPlanHTML() + '<div class="panel" style="margin-bottom:12px">';
-  if(G.preResults.length){
-    s += '<table class="tbl" style="margin-top:8px"><tr><th>Game</th><th>Opponent</th><th>Result</th></tr>';
-    G.preResults.forEach((r,i) => {
-      s += '<tr><td>'+(i+1)+'</td><td>'+esc(tName(r.opp))+'</td><td><span class="tag '+(r.won?'w':'l')+'">'+(r.won?'W':'L')+' '+r.my+'–'+r.op+'</span></td></tr>';
-    });
-    s += '</table>';
-  }
-  s += '</div>';
-  if(G.preReport && (G.preReport.devs.length || G.preReport.injuries.length)){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Last Game — Player Report</div>';
-    if(G.preReport.devs.length) s += '<p class="sub" style="margin-top:4px">Developed with live reps: ' + G.preReport.devs.map(d => esc(d.name)+' ('+PL(d)+') +'+d.delta+' → <b style="color:var(--gold)">'+d.ovr+'</b>').join(' · ') + '</p>';
-    if(G.preReport.injuries.length) s += '<p class="sub" style="margin-top:4px;color:var(--red)">Injured: ' + G.preReport.injuries.map(i => esc(i.name)+' ('+PL(i)+') — out '+i.weeks+'wk').join(' · ') + '</p>';
-    if(G.campReport && G.campReport.length) s += '<p class="sub" style="margin-top:4px">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+PL(r)+') +'+r.delta).join(' · ')+'</p>';
-    s += '</div>';
-  } else if(G.campReport && G.campReport.length){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Camp Report</div><p class="sub">Camp risers: '+G.campReport.map(r=>esc(r.name)+' ('+PL(r)+') +'+r.delta).join(' · ')+'</p></div>';
-  }
-  s += posNeedsHTML(me);
-  s += '<div class="panel" style="margin-bottom:12px">'+capBarHTML(me)+'<div style="margin-top:8px"><span class="countpill">Camp roster <b>'+me.roster.length+'</b> / '+LIMIT_OFF+'</span> <span class="sub">Cutdown to '+LIMIT_REG+' comes '+fmtDate(cutdownDate(G.year))+' — the day before the opener.</span></div></div>';
-  s += '<div class="panel"><div class="hd disp">Camp Roster</div>' +
-    rosterTable(me, p => '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>') + '</div>';
-  return s;
+  let s = preseasonPlanHTML();
+  const bits = [];
+  if(G.preResults.length) bits.push('<span class="fz-pill">Results '+G.preResults.map(r => '<b style="color:'+(r.won?'var(--green)':'var(--red)')+'">'+(r.won?'W':'L')+' '+r.my+'-'+r.op+'</b> '+esc(G.teams[r.opp].abbr)).join(' · ')+'</span>');
+  const R = G.preReport;
+  if(R && R.devs.length) bits.push('<span class="fz-pill">Reps paid off '+R.devs.slice(0,3).map(d => esc(d.name.split(' ').pop())+' <b class="up">+'+d.delta+'</b>').join(' · ')+(R.devs.length>3?' +'+(R.devs.length-3):'')+'</span>');
+  if(R && R.injuries.length) bits.push('<span class="fz-pill" style="border-color:var(--red)">Hurt '+R.injuries.map(i => esc(i.name.split(' ').pop())+' <b class="dn">'+i.weeks+'wk</b>').join(' · ')+'</span>');
+  if(bits.length) s += '<div class="fit-bar">'+bits.join('')+'</div>';
+  return '<div class="fit-page">'+s+'</div>';
+}
+function campRosterHTML(){
+  const me = meT();
+  return '<div class="fit-bar"><span class="fz-pill">Roster <b>'+me.roster.length+'</b> / '+LIMIT_OFF+'</span><span class="fz-pill">Cap room <b>'+money(capRoom(me))+'</b></span><span class="sub">Cutdown to '+LIMIT_REG+' on '+fmtDate(cutdownDate(G.year))+'.</span></div>' +
+    rosterTable(me, p => '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>');
 }
 
 /* ---------- cutdown day ---------- */
+let cutF = {pos:'ALL', bubble:false, over:false}, cutSort = {key:'rating', dir:-1};
+function setCutF(k, v){ cutF[k] = v; render(); }
+function setCutPos(v){ cutF.pos = v; render(); }
+function setCutSort(k){ cutSort = cutSort.key === k ? {key:k, dir:-cutSort.dir} : {key:k, dir:-1}; render(); }
+function cutBubbleIds(t){
+  const ids = new Set();
+  POS_ORDER.forEach(pos => { const g = t.roster.filter(p => p.pos === pos).sort((a,b) => a.rating - b.rating); if(g.length > MIN53[pos]) g.slice(0, 2).forEach(p => ids.add(p.id)); });
+  return ids;
+}
+function cutSaves(p){ try { return Math.round(((p.salary||0) - releaseSplit(p).now)*10)/10; } catch(e){ return p.salary||0; } }
+function cutListHTML(me){
+  const bub = cutBubbleIds(me);
+  let list = me.roster.filter(p => (cutF.pos === 'ALL' || p.pos === cutF.pos || p.spot === cutF.pos) && (!cutF.bubble || bub.has(p.id)) && (!cutF.over || posCount(me, p.pos) > MIN53[p.pos]));
+  const val = (p, k) => k === 'spot' ? spotSortVal(p) : k === 'form' ? (p.form==null?80:p.form) : k === 'saves' ? cutSaves(p) : p[k];
+  list.sort((a,b) => { const va = val(a, cutSort.key), vb = val(b, cutSort.key); return (typeof va === 'string' ? va.localeCompare(vb) : (va - vb) || (b.rating - a.rating)) * cutSort.dir; });
+  const th = (k, l) => '<th class="sorth'+(cutSort.key===k?' on':'')+'" onclick="setCutSort(\''+k+'\')">'+l+(cutSort.key===k?(cutSort.dir>0?' ▲':' ▼'):'')+'</th>';
+  let s = '<table class="tbl cut-tbl"><tr>'+th('name','Player')+th('spot','Pos')+th('age','Age')+th('rating','OVR')+th('form','Form')+th('salary','Salary')+th('years','Yrs')+th('saves','Cut saves')+'<th></th></tr>';
+  list.forEach(p => { const sv = cutSaves(p), f = p.form==null?80:Math.round(p.form);
+    s += '<tr'+(bub.has(p.id)?' class="bub"':'')+'><td>'+pn(p)+(p.injWeeks>0?' <span class="tag l">INJ</span>':'')+(bub.has(p.id)?' <span title="Bubble: bottom 2 at his position" style="color:#F2A24A">●</span>':'')+'</td><td>'+PL(p)+'</td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:800">'+p.rating+'</td>' +
+      '<td style="color:'+fcol(f)+'">'+f+'</td><td>'+money(p.salary)+'</td><td>'+p.years+'</td><td style="color:'+(sv>=0?'var(--green)':'var(--red)')+'">'+(sv>=0?'':'−')+money(Math.abs(sv))+'</td>' +
+      '<td><button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button></td></tr>'; });
+  if(!list.length) s += '<tr><td colspan="9" class="sub" style="text-align:center;padding:12px">Nobody matches.</td></tr>';
+  return s + '</table>';
+}
+function cutReportMiniHTML(){
+  if(!G.camp || G.camp.year !== G.year) return '<div class="cp-h">Camp report</div><div class="sub">No camp held this year.</div>';
+  const C = G.camp, R = campGrade(), me = meT();
+  const gain = me.roster.reduce((a,p) => a + (C.snap[p.id] != null && p.rating > C.snap[p.id] ? p.rating - C.snap[p.id] : 0), 0);
+  const gc = R.g[0] === 'A' ? 'var(--green)' : R.g[0] === 'B' ? 'var(--gold)' : R.g[0] === 'C' ? '#F2A24A' : 'var(--red)';
+  const bt = C.battles.map(b => { const W = campP(b.win||b.a); return W ? esc(W.name.split(' ').pop())+' '+b.spot : ''; }).filter(Boolean).slice(0,3).join(', ');
+  return '<div class="cp-h">Camp report<em><a href="#" onclick="event.preventDefault();openModal(\'campreport\')" style="color:var(--muted)">full card ›</a></em></div>' +
+    '<div style="display:flex;gap:10px;align-items:center;cursor:pointer" onclick="openModal(\'campreport\')"><span class="cp-grade" style="color:'+gc+';font-size:34px;line-height:1">'+R.g+'</span>' +
+    '<div class="sub" style="font-size:10.5px">Starter form <b style="color:var(--chalk)">'+R.form+'</b> · +'+gain+' OVR<br>'+(bt?'Battles: '+bt:'No battles')+'<br>'+R.inj+' camp injur'+(R.inj===1?'y':'ies')+'</div></div>';
+}
 function cutdownHTML(){
-  const me = meT();
-  const over = me.roster.length > LIMIT_REG;
-  let s = campReportCardHTML() + '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Cutdown Day — '+fmtDate(cutdownDate(G.year))+'</div>' +
-    '<p class="sub" style="margin-bottom:10px">Rosters must be at '+LIMIT_REG+' by tonight. The season kicks off tomorrow, '+fmtDate(seasonStartDate(G.year))+'. Cuts hit the waiver wire (free agent pool). Minimums: QB 2 · RB 3 · WR 5 · TE 3 · OL 8 · DL 6 · LB 5 · CB 4 · S 3 · K 1.</p>' +
-    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
-    '<span class="countpill'+(over?' over':'')+'">Roster <b>'+me.roster.length+'</b> / '+LIMIT_REG+'</span>' +
-    '<button class="btn" onclick="doAutoCut()">Auto-cut to best 53</button>' +
-    (!meetsMinimums(me) ? '<button class="btn" onclick="fillMinimums()">Sign street FAs to fill minimums</button>' : '') +
-    '<button class="btn primary" style="margin-left:auto" '+(over||!meetsMinimums(me)?'disabled':'')+' onclick="confirmCutdown()">Set Final 53 — Kick Off the Season →</button></div></div>' +
-    (!meetsMinimums(me) ? '<div class="panel" style="margin-bottom:12px"><p class="sub">You\'re short at one or more positions. Hit <b>Sign street FAs</b> to grab the best available bodies at your thin spots, or you can\'t kick off.</p></div>' : '');
-  s += posNeedsHTML(me);
-  s += '<div class="panel"><div class="hd disp">Make Your Cuts</div>' +
-    rosterTable(me, p => '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>') + '</div>';
-  return s;
+  const me = meT(), over = me.roster.length - LIMIT_REG, ok = meetsMinimums(me);
+  let s = '<div class="fit-bar"><span class="cp-t" style="font:700 13px Oswald,Arial,sans-serif;letter-spacing:.1em;color:var(--gold)">CUTDOWN DAY · '+fmtDate(cutdownDate(G.year)).toUpperCase()+'</span>' +
+    '<span class="fz-pill">Roster <b style="color:'+(over>0?'var(--red)':'var(--green)')+'">'+me.roster.length+'</b> / '+LIMIT_REG+'</span>' +
+    '<span class="fz-pill">Cap room <b style="color:'+(capRoom(me)>=0?'var(--green)':'var(--red)')+'">'+money(capRoom(me))+'</b></span>' +
+    '<button class="btn tiny" onclick="doAutoCut()">Auto-cut to best 53</button>' +
+    (!ok ? '<button class="btn tiny" onclick="fillMinimums()">Sign street FAs for minimums</button>' : '') +
+    '<button class="btn tiny primary ml" '+(over>0||!ok?'disabled':'')+' onclick="confirmCutdown()">Set Final 53 · Kick Off →</button></div>';
+  s += '<div class="fit-cols fit-fix" style="--fit-h:196px;grid-template-columns:1.9fr 1fr">';
+  s += '<div class="fit-card"><div class="fit-seg">'+posDDHTML(cutF.pos, 'setCutPos', (pos, sp) => { const l = me.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp)), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1); return {txt: l.length+' of '+min+' min', warn: l.length < min}; }, me.roster.length+' players') +
+    '<button class="fb'+(cutF.bubble?' on':'')+'" onclick="setCutF(\'bubble\','+!cutF.bubble+')">Bubble only</button>' +
+    '<button class="fb'+(cutF.over?' on':'')+'" onclick="setCutF(\'over\','+!cutF.over+')">Over minimum</button></div>' +
+    '<div class="fit-box">'+cutListHTML(me)+'</div></div>';
+  s += '<div class="fit-card">' + cutReportMiniHTML() +
+    '<div class="cp-h" style="margin-top:6px">Minimums<em>'+(ok?'all met ✓':'<span style="color:#ff9a9a">short</span>')+'</em></div>' + minStripHTML(me).replace('<span class="mt">MINIMUMS</span>','') +
+    '<div class="cp-h" style="margin-top:6px">To cut<em>'+(over>0?over+' more':'done ✓')+'</em></div>' +
+    '<div class="capbar"><i style="width:'+clamp((me.roster.length-LIMIT_REG)/Math.max(1,LIMIT_OFF-LIMIT_REG)*100,0,100)+'%;background:var(--red)"></i></div>' +
+    '<div class="sub" style="font-size:10px"><span style="color:#F2A24A">●</span> Bubble = bottom 2 at a spot above its minimum. Cuts go to waivers. Season opens '+fmtDate(seasonStartDate(G.year))+'.</div>' +
+    (!ok ? '<div class="sub" style="font-size:10px;color:#ff9a9a">Short at a spot. Sign street FAs or you can\'t kick off.</div>' : '') + '</div>';
+  return '<div class="fit-page">' + s + '</div></div>';
 }
 
 /* ---------- hub (regular season) ---------- */
@@ -14081,75 +14214,108 @@ let rosterTeamIdx = null;
 
 /* shared position dropdown (Rosters, Free Agents, All Players): colored by group, opens under its box */
 const POS_COL = {QB:'#E25555', RB:'#F2994A', WR:'#F2C94C', TE:'#A3D977', OL:'#4CAF6E', DL:'#56CCF2', LB:'#4A90E2', CB:'#9B6BE8', S:'#E06CB4', K:'#9AA5B1', P:'#9AA5B1', LS:'#9AA5B1'};
-function posDDHTML(cur, setter, rowFn, allTxt){
-  const grpName = {OL:'Offensive Line', DL:'Defensive Line', LB:'Linebackers', S:'Safeties'};
-  const row = (val, code, r, col, extra) => '<button class="dd-opt'+(cur===val?' on':'')+(extra||'')+'" style="--c:'+col+'" onclick="ddPick(this);'+setter+'(\''+val+'\')"><span class="dd-code">'+code+'</span><span class="dd-txt">'+r.txt+'</span>'+(r.warn?'<span class="dd-warn" title="Below minimum">short</span>':'')+'</button>';
-  let opts = row('ALL','ALL',{txt:'All positions · '+allTxt},'#FFD447');
+function posDDHTML(cur, setter, rowFn, allTxt, right){
+  const items = [['ALL','ALL',{txt:'All positions · '+allTxt},'#FFD447']];
   POS_ORDER.forEach(pos => {
     const col = POS_COL[pos]||'#9AA5B1';
-    if(SPOTS[pos].length > 1){
-      opts += '<div class="dd-grp" style="--c:'+col+'">'+(grpName[pos]||pos)+'</div>' + row(pos,'ALL '+pos,rowFn(pos,pos),col,' sub');
-      SPOTS[pos].forEach(sp => opts += row(sp,sp,rowFn(pos,sp),col,' sub'));
-    } else opts += row(pos,pos,rowFn(pos,pos),col);
+    if(SPOTS[pos].length > 1){ items.push([pos,'ALL '+pos,rowFn(pos,pos),col]); SPOTS[pos].forEach(sp => items.push([sp,sp,rowFn(pos,sp),col])); }
+    else items.push([pos,pos,rowFn(pos,pos),col]);
   });
-  const g = cur==='ALL' ? null : (SPOT_GROUP[cur] || cur), r = g ? rowFn(g, cur) : null;
+  let ci = items.findIndex(x => x[0] === cur); if(ci < 0) ci = 0;
+  const one = items.map((x,i) => '<div class="wh-it" data-i="'+i+'" data-v="'+x[0]+'" style="--c:'+x[3]+'"><span class="dd-code">'+x[1]+'</span><span class="dd-txt">'+x[2].txt+'</span>'+(x[2].warn?'<span class="dd-warn">short</span>':'')+'</div>').join('');
+  let rows = ''; for(let r=0; r<WH_REP; r++) rows += one;
+  const g = cur==='ALL' ? null : (SPOT_GROUP[cur] || cur), rr = g ? rowFn(g, cur) : null;
   const col = g ? (POS_COL[g]||'#9AA5B1') : '#FFD447';
-  return '<div class="dd dd-left"><button class="dd-btn" style="--c:'+col+'" onclick="ddToggle(this)"><span class="dd-code">'+(g&&SPOTS[cur]&&SPOTS[cur].length>1?'ALL '+cur:cur)+'</span><span class="dd-txt">'+(g?r.txt:'All positions')+'</span>'+(r&&r.warn?'<span class="dd-warn">short</span>':'')+'<span class="dd-car">▾</span></button><div class="dd-pop">'+opts+'</div></div>';
+  return '<div class="dd dd-wheel '+(right?'dd-right':'dd-left')+'" data-setter="'+setter+'" data-n="'+items.length+'" data-cur="'+ci+'"><button class="dd-btn" style="--c:'+col+'" onclick="ddToggle(this)"><span class="dd-code">'+(g&&SPOTS[cur]&&SPOTS[cur].length>1?'ALL '+cur:cur)+'</span><span class="dd-txt">'+(g?rr.txt:'All positions')+'</span>'+(rr&&rr.warn?'<span class="dd-warn">short</span>':'')+'<span class="dd-car">▾</span></button>' +
+    '<div class="dd-pop wh"><div class="wh-band"></div><div class="wh-list">'+rows+'</div><div class="wh-fade"></div></div></div>';
+}
+/* ---- looping position wheel: whatever row rolls into the top band is the filter ---- */
+const WH_REP = 5, WH_H = 32;
+let WH_KEEP = null;
+function whPlace(dd){
+  const btn = dd.querySelector('.dd-btn'), pop = dd.querySelector('.dd-pop'); if(!btn || !pop) return;
+  const r = btn.getBoundingClientRect(), W = 270, vw = window.innerWidth, vh = window.innerHeight;
+  let left = dd.classList.contains('dd-right') ? r.right - W : r.left; left = Math.max(6, Math.min(left, vw - W - 6));
+  let top = r.bottom + 4, h = Math.min(200, vh - top - 6); if(h < 120){ h = Math.min(200, r.top - 10); top = r.top - 4 - h; }
+  Object.assign(pop.style, {position:'fixed', left:left+'px', top:top+'px', right:'auto', height:h+'px', zIndex:300});
+}
+function whBind(dd, idx){
+  const list = dd.querySelector('.wh-list'); if(!list) return;
+  whPlace(dd);
+  const N = +dd.dataset.n, setter = dd.dataset.setter;
+  const mark = () => { const k = Math.round(list.scrollTop / WH_H); [...list.children].forEach((e,j) => e.classList.toggle('top', j === k)); };
+  list.scrollTop = (Math.floor(WH_REP/2)*N + idx) * WH_H; mark();
+  if(list.dataset.bound) return; list.dataset.bound = '1';
+  let t = null;
+  list.addEventListener('scroll', () => { mark(); clearTimeout(t); t = setTimeout(() => {
+    const k = Math.round(list.scrollTop / WH_H), i = ((k % N) + N) % N;
+    if(k < N || k >= (WH_REP-1)*N){ list.scrollTop = (Math.floor(WH_REP/2)*N + i) * WH_H; mark(); }
+    if(i !== +dd.dataset.cur){ const v = list.children[i].dataset.v; WH_KEEP = {setter, i}; dd.dataset.cur = i; if(typeof window[setter] === 'function') window[setter](v); }
+  }, 120); }, {passive:true});
+  list.addEventListener('click', e => { const it = e.target.closest('.wh-it'); if(!it) return; e.stopPropagation(); list.scrollTo({top: [...list.children].indexOf(it) * WH_H, behavior:'smooth'}); });
+}
+function whRestore(){
+  if(!WH_KEEP) return;
+  const dd = document.querySelector('.dd-wheel[data-setter="'+WH_KEEP.setter+'"]');
+  if(!dd){ WH_KEEP = null; return; }
+  dd.classList.add('open'); whBind(dd, WH_KEEP.i);
 }
 /* anchored dropdown: toggle, pick, close on outside tap */
-function ddToggle(btn){ const dd = btn.closest('.dd'), was = dd.classList.contains('open'); document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); if(!was){ dd.classList.add('open'); const on = dd.querySelector('.dd-opt.on'); const pop = dd.querySelector('.dd-pop'); if(on && pop) pop.scrollTop = Math.max(0, on.offsetTop - pop.clientHeight/2); } }
+function ddToggle(btn){ const dd = btn.closest('.dd'), was = dd.classList.contains('open'); document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); WH_KEEP = null; if(!was && dd.classList.contains('dd-wheel')){ dd.classList.add('open'); whBind(dd, +dd.dataset.cur); return; } if(!was){ dd.classList.add('open'); const on = dd.querySelector('.dd-opt.on'); const pop = dd.querySelector('.dd-pop'); if(on && pop) pop.scrollTop = Math.max(0, on.offsetTop - pop.clientHeight/2); } }
 function ddPick(el){ const dd = el.closest('.dd'); if(dd) dd.classList.remove('open'); }
-document.addEventListener('click', e => { if(!e.target.closest || !e.target.closest('.dd')) document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); }, true);
+document.addEventListener('click', e => { if(!e.target.closest || !e.target.closest('.dd')){ document.querySelectorAll('.dd.open').forEach(x => x.classList.remove('open')); WH_KEEP = null; } }, true);
 function rosterTeamT(){ return (rosterTeamIdx != null && G.teams[rosterTeamIdx]) ? G.teams[rosterTeamIdx] : meT(); }
 function setRosterTeam(v){ rosterTeamIdx = (+v === G.userTeam) ? null : +v; render(); }
+function capPillHTML(t){
+  const pct = clamp(payroll(t)/capNow()*100, 0, 100), rm = capRoom(t);
+  return '<span class="fz-pill cpp" title="Payroll '+money(payroll(t))+' of '+money(capNow())+' cap">Cap room <b style="color:'+(rm>=0?'var(--green)':'var(--red)')+'">'+money(rm)+'</b><i><u style="width:'+pct+'%;'+(pct>92?'background:var(--red)':'')+'"></u></i></span>';
+}
 function rosterHTML(){
   const me = rosterTeamT(), mine = me.idx === G.userTeam;
-  // anchored dropdowns: open right under their box, scroll inside, colored by position group
   const posSel = posDDHTML(rFilter, 'setRFilter', (pos, sp) => {
     const list = me.roster.filter(p => p.pos===pos && (sp===pos || p.spot===sp) && !p.ir), min = sp===pos ? MIN53[pos] : (SPOT_MIN[sp]||1);
     return { txt: list.length+' of '+min+' min'+(list.length?' · best '+Math.max(...list.map(p=>p.rating)):''), warn: list.length < min, n: list.length };
-  }, me.roster.length+' players');
+  }, me.roster.length+' players', true);
   let teamOpts = '';
   CONF_NAMES.forEach((cn,ci) => { [0,1].forEach(dv => {
     const ts = G.teams.filter(t=>t.conf===ci && t.div===dv).sort((a,b)=>a.city.localeCompare(b.city)); if(!ts.length) return;
     teamOpts += '<div class="dd-grp" style="--c:#FFD447">'+cn+' '+DIV_NAMES[dv]+'</div>';
     ts.forEach(t => teamOpts += '<button class="dd-opt'+(t.idx===me.idx?' on':'')+'" style="--c:'+t.c2+'" onclick="ddPick(this);setRosterTeam('+t.idx+')">'+teamLogo(t,22)+'<span class="dd-txt"><b>'+esc(t.city+' '+t.name)+'</b>'+(t.idx===G.userTeam?' <span class="sub">(you)</span>':'')+' <span class="sub">'+t.w+'-'+t.l+'</span></span></button>');
   }); });
-  const teamSel = '<div class="dd dd-right"><button class="dd-btn" style="--c:'+me.c2+'" onclick="ddToggle(this)">'+teamLogo(me,24)+'<span class="dd-txt"><b>'+esc(me.city+' '+me.name)+'</b></span><span class="dd-car">▾</span></button><div class="dd-pop">'+teamOpts+'</div></div>';
-  let tabs = '<div class="ros-top"><div class="ros-left">' + posSel +
-    '<div class="filterbar ros-tabs"><button class="fbtn'+(rosterTab==='roster'?' on':'')+'" onclick="setRosterTab(\'roster\')">Roster</button>' +
-    '<button class="fbtn'+(rosterTab==='prog'?' on':'')+'" onclick="setRosterTab(\'prog\')">Progression</button></div></div>' +
-    '<div class="ros-right">'+teamSel+'</div></div>';
-  if(rosterTab === 'prog') return tabs + progressionTabHTML();
-  const dc = dressedCount(me);
-  const limit = rosterLimit();
-  const label = limit === LIMIT_OFF ? (limit+'-Man Camp Roster') : (limit+'-Man Roster');
-  let s = '<div class="panel" style="margin-bottom:12px">'+(mine?'':'<div class="hd disp" style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+teamLogo(me,26)+esc(me.city+' '+me.name)+' <span class="sub" style="font-family:inherit">'+me.w+'-'+me.l+(me.t?'-'+me.t:'')+' · '+teamOverall(me)+' OVR</span></div>')+capBarHTML(me)+
-    '<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">' +
-    '<span class="countpill'+(activeCount(me)>limit?' over':'')+'">Roster <b>'+activeCount(me)+'</b> / '+limit+'</span>' +
-    (me.roster.some(p=>p.ir) ? '<span class="countpill">IR <b>'+me.roster.filter(p=>p.ir).length+'</b></span>' : '') +
-    (G.phase==='hub' ? '<span class="countpill'+(dc>LIMIT_DRESS?' over':'')+'">Dressed <b>'+dc+'</b> / '+LIMIT_DRESS+'</span>' : '') +
-    (G.phase==='hub' && mine ? '<button class="btn" onclick="autoDress(meT(),false);save();render()">Auto-dress best 46</button>' : '') +
-    '<span class="countpill">Avg age <b>'+(me.roster.length? (me.roster.reduce((a,p)=>a+p.age,0)/me.roster.length).toFixed(1) : '—')+'</b></span>' +
-    '</div>' +
-    (mine ? '<p class="sub" style="margin-top:8px">Train: 2 pts = +1 OVR (max +5/season).'+(G.phase==='hub' ? ' Dress/Sit toggles who suits up Sunday. Extras above 46 are healthy scratches.' : '')+' Need a body? Open Players above.</p>' : '<p class="sub" style="margin-top:8px">Viewing another team. Tap a name for the player card. Trades live in Front Office.</p>')+'</div>';
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">'+label+'</div>' +
+  const teamSel = '<div class="dd dd-right"><button class="dd-btn" style="--c:'+me.c2+'" onclick="ddToggle(this)">'+teamLogo(me,20)+'<span class="dd-txt"><b>'+esc(me.abbr||me.city)+'</b></span><span class="dd-car">▾</span></button><div class="dd-pop">'+teamOpts+'</div></div>';
+  const tabs = '<div class="lt-tabs"><button class="fbtn'+(rosterTab==='roster'?' on':'')+'" onclick="setRosterTab(\'roster\')">Roster</button><button class="fbtn'+(rosterTab==='prog'?' on':'')+'" onclick="setRosterTab(\'prog\')">Progression</button></div>';
+  if(rosterTab === 'prog') return '<div class="lt-bar">'+tabs+'<div class="lt-info"></div><div class="lt-filt">'+teamSel+'</div></div>' + progressionTabHTML();
+  const dc = dressedCount(me), limit = rosterLimit();
+  let info = (!mine ? '<span class="fz-pill">'+teamLogo(me,14)+' '+me.w+'-'+me.l+(me.t?'-'+me.t:'')+' · <b>'+teamOverall(me)+'</b> OVR</span>' : '') +
+    '<span class="fz-pill">Roster <b style="color:'+(activeCount(me)>limit?'var(--red)':'var(--chalk)')+'">'+activeCount(me)+'</b>/'+limit+'</span>' +
+    (me.roster.some(p=>p.ir) ? '<span class="fz-pill">IR <b>'+me.roster.filter(p=>p.ir).length+'</b></span>' : '') +
+    (G.phase==='hub' ? '<span class="fz-pill">Dressed <b style="color:'+(dc>LIMIT_DRESS?'var(--red)':'var(--chalk)')+'">'+dc+'</b>/'+LIMIT_DRESS+'</span>' : '') +
+    capPillHTML(me) +
+    (G.phase==='hub' && mine ? '<button class="btn tiny" onclick="autoDress(meT(),false);save();render()">Auto-dress</button>' : '') +
+    '<span class="fz-pill" title="Unit ratings, healthy starters">PO <b>'+Math.round(offPass(me))+'</b> RO <b>'+Math.round(offRush(me))+'</b> PD <b>'+Math.round(defPass(me))+'</b> RD <b>'+Math.round(defRush(me))+'</b></span>';
+  let s = '<div class="fit-page"><div class="lt-bar">'+tabs+'<div class="lt-info">'+info+'</div><div class="lt-filt">'+posSel+teamSel+'</div></div>';
+  s += '<div class="lt-card"><div class="fit-box" style="--fit-off:178px">' +
     rosterTable(me, p => {
       if(!mine) return '';
-      if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">—</span>';
+      if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">-</span>';
       let a = trainBtnHTML(p);
-      a += '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">Extend</button> ';
-      a += '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">Position</button> ';
       if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button> ';
-      if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR — frees his roster spot">IR</button> ';
-      a += '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>';
+      if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR. Frees his roster spot">IR</button> ';
+      a += '<button class="btn tiny" title="More actions" onclick="openModal(\'pacts\','+p.id+')">⋯</button>';
       return a;
-    }, true) +
-    '<div style="margin-top:10px" class="sub">Unit ratings (healthy starters) — Pass O <b>'+Math.round(offPass(me))+'</b> · Run O <b>'+Math.round(offRush(me))+'</b> · Pass D <b>'+Math.round(defPass(me))+'</b> · Run D <b>'+Math.round(defRush(me))+'</b> · K <b>'+Math.round(kRating(me))+'</b></div></div>';
-  if(mine && activeCount(me) < limit && !rosterFrozen()){
-    s += '<div class="panel"><p class="sub">Roster spot open — hit <b>Players</b> above to sign a free agent off the wire.</p></div>';
-  }
-  return tabs + s;
+    }, true).replace('<table class="tbl">','<table class="tbl lt-tbl">') + '</div></div></div>';
+  return s;
+}
+function playerActsHTML(pid){
+  const hit = findPlayer(pid); if(!hit) return '<p class="sub">Player not found.</p>';
+  const p = hit.p, b = (ic, l, sub, js, cls) => '<button class="btn'+(cls?' '+cls:'')+'" style="display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:8px 10px;text-align:left" onclick="'+js+'"><b>'+ic+' '+l+'</b><span class="sub" style="font-size:10.5px">'+sub+'</span></button>';
+  let s = '<div class="sub" style="margin-bottom:8px">'+PL(p)+' · '+p.age+' · <b style="color:var(--gold)">'+p.rating+'</b> OVR · '+money(p.salary)+' × '+p.years+'yr</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">';
+  s += b('👤','Player card','Ratings, stats, contract', "closeModal();openModal('player',"+p.id+")");
+  s += b('✍️','Extend','Open contract builder', "closeModal();openContract('extend',"+p.id+")");
+  s += b('🔀','Position','Move to a new spot', "closeModal();openModal('reposition',"+p.id+")");
+  if(typeof rsEligible === 'function' && rsEligible(p)) s += b('🔧','Restructure','Turn salary into bonus', "closeModal();openRestructure("+p.id+")");
+  s += b('✂️','Release','Cut him. See dead money first', "closeModal();cutPlayer("+p.id+")", 'danger');
+  return s + '</div>';
 }
 
 /* ---------- depth chart ---------- */
@@ -14192,9 +14358,10 @@ function depthTableHTML(t, form, lu, side){
       .sort((a,b) => b.e - a.e)
       .filter(x => !starters.has(x.p.id))
       .slice(0,2);
-    const cell = x => x ? esc(x.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(x.e)+'</b>'+effTagHTML(x.p, sl.spot, form.scheme) : '<span class="sub">—</span>';
+    const nmL = q => '<span class="pname" onclick="event.stopPropagation();openModal(\'player\','+q.id+')">'+esc(q.name.split(' ').pop())+'</span>';
+    const cell = x => x ? nmL(x.p)+' <b style="color:var(--gold)">'+Math.ceil(x.e)+'</b>'+effTagHTML(x.p, sl.spot, form.scheme) : '<span class="sub">—</span>';
     const manualTag = sl.manual ? ' <span class="tag up" title="manually assigned">SET</span>' : '';
-    const sCell = sl.p ? esc(sl.p.name.split(' ').pop())+' <b style="color:var(--gold)">'+Math.ceil(sl.eff)+'</b>'+manualTag+effTagHTML(sl.p, sl.spot, form.scheme) : '<span class="oop">EMPTY</span>';
+    const sCell = sl.p ? nmL(sl.p)+' <b style="color:var(--gold)">'+Math.ceil(sl.eff)+'</b>'+manualTag+effTagHTML(sl.p, sl.spot, form.scheme) : '<span class="oop">EMPTY</span>';
     const assignBtn = side ? '<td><button class=\"btn tiny\" onclick=\"openModal(\'assign\',{side:\''+side+'\',i:'+i+'})\">Set</button></td>' : '';
     s += '<tr class="depthrow"><td><b>'+sl.spot+'</b></td><td>'+sCell+'</td><td>'+cell(cands[0])+'</td><td>'+cell(cands[1])+'</td>'+assignBtn+'</tr>';
   });
@@ -14632,7 +14799,7 @@ function budgetsHTML(){
     '<div><div class="sub">Projected Cash, Season End</div><div style="font-size:18px;font-weight:700;color:'+(projected>=0?'var(--green)':'var(--red)')+'">'+money(projected)+'</div></div>' +
     '</div></div>';
 }
-function financesHTML(){
+function financesHTML(noPricing){
   const me = meT();
   const market = me.market || 3;
   let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Team Finances</div>' +
@@ -14671,7 +14838,7 @@ function financesHTML(){
     });
     s += '</table>';
   }
-  return s + '</div>' + pricingHTML();
+  return s + '</div>' + (noPricing ? '' : pricingHTML());
 }
 function setPricing(key, val){
   if(!G.pricing) G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false};
@@ -14832,6 +14999,10 @@ function minimumsHTML(t){
   });
   return s + '</div>';
 }
+function minStripHTML(t){
+  return '<div class="minstrip"><span class="mt">MINIMUMS</span>' + POS_ORDER.map(pos => { const have = posCount(t, pos), min = MIN53[pos];
+    return '<button class="mc'+(have<min?' short':'')+'" onclick="showPosRoster(\''+pos+'\')">'+pos+' <b>'+have+'/'+min+'</b></button>'; }).join('') + '</div>';
+}
 function setDepthSide(side){ depthSide = side; render(); }
 let practiceOffTier = 1, practiceDefTier = 1;
 let drillP1 = null, drillP2 = null;
@@ -14946,36 +15117,30 @@ function depthHTML(){
   const oKey = offFormKeyOf(me), dKey = defFormKeyOf(me);
   const oLu = lineupFor(me, oForm, oKey), dLu = lineupFor(me, dForm, dKey);
   const oManual = oLu.some(x => x.manual), dManual = dLu.some(x => x.manual);
-  let s = '<div class="filterbar" style="margin-bottom:12px">' +
-    '<button class="fbtn'+(depthSide==='off'?' on':'')+'" style="flex:1;text-align:center;padding:8px" onclick="setDepthSide(\'off\')">Offense</button>' +
-    '<button class="fbtn'+(depthSide==='def'?' on':'')+'" style="flex:1;text-align:center;padding:8px" onclick="setDepthSide(\'def\')">Defense</button>' +
-    '<button class="fbtn'+(depthSide==='st'?' on':'')+'" style="flex:1;text-align:center;padding:8px" onclick="setDepthSide(\'st\')">Special Teams</button>' +
-    '</div>';
-  if(depthSide === 'st'){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Special Teams</div><p class="sub" style="margin-bottom:8px">Five units: Kickoff, Kick Return, Punt, Punt Return, FG/PAT. Every block and every coverage rep is a real matchup on game day, so speed, blocking and tackling all count. Starters who also play special teams carry a heavier load.</p>' + stDepthHTML() + '</div>';
-  } else if(depthSide === 'off'){
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Offense — '+oForm.name+'</div>';
-    s += '<div class="filterbar">';
-    Object.keys(OFF_FORMS).forEach(k => {
-      const f = OFF_FORMS[k];
-      s += '<button class="fbtn'+(G.offForm===k?' on':'')+'" onclick="setOffForm(\''+k+'\')">'+f.name+'</button>';
-    });
-    s += '</div><p class="sub">Run '+(oForm.runMod>=0?'+':'')+oForm.runMod+' · Pass '+(oForm.passMod>=0?'+':'')+oForm.passMod+'. Best fits line up automatically — click a slot (chart or table) to hand-pick who starts there instead. Gold dot = manually set. Red ring = out of natural position. Orange ring = low game form. Tap any tag for why.'+(oManual?' <button class=\"btn tiny\" style=\"margin-left:6px\" onclick=\"resetLineup(\'off\')\">Reset to Auto</button>':'')+'</p>';
-    s += depthChartSVG(oForm, oLu, false, 'off') + depthTableHTML(me, oForm, oLu, 'off');
-    s += '<div class="sub" style="margin-top:8px">Unit ratings — Pass O <b style="color:var(--chalk)">'+Math.round(offPass(me))+'</b> · Run O <b style="color:var(--chalk)">'+Math.round(offRush(me))+'</b></div></div>';
-  } else {
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Defense — '+dForm.name+'</div>';
-    s += '<div class="filterbar">';
-    Object.keys(DEF_FORMS).forEach(k => {
-      const f = DEF_FORMS[k];
-      s += '<button class="fbtn'+(G.defForm===k?' on':'')+'" onclick="setDefForm(\''+k+'\')">'+f.name+'</button>';
-    });
-    s += '</div><p class="sub">Run D '+(dForm.runMod>=0?'+':'')+dForm.runMod+' · Pass D '+(dForm.passMod>=0?'+':'')+dForm.passMod+' · '+SCHEME_TAG[dForm.scheme]+' scheme. Front-seven players tagged for the other scheme take a −'+SCHEME_PENALTY+' hit; versatile (VERS) players fit anywhere.'+(dManual?' <button class=\"btn tiny\" style=\"margin-left:6px\" onclick=\"resetLineup(\'def\')\">Reset to Auto</button>':'')+'</p>';
-    s += depthChartSVG(dForm, dLu, true, 'def') + depthTableHTML(me, dForm, dLu, 'def');
-    s += '<div class="sub" style="margin-top:8px">Unit ratings — Pass D <b style="color:var(--chalk)">'+Math.round(defPass(me))+'</b> · Run D <b style="color:var(--chalk)">'+Math.round(defRush(me))+'</b></div></div>';
+  const side = depthSide;
+  let s = '<div class="fit-bar"><div class="fit-seg">' +
+    [['off','Offense'],['def','Defense'],['st','Special Teams']].map(([k,l]) => '<button class="fb'+(side===k?' on':'')+'" onclick="setDepthSide(\''+k+'\')">'+l+'</button>').join('') + '</div>';
+  if(side === 'off' || side === 'def'){
+    const forms = side === 'off' ? OFF_FORMS : DEF_FORMS, cur = side === 'off' ? G.offForm : G.defForm, fn = side === 'off' ? 'setOffForm' : 'setDefForm';
+    s += '<div class="fit-seg" style="margin-left:6px">' + Object.keys(forms).map(k => '<button class="fb'+(cur===k?' on':'')+'" onclick="'+fn+'(\''+k+'\')">'+forms[k].name+'</button>').join('') + '</div>';
+    s += '<span class="fz-pill ml">' + (side === 'off'
+      ? 'Pass O <b>'+Math.round(offPass(me))+'</b> · Run O <b>'+Math.round(offRush(me))+'</b>'
+      : 'Pass D <b>'+Math.round(defPass(me))+'</b> · Run D <b>'+Math.round(defRush(me))+'</b>') + '</span>';
+    if(side === 'off' ? oManual : dManual) s += '<button class="btn tiny" onclick="resetLineup(\''+side+'\')">Reset to Auto</button>';
   }
-  s += '<div class="panel">'+minimumsHTML(me)+'</div>';
-  return s;
+  s += '</div>';
+  if(side === 'st'){
+    s += '<div class="fit-cols fit-fix" style="--fit-h:170px;grid-template-columns:1fr"><div class="fit-card"><div class="fit-box">' + stDepthHTML() + '</div></div></div>';
+  } else {
+    const form = side === 'off' ? oForm : dForm, lu = side === 'off' ? oLu : dLu, isDef = side === 'def';
+    const note = isDef ? SCHEME_TAG[form.scheme]+' scheme, off-scheme front 7 −'+SCHEME_PENALTY+'.'
+      : 'Run '+(form.runMod>=0?'+':'')+form.runMod+' · Pass '+(form.passMod>=0?'+':'')+form.passMod+'.';
+    s += '<div class="dc-fit fit-fix" style="--fit-h:170px"><div class="fit-card">' + depthChartSVG(form, lu, isDef, side) +
+      '<div class="dc-hint">'+note+' Name: player card. Dot or Set: swap. <span style="color:#ff9a9a">Red</span> out of pos · <span style="color:#F2A24A">orange</span> low form.</div></div>' +
+      '<div class="fit-card"><div class="fit-box">' + depthTableHTML(me, form, lu, side) + '</div></div></div>';
+  }
+  s += '<div style="margin-top:5px">'+minStripHTML(me)+'</div>';
+  return '<div class="fit-page">'+s+'</div>';
 }
 function resetLineup(side){
   const formKey = side === 'off' ? G.offForm : G.defForm;
@@ -15163,6 +15328,8 @@ function toggleGet(pid){
 }
 function toggleGetPick(id){ toggleArr(tradeCart(tradeTeam).getPicks, id); clearTradeCounter(tradeTeam); save(); render(); }
 function setTradeFilter(which, pos){ tradeFilterState[which] = pos; render(); }
+function setTF_mine(v){ setTradeFilter('mine', v === 'ALL' ? '' : v); }
+function setTF_theirs(v){ setTradeFilter('theirs', v === 'ALL' ? '' : v); }
 function setTradeSort(which, key){
   const s = tradeSortState[which];
   if(s.key === key) s.dir = -s.dir; else { s.key = key; s.dir = key==='name'?1:-1; }
@@ -15539,7 +15706,7 @@ function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock)
   const filter = tradeFilterState[which];
   const sort = tradeSortState[which];
   let pool = team.roster.filter(p => !p.ir);
-  if(filter) pool = pool.filter(p => p.spot === filter);
+  if(filter) pool = pool.filter(p => p.spot === filter || p.pos === filter);
   pool = pool.slice().sort((a,b) => {
     let va, vb;
     if(sort.key === 'spot'){ va = spotSortVal(a); vb = spotSortVal(b); }
@@ -15547,7 +15714,7 @@ function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock)
     if(typeof va === 'string') return va.localeCompare(vb) * sort.dir;
     return ((va - vb) || (b.rating - a.rating)) * sort.dir;
   });
-  let s = '<div class="rosterctl" style="margin-bottom:8px"><select class="fselect" onchange="setTradeFilter(\''+which+'\', this.value)">' + posFilterOptionsHTML(filter) + '</select></div>';
+  let s = '<div class="rosterctl" style="margin-bottom:8px">' + posDDHTML(filter||'ALL', 'setTF_'+which, (pos, sp) => { const l = team.roster.filter(p => !p.ir && p.pos===pos && (sp===pos || p.spot===sp)); return {txt: l.length+' players'}; }, team.roster.length+' players') + '</div>';
   const cols = [['name','Player'],['rating','OVR'],['salary','$'],['status','Status']];
   s += '<table class="tbl"><tr>';
   cols.forEach(c => {
@@ -15929,36 +16096,47 @@ function financeChartSVG(values, color, W, H){
     '<polyline points="'+line+'" fill="none" stroke="'+color+'" stroke-width="2"/></svg>';
 }
 function financesSummaryHTML(){
-  const log = G.financeLog || [];
-  const last = log[log.length-1];
-  const prev = log[log.length-2];
+  const me = meT(), log = G.financeLog || [], last = log[log.length-1];
   const seasonEntries = last ? log.filter(l => l.season === last.season) : [];
   const lastSeasonEntries = last ? log.filter(l => l.season === last.season-1) : [];
-  const sum = arr => arr.reduce((a,l)=>a+l.net,0);
-  const thisSeasonNet = Math.round(sum(seasonEntries)*10)/10;
-  const lastSeasonNet = Math.round(sum(lastSeasonEntries)*10)/10;
-  const cashSeries = log.map(l=>l.cash);
-  const netSeries = log.map(l=>l.net);
-  const incSeries = log.map(l=>l.revenue);
-  const expSeries = log.map(l=>l.staffCost+l.opsCost);
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Overall Balance</div>' +
-    '<div style="font-size:26px;font-weight:700;color:'+((G.cash||0)>=0?'var(--green)':'var(--red)')+'">'+money(G.cash||0)+'</div>' +
-    financeChartSVG(cashSeries, '#B266FF') +
-    '<p class="sub">Trend across the last '+Math.min(log.length,24)+' periods on record.</p></div>';
-  s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp">Profit / Loss</div>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center">' +
-    '<div><div class="sub">This Period</div><div style="font-size:16px;font-weight:700;color:'+(last&&last.net>=0?'var(--green)':'var(--red)')+'">'+(last?(last.net>=0?'+':'')+money(last.net):'—')+'</div></div>' +
-    '<div><div class="sub">This Season</div><div style="font-size:16px;font-weight:700;color:'+(thisSeasonNet>=0?'var(--green)':'var(--red)')+'">'+(seasonEntries.length?(thisSeasonNet>=0?'+':'')+money(thisSeasonNet):'—')+'</div></div>' +
-    '<div><div class="sub">Last Season</div><div style="font-size:16px;font-weight:700;color:'+(lastSeasonNet>=0?'var(--green)':'var(--red)')+'">'+(lastSeasonEntries.length?(lastSeasonNet>=0?'+':'')+money(lastSeasonNet):'—')+'</div></div>' +
-    '</div>' + financeChartSVG(netSeries, '#6C7BFF') + '</div>';
-  s += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">' +
-    '<div class="panel"><div class="hd disp">Income This Period</div>' +
-    '<div style="font-size:18px;font-weight:700;color:var(--green)">'+(last?money(last.revenue):'—')+'</div>' +
-    financeChartSVG(incSeries, '#E0C13A') + '</div>' +
-    '<div class="panel"><div class="hd disp">Expenditure This Period</div>' +
-    '<div style="font-size:18px;font-weight:700;color:var(--red)">'+(last?money(last.staffCost+last.opsCost):'—')+'</div>' +
-    financeChartSVG(expSeries, '#E05A5A') + '</div></div>';
-  return s + budgetsHTML() + financesHTML();
+  const sum = arr => Math.round(arr.reduce((a,l)=>a+l.net,0)*10)/10;
+  const sg = v => (v>=0?'+':'')+money(v), col = v => v>=0 ? 'var(--green)' : 'var(--red)';
+  const room = capRoom(me), liveNet = projectedNetThisPeriod(), cash = G.cash||0;
+  const projected = Math.round((cash + liveNet*periodsRemainingThisSeason())*10)/10;
+  const li = (l, v, c) => '<div class="cp-li"><span>'+l+'</span><b style="color:'+(c||'var(--chalk)')+'">'+v+'</b></div>';
+  let s = '<div class="fit-page"><div class="fit-cols fin-cols fit-fix" style="--fit-h:159px">';
+  // balance
+  s += '<div class="fit-card"><div class="cp-h">Balance<em>'+(log.length?'<a href="#" style="color:var(--muted)" onclick="event.preventDefault();openModal(\'finledger\')">📜 ledger ›</a>':'')+'</em></div><span class="fin-big" style="color:'+col(cash)+'">'+money(cash)+'</span>' +
+    (log.length > 1 ? '<div class="fin-chart">'+financeChartSVG(log.map(l=>l.cash), '#B266FF', 300, 60)+'</div>' : '') +
+    li('This period', last ? sg(last.net) : '-', last ? col(last.net) : '') +
+    li('This season', seasonEntries.length ? sg(sum(seasonEntries)) : '-', seasonEntries.length ? col(sum(seasonEntries)) : '') +
+    li('Last season', lastSeasonEntries.length ? sg(sum(lastSeasonEntries)) : '-', lastSeasonEntries.length ? col(sum(lastSeasonEntries)) : '') +
+    '<div class="sub" style="font-size:10px;margin-top:auto">'+esc(me.city)+' <b style="color:var(--gold)">'+'★'.repeat(me.market||3)+'</b> market. Scales gate and sponsors.</div></div>';
+  // budgets
+  const pct = clamp(cash / Math.max(1, Math.abs(projected)) * 100, 0, 100);
+  s += '<div class="fit-card"><div class="cp-h">Budgets<em>projected</em></div>' +
+    li('Cap room', money(room), col(room)) + li('Cash on hand', money(cash), col(cash)) +
+    li('Net this period', sg(liveNet), col(liveNet)) + li('Season end cash', money(projected), col(projected)) +
+    '<div class="capbar" style="margin-top:4px"><i style="width:'+pct+'%;background:var(--green)"></i></div><div class="sub" style="font-size:10px">Cash now vs season-end projection</div></div>';
+  // this period
+  s += '<div class="fit-card"><div class="cp-h">This period<em>'+(last ? (last.month ? esc(last.month) : 'Season '+last.season) : 'income vs spend')+'</em></div>';
+  if(last && last.income){
+    const I = last.income, E = last.expense;
+    [['Tickets',I.tickets],['Parking',I.parking],['Concessions',I.concessions],['Suites',I.suites],['Sponsors / deals',I.sponsorship],['Merch',I.merch]].forEach(r => { s += li(r[0], money(r[1]), 'var(--green)'); });
+    [['Staff',E.staff],['Operations',E.ops],['Loyalty',E.loyalty]].forEach(r => { s += li(r[0], '−'+money(r[1]), 'var(--red)'); });
+    s += li('<b style="color:var(--chalk)">Net</b>', sg(last.net), col(last.net));
+  } else if(last){
+    s += li('Revenue', money(last.revenue), 'var(--green)') + li('Staff', '−'+money(last.staffCost), 'var(--red)') + li('Operations', '−'+money(last.opsCost), 'var(--red)') + li('<b style="color:var(--chalk)">Net</b>', sg(last.net), col(last.net));
+  } else s += '<div class="sub">No books closed yet. They settle at the Franchise Tag window.</div>';
+  s += '</div>';
+  // pricing
+  const pr = G.pricing || (G.pricing = {tickets:1.0,parking:1.0,concessions:1.0,merch:1.0,suites:1.0,bundles:false});
+  s += '<div class="fit-card"><div class="cp-h">Pricing<em>vs market</em></div>' +
+    [['tickets','Tickets'],['parking','Parking'],['concessions','Concessions'],['merch','Merch markup'],['suites','Suites']].map(([k,l]) => { const v = pr[k];
+      return '<div class="fin-st"><span>'+l+'</span><span class="c"><button class="btn tiny" onclick="setPricing(\''+k+'\','+(v-0.05)+')" '+(v<=0.5?'disabled':'')+'>−</button><b style="color:'+(v>1?'var(--gold)':v<1?'var(--green)':'var(--chalk)')+'">'+Math.round(v*100)+'%</b><button class="btn tiny" onclick="setPricing(\''+k+'\','+(v+0.05)+')" '+(v>=2?'disabled':'')+'>+</button></span></div>'; }).join('') +
+    '<div class="fin-st"><span>Season tickets</span><button class="btn tiny'+(pr.bundles?' primary':'')+'" onclick="setPricing(\'bundles\')">'+(pr.bundles?'✓ On':'Off')+'</button></div>' +
+    '<div class="sub" style="font-size:10px;margin-top:auto">'+(pr.bundles?'Bundles: +8% gate revenue, small fan drag.':'Above market earns more per fan. Push too far, fans notice.')+'</div></div>';
+  return s + '</div></div>';
 }
 function playWeek(){ startGame({game: userGame()}); }
 function simWeek(){
