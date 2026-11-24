@@ -634,6 +634,19 @@ th.sorth.on{color:var(--gold)}
 .pregame-note{color:var(--muted);font-size:10px;letter-spacing:.08em;margin-top:14px}
 @keyframes pregameLoad{to{width:100%}}
 @media(max-width:560px){.pregame-conditions{grid-template-columns:repeat(2,1fr)}.game-conditions{gap:9px}}
+/* compact presentation: one screen, no scrolling */
+.pregame-screen{min-height:0;padding:10px 12px}
+.pregame-card{padding:16px 20px}
+.pregame-kicker{margin-bottom:6px}
+.pregame-card h1{font-size:clamp(20px,3.4vw,30px);line-height:1.15}
+.pregame-sub{font-size:12px;margin:4px 0 6px}
+.pregame-conditions{gap:8px;margin:10px auto 10px}
+.pregame-conditions div{padding:7px 6px}
+.pregame-conditions small{margin-bottom:3px}
+.pregame-conditions b{font-size:14px}
+.pregame-fx{margin:0 auto 10px;line-height:1.5;font-size:12px}
+.pregame-note{margin-top:7px}
+@media(max-width:560px){.pregame-conditions{grid-template-columns:repeat(4,1fr)}}
 
 
 /* ===== landscape everywhere: phones held upright get the whole game turned sideways ===== */
@@ -972,6 +985,36 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .cp-grade{font:700 44px Oswald,Arial,sans-serif;line-height:1}
 .cp-dist{display:flex;align-items:flex-end;gap:3px;height:56px;margin:2px 0 14px}
 .cp-dist div{flex:1;border-radius:3px 3px 0 0;position:relative}.cp-dist span{position:absolute;bottom:-13px;left:-4px;right:-4px;text-align:center;font-size:8.5px;color:var(--muted);white-space:nowrap}
+.ct2{display:flex;flex-direction:column;gap:6px}
+.ct2-top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11.5px}
+.ct2-tabs{display:flex;gap:4px}.ct2-tabs span{font:700 10px Inter,sans-serif;border:1px solid var(--line);border-radius:10px;padding:2px 8px;color:var(--muted)}.ct2-tabs span.on{background:var(--gold);color:#14100a;border-color:var(--gold)}
+.ct2-body{display:grid;grid-template-columns:1.05fr 1.35fr .95fr;gap:6px}
+.ct2-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ct2-h{display:flex;justify-content:space-between;align-items:center;font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase}
+.ct2-h em{font:600 9.5px Inter,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none}
+.ct2-st{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px}.ct2-st>span{color:var(--muted)}
+.ct2-st>div{display:flex;align-items:center;gap:4px}.ct2-st button{width:22px;height:22px;border:1px solid var(--line);border-radius:5px;background:var(--panel2);color:var(--chalk);font-weight:700;cursor:pointer;padding:0}
+.ct2-st b{min-width:56px;text-align:center;font-size:12px}
+.ct2-seg{display:inline-flex!important;gap:0!important;border:1px solid var(--line);border-radius:12px;overflow:hidden}.ct2-seg i{font-style:normal;padding:2px 7px;font:700 9.5px Inter,sans-serif;color:var(--muted);cursor:pointer;white-space:nowrap}.ct2-seg i.on{background:var(--gold);color:#14100a}
+.ct2-pre{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}.ct2-pre span{border:1px solid var(--line);border-radius:7px;padding:3px 4px;font-size:9.5px;text-align:center;color:var(--muted);cursor:pointer;line-height:1.2}.ct2-pre span b{display:block;color:var(--chalk);font-size:10.5px}.ct2-pre span.on{border-color:var(--gold);background:rgba(255,212,71,.08)}
+.ct2-tw{max-height:150px;overflow:auto}
+.ct2-t{width:100%;border-collapse:collapse;font-size:10.5px}.ct2-t th{font:700 8.5px Inter,sans-serif;letter-spacing:.06em;color:var(--muted);text-align:right;padding:3px 4px;border-bottom:1px solid var(--line);text-transform:uppercase}.ct2-t td{padding:3px 4px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.ct2-t th:first-child,.ct2-t td:first-child{text-align:left}.ct2-t td.hit{font-weight:800;color:var(--gold)}.ct2-t tr.void td{color:#B48CF0}
+.ct2 .up,.ct2-body .up,.ct2-two .up,.ct2-t .up{color:var(--green)}.ct2 .dn,.ct2-body .dn,.ct2-two .dn,.ct2-t .dn{color:var(--red)}
+.ct2-bar{height:7px;border-radius:4px;background:#0c121d;overflow:hidden;display:flex}.ct2-bar i{display:block;height:100%}
+.ct2-leg{display:flex;gap:8px;flex-wrap:wrap;font-size:9px;color:var(--muted)}.ct2-leg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:3px;vertical-align:-1px}
+.ct2-meter{height:10px;border-radius:6px;background:linear-gradient(90deg,var(--red),#F2A24A 45%,var(--green) 70%);position:relative;margin:4px 0}.ct2-meter b{position:absolute;top:-3px;width:3px;height:16px;background:#fff;border-radius:2px}
+.ct2-kv{display:flex;justify-content:space-between;gap:6px;font-size:11px;padding:1px 0}.ct2-kv span{color:var(--muted)}
+.ct2-ca{border:1px solid rgba(86,204,242,.4);background:rgba(86,204,242,.06);border-radius:8px;padding:5px 7px;font-size:10.5px;display:flex;flex-direction:column;gap:2px}.ct2-ca>b{font:700 9.5px Inter,sans-serif;letter-spacing:.08em;color:#56CCF2}.ct2-ca.off{opacity:.7}
+.ct2-two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ct2-opt{border:1px solid var(--line);border-radius:9px;padding:8px;display:flex;flex-direction:column;gap:5px;min-height:170px}.ct2-opt.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+.tv-eq{font-size:9px;font-weight:700;color:#9fc1ff;border:1px solid rgba(159,193,255,.35);border-radius:8px;padding:0 5px;white-space:nowrap;cursor:pointer;margin-right:4px}
+.tv-ctx{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}.tv-pill{font-size:9.5px;border:1px solid var(--line);border-radius:9px;padding:0 6px;color:var(--muted);white-space:nowrap}.tv-pill.live{border-color:var(--red);color:#ffb3b3}
+.tv-why{width:100%;display:flex;flex-direction:column;gap:1px;font-size:9.5px;text-align:left}.tv-why div{display:flex;justify-content:space-between;gap:4px;border-bottom:1px solid var(--line);padding:1px 0}.tv-why span{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.tv-why b{white-space:nowrap}.tv-why .up{color:var(--green)}.tv-why .dn{color:var(--red)}
+.tv-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;border-bottom:1px solid var(--line)}
+.ls-h{font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin:6px 0 2px}.ls-h:first-child{margin-top:0}
+.ls-t{width:100%;border-collapse:collapse;font-size:11px}.ls-t th{font:700 8.5px Inter,sans-serif;letter-spacing:.06em;color:var(--muted);text-align:right;padding:1px 4px}.ls-t td{padding:2px 4px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+.ls-t td:first-child,.ls-t th:first-child{text-align:left}.ls-tm{display:inline-block;font:800 8.5px Inter,sans-serif;border-radius:3px;padding:0 3px;margin-right:4px;vertical-align:1px}
 .fz{display:flex;flex-direction:column;gap:6px}
 .fz-top{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:5px 10px}
 .fz-t{white-space:nowrap;font:700 13px Oswald,Arial,sans-serif;letter-spacing:.12em;color:var(--gold)}
@@ -1063,12 +1106,12 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .pg-tm{display:flex;align-items:center;gap:8px;font-size:12.5px;flex:0 1 auto;min-width:0}.pg-tm b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pg-sc{font:700 26px Oswald,Arial,sans-serif;color:var(--chalk);opacity:.8}.pg-sc.w{color:var(--gold);opacity:1}
 .pg-mid{flex:1;text-align:center;min-width:0}.pg-mid b{display:block;font:700 11px Oswald,Arial,sans-serif;letter-spacing:.18em}.pg-mid span{font-size:10.5px;color:#c9d4e4;white-space:nowrap}
-.pg-body{display:grid;grid-template-columns:1fr 1.3fr 1fr;gap:7px}
+.pg-body{display:grid;grid-template-columns:.78fr 1.62fr .95fr;gap:7px}
 .pg-box{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:6px 9px;display:flex;flex-direction:column;gap:1px;min-width:0}
 .pg-h{display:flex;justify-content:space-between;align-items:center;font:700 10.5px Oswald,Arial,sans-serif;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;margin-bottom:2px}
 .pg-h em{font:600 9.5px Inter,sans-serif;letter-spacing:0;color:var(--muted);font-style:normal;text-transform:none}
 .pg-ts{display:grid;grid-template-columns:1fr auto 1fr;font-size:11.5px;row-gap:1px;align-items:center;margin-bottom:6px}
-.pg-ts span:nth-child(3n+1){text-align:right;font-weight:700}.pg-ts span:nth-child(3n+2){color:var(--muted);text-align:center;padding:0 7px;font-size:9.5px;letter-spacing:.06em}.pg-ts span:nth-child(3n){font-weight:700}
+.pg-ts span:nth-child(3n+1){text-align:right;font-weight:700}.pg-ts span:nth-child(3n+2){color:var(--muted);text-align:center;padding:0 4px;font-size:9px;letter-spacing:.03em}.pg-ts span:nth-child(3n){font-weight:700}
 .pg-ts .bt{color:var(--gold)}
 .pg-pl{display:flex;align-items:center;gap:6px;font-size:11px;padding:2px 0;border-bottom:1px solid var(--line);cursor:pointer;min-width:0}
 .pg-pl:last-child{border-bottom:none}
@@ -2253,6 +2296,7 @@ function openFreeAgency(){
   runExpiry();
   G.phase = 'fa'; faFilter = 'ALL'; faTeamFilter = 'FA';
   try { proDayEvent(); } catch(e){ console.error('pro day', e); }
+  try { aiCapCasualtyCuts(); } catch(e){ console.error('cap cuts', e); }
   if(G.mode !== 'player' && iRun('fa')) { try { fzInit(); G.phaseDesk = 'fa'; G.activePage = null; } catch(e){ console.error('frenzy', e); } }
   save(); render();
 }
@@ -2349,11 +2393,7 @@ function tradeDeadCharge(p){
   const c = contractOf(p);
   return c.bonusYearsLeft > 0 ? Math.round(c.bonusProration * c.bonusYearsLeft * 10) / 10 : 0;
 }
-function deadCapCharge(p){
-  if(isPostJune1()) return p.salary; // the year's cap hit is guaranteed once we're past the June 1 point — cutting him saves nothing this season
-  const c = contractOf(p);
-  return c.bonusYearsLeft > 0 ? Math.round(c.bonusProration * c.bonusYearsLeft * 10) / 10 : 0;
-}
+function deadCapCharge(p){ return releaseSplit(p, false).now; }
 function teamCanRealisticallyAfford(t, annualCost){
   // not just "does this one contract fit right now" — does the team still have room to field
   // a complete legal roster afterward, so they're not forced to cut the guy at cutdown
@@ -2425,30 +2465,324 @@ function chargeDeadCap(t, amount){
   G.deadCap[t.idx] = Math.round(((G.deadCap[t.idx]||0) + amount) * 10) / 10;
 }
 function restructureContract(p){
-  if(p.contractYear && (G.year - p.contractYear) < 1) return 0; // just signed — his camp won't revisit terms yet
   const c = contractOf(p);
-  if(p.years <= 1) return 0; // nothing to spread into
-  const currentBase = c.base[0];
-  const convertible = Math.round(currentBase * 0.65 * 10) / 10; // convert up to 65% of this year's base into a signing-bonus-style proration
-  if(convertible < 0.5) return 0;
-  const newProration = Math.round((convertible / p.years) * 10) / 10;
-  const savings = Math.round((convertible - newProration) * 10) / 10;
-  if(savings <= 0) return 0;
-  c.base[0] = Math.round((currentBase - convertible) * 10) / 10;
-  c.bonusProration = Math.round(((c.bonusProration||0) + newProration) * 10) / 10;
-  c.bonusYearsLeft = p.years;
-  c.totalBonus = Math.round(((c.totalBonus||0) + convertible) * 10) / 10;
-  p.salary = Math.round((p.salary - savings) * 10) / 10;
-  return savings;
+  const amt = Math.round(Math.max(0, (c.base[0]||0) - 1.2) * .65 * 10) / 10;
+  if(amt < .5) return 0;
+  const r = applyRestructure(p, amt, 0);
+  return r.ok ? r.saved : 0;
 }
-function enforceCapCompliance(t){
+/* ================= CONTRACTS 2.0: builder, guarantees, void years, restructures, post-June 1 cuts ================= */
+const CT_SHAPES = {flat:'Flat', esc:'Escalate', front:'Front'};
+function ctExpectedGtd(p){ return p.rating >= 88 ? .55 : p.rating >= 80 ? .42 : p.rating >= 72 ? .28 : .12; }
+function ctMinGtd(p){ return Math.max(0, ctExpectedGtd(p) - .2); }
+function rsRecent(p){ const h = p.rsHist || []; return h.filter(y => G.year - y < 3).length; }
+function rsFatigue(p){ return Math.max(0, rsRecent(p) - 1); }           // restructured 2+ times in 3 yrs
+function ctFatigueMult(p){ return 1 + .08 * rsFatigue(p); }
+function buildSchedule(apy, years, bonusPct, shape, voids, gtdYrs){
+  years = Math.max(1, Math.round(years)); voids = clamp(voids||0, 0, 2);
+  const total = Math.round(apy * years * 10) / 10;
+  const bonus = Math.round(total * clamp(bonusPct, 0, .6) * 10) / 10;
+  const pyrs = bonus > 0 ? Math.min(5, years + voids) : 0;
+  const pror = pyrs ? Math.round(bonus / pyrs * 100) / 100 : 0;
+  const baseTotal = total - bonus;
+  const w = []; for(let i=0;i<years;i++) w.push(shape === 'esc' ? 1 + .18*i : shape === 'front' ? 1 + .18*(years-1-i) : 1);
+  const ws = w.reduce((a,b)=>a+b,0);
+  const base = w.map(x => Math.round(baseTotal * x / ws * 10) / 10);
+  base[base.length-1] = Math.round((base[base.length-1] + baseTotal - base.reduce((a,b)=>a+b,0)) * 10) / 10;
+  return { base, bonusProration: pror, bonusYearsLeft: pyrs, totalBonus: bonus, gtdYrs: clamp(gtdYrs||0, 0, years), voids: pyrs > years ? pyrs - years : 0, total };
+}
+function schedHit(s, i){ return Math.round(((s.base[i]||0) + (i < s.bonusYearsLeft ? s.bonusProration : 0)) * 10) / 10; }
+function schedGtd(s){ let g = s.totalBonus; for(let i=0;i<Math.min(s.gtdYrs||0, s.base.length);i++) g += s.base[i]; return Math.round(g*10)/10; }
+function schedDeadIfCut(s, i){ // cut before year i is played: remaining bonus + remaining guaranteed base
+  let d = Math.max(0, s.bonusYearsLeft - i) * s.bonusProration;
+  for(let k=i; k<Math.min(s.gtdYrs||0, s.base.length); k++) d += s.base[k];
+  return Math.round(d*10)/10;
+}
+/* what the deal is worth to him, per year, vs what he wants */
+function ctRead(p, d, askApy){
+  const s = buildSchedule(d.apy, d.years, d.bonusPct, d.shape, d.voids, d.gtdYrs);
+  const total = s.total, gtd = schedGtd(s), share = total ? gtd/total : 0, exp = ctExpectedGtd(p);
+  const want = p.askYears || 3;
+  const yFit = 1 - Math.min(.12, Math.abs(d.years - want) * .03) + (p.age >= 30 && d.years > want ? .03 : 0);
+  const worthApy = d.apy * (1 + .3 * (share - exp)) * yFit;
+  const ask = askApy * ctFatigueMult(p);
+  const ratio = worthApy / ask;
+  const lowG = share < ctMinGtd(p);
+  const tier = lowG ? 'lowg' : ratio >= 1 ? 'accept' : ratio >= .9 ? 'counter' : 'reject';
+  return { s, total, gtd, share, exp, worthApy, ask, ratio, tier, worth: Math.round(worthApy * d.years * 10)/10 };
+}
+function ctAskApy(p, mode){
+  if(mode === 'fa') return fzOn() ? fzAsk(p) : neededValueFor(p, meT());
+  if(mode === 'resign') return userPrice(p, 1);
+  const c = contractOf(p); let rem = 0; for(let i=0;i<p.years;i++) rem += scheduleSalary(c, i);
+  const add = Math.max(1, (cDraft && cDraft.pid === p.id ? cDraft.years : p.years + 2) - p.years);
+  return Math.round((rem + userPrice(p, 1) * add) / (p.years + add) * 10) / 10;
+}
+let cDraft = null;
+function ctPlayer(pid){ return G.fa.find(x => x.id === pid) || meT().roster.find(x => x.id === pid); }
+function openContract(mode, pid){
+  const p = ctPlayer(pid); if(!p) return;
+  if(mode === 'extend' && p.years <= 1) mode = 'resign';
+  if(mode === 'extend' && p.contractYear && G.year - p.contractYear < 1 && !p.demand){ alert(p.name+' just signed. His camp wants a year before revisiting terms.'); return; }
+  const yrs = mode === 'extend' ? p.years + 2 : clamp(p.askYears || 3, 1, 5);
+  cDraft = { pid, mode, years: Math.min(6, yrs), apy: 0, bonusPct: .3, gtdYrs: 1, shape:'flat', voids: 0 };
+  const F = mode === 'fa' && fzOn() ? fzF() : null, o = F && F.offers[pid];
+  if(o && o.struct){ Object.assign(cDraft, o.struct); cDraft.apy = o.counter ? o.counter.sal : o.sal; }
+  else cDraft.apy = Math.round(ctAskApy(p, mode) * 10) / 10;
+  openModal('contract', pid);
+}
+function ctSet(k, v){
+  const d = cDraft; if(!d) return; const p = ctPlayer(d.pid);
+  if(k === 'years'){ const min = d.mode === 'extend' ? p.years + 1 : 1; d.years = clamp(d.years + v, min, 6); d.gtdYrs = Math.min(d.gtdYrs, d.years); if(d.years + d.voids > 5) d.voids = Math.max(0, 5 - d.years); }
+  else if(k === 'apy'){ const step = Math.max(.1, Math.round(ctAskApy(p, d.mode) * .025 * 10) / 10); d.apy = Math.max(.5, Math.round((d.apy + v*step) * 10) / 10); }
+  else if(k === 'bonus') d.bonusPct = clamp(Math.round((d.bonusPct + v*.05)*100)/100, 0, .6);
+  else if(k === 'gtd') d.gtdYrs = clamp(d.gtdYrs + v, 0, d.years);
+  else if(k === 'shape') d.shape = v;
+  else if(k === 'voids') d.voids = clamp(v, 0, Math.max(0, 5 - d.years));
+  else if(k === 'preset'){ if(v === 'relief'){ d.bonusPct = .5; d.shape = 'esc'; d.voids = Math.min(1, Math.max(0, 5 - d.years)); d.gtdYrs = Math.min(1, d.years); }
+    else if(v === 'bal'){ d.bonusPct = .3; d.shape = 'flat'; d.voids = 0; d.gtdYrs = Math.min(1, d.years); }
+    else { d.bonusPct = .15; d.shape = 'front'; d.voids = 0; d.gtdYrs = Math.min(2, d.years); } }
+  render();
+}
+function contractHTML(){
+  const d = cDraft; if(!d) return '<p class="sub">No deal open.</p>';
+  const p = ctPlayer(d.pid); if(!p) return '<p class="sub">He is no longer available.</p>';
+  const me = meT(), ask = ctAskApy(p, d.mode), R = ctRead(p, d, ask), s = R.s, ca = currentCoach('CA');
+  const y0 = G.year + (['fa','resign'].includes(d.mode) && ['tag','fa','draft','resign'].includes(G.phase) ? 0 : 0);
+  const preOn = d.bonusPct === .5 && d.shape === 'esc' ? 'relief' : d.bonusPct === .3 && d.shape === 'flat' && !d.voids ? 'bal' : d.bonusPct === .15 && d.shape === 'front' ? 'now' : '';
+  const stp = (lbl, val, k) => '<div class="ct2-st"><span>'+lbl+'</span><div><button onclick="ctSet(\''+k+'\',-1)">−</button><b>'+val+'</b><button onclick="ctSet(\''+k+'\',1)">+</button></div></div>';
+  const seg = (lbl, k, opts, cur) => '<div class="ct2-st"><span>'+lbl+'</span><div class="ct2-seg">'+opts.map(o => '<i class="'+(o[0]===cur?'on':'')+'" onclick="ctSet(\''+k+'\','+(typeof o[0]==='number'?o[0]:'\''+o[0]+'\'')+')">'+o[1]+'</i>').join('')+'</div></div>';
+  const tabs = ['fa','resign','extend'].map(m => '<span class="'+(d.mode===m?'on':'')+'">'+{fa:'Free agent',resign:'Re-sign',extend:'Extend'}[m]+'</span>').join('');
+  let h = '<div class="ct2"><div class="ct2-top"><div class="ct2-tabs">'+tabs+'</div><span class="sub"><b style="color:var(--chalk)">'+esc(p.name)+'</b> · '+PL(p)+' · '+p.age+' · OVR '+p.rating+' · asks <b style="color:var(--chalk)">'+money(Math.round(R.ask*10)/10)+' × '+(p.askYears||3)+'</b>'+(rsFatigue(p)?' · <span style="color:var(--red)">restructure-weary +'+Math.round(rsFatigue(p)*8)+'%</span>':'')+'</span></div>';
+  h += '<div class="ct2-body">';
+  // terms
+  h += '<div class="ct2-card"><div class="ct2-h">Terms<em>tap ± to adjust</em></div><div class="ct2-pre">' +
+    [['relief','Cap relief','big bonus, escalating'],['bal','Balanced','30% bonus, flat'],['now','Pay now','front-loaded']].map(x => '<span class="'+(preOn===x[0]?'on':'')+'" onclick="ctSet(\'preset\',\''+x[0]+'\')"><b>'+x[1]+'</b>'+x[2]+'</span>').join('') + '</div>' +
+    stp('Years', d.years, 'years') + stp('Per year (APY)', money(d.apy), 'apy') + stp('Signing bonus', Math.round(d.bonusPct*100)+'%', 'bonus') + stp('Guaranteed base', d.gtdYrs ? 'Yr 1'+(d.gtdYrs>1?'–'+d.gtdYrs:'') : 'none', 'gtd') +
+    seg('Structure', 'shape', [['flat','Flat'],['esc','Escalate'],['front','Front']], d.shape) +
+    seg('Void years', 'voids', [[0,'0'],[1,'1'],[2,'2']].filter(o => o[0] === 0 || d.years + o[0] <= 5), d.voids) +
+    '<div class="sub" style="font-size:10px">Bonus spreads over '+(s.bonusYearsLeft||0)+' yr'+(s.bonusYearsLeft===1?'':'s')+(s.voids?' ('+d.years+' real + '+s.voids+' void). Void years add <b style="color:#B48CF0">'+money(Math.round(s.bonusProration*s.voids*10)/10)+'</b> dead money when the deal ends.':'.')+'</div></div>';
+  // cap table
+  let rows = '';
+  for(let i=0;i<d.years;i++) rows += '<tr><td>'+(G.year+i+(['hub','playoffs'].includes(G.phase)?1:0))+'</td><td>'+money(s.base[i])+'</td><td>'+(i<s.bonusYearsLeft?money(s.bonusProration):'—')+'</td><td class="hit">'+money(schedHit(s,i))+'</td><td>'+(i<s.gtdYrs?'<span class="up">✓</span>':'no')+'</td><td class="dn">'+money(schedDeadIfCut(s,i))+'</td></tr>';
+  for(let i=0;i<s.voids;i++) rows += '<tr class="void"><td>'+(G.year+d.years+i+(['hub','playoffs'].includes(G.phase)?1:0))+' void</td><td>—</td><td>'+money(s.bonusProration)+'</td><td>'+(i===0?money(Math.round(s.bonusProration*s.voids*10)/10)+' dead':'')+'</td><td></td><td></td></tr>';
+  const gB = schedGtd(s) - s.totalBonus, ng = s.total - schedGtd(s);
+  const pct = v => clamp(v / Math.max(1,s.total) * 100, 0, 100);
+  const roomAfter = capRoom(me) + (d.mode === 'fa' ? 0 : p.salary) - schedHit(s, 0);
+  h += '<div class="ct2-card"><div class="ct2-h">Cap by year<em>total '+money(s.total)+' · guaranteed '+money(schedGtd(s))+'</em></div><div class="ct2-tw"><table class="ct2-t"><tr><th>Year</th><th>Base</th><th>Bonus</th><th>Cap hit</th><th>Gtd</th><th>Dead if cut</th></tr>'+rows+'</table></div>' +
+    '<div class="ct2-bar"><i style="width:'+pct(s.totalBonus)+'%;background:var(--gold)"></i><i style="width:'+pct(gB)+'%;background:var(--green)"></i><i style="width:'+pct(ng)+'%;background:#3a4a63"></i></div>' +
+    '<div class="ct2-leg"><span><i style="background:var(--gold)"></i>Bonus '+money(s.totalBonus)+'</span><span><i style="background:var(--green)"></i>Gtd base '+money(Math.round(gB*10)/10)+'</span><span><i style="background:#3a4a63"></i>Not gtd '+money(Math.round(ng*10)/10)+'</span></div>' +
+    '<div class="sub" style="font-size:10px">Room this year after: <b style="color:'+(roomAfter>=0?'var(--green)':'var(--red)')+'">'+money(Math.round(roomAfter*10)/10)+'</b>. Flat, no bonus would hit '+money(d.apy)+'.</div></div>';
+  // his read
+  const pos = clamp((R.ratio - .75) / .4 * 100, 2, 98);
+  const verdict = R.tier === 'accept' ? '<b class="up">'+Math.round(R.ratio*100)+'% ✓ he signs</b>' : R.tier === 'counter' ? '<b style="color:var(--orange)">'+Math.round(R.ratio*100)+'% close</b>' : R.tier === 'lowg' ? '<b class="dn">wants more guaranteed</b>' : '<b class="dn">'+Math.round(R.ratio*100)+'% too low</b>';
+  let caBox;
+  if(ca){
+    const minG = Math.round(ctMinGtd(p) * s.total * 10) / 10;
+    const apy70 = Math.round(R.ask / ((1 + .3*(.7 - R.exp)) * (1 - Math.min(.12, Math.abs(d.years-(p.askYears||3))*.03))) * 10) / 10;
+    let warn = ''; for(let i=0;i<d.years;i++){ const pc = schedHit(s,i) / capNow(); if(pc > (p.pos==='QB' ? .2 : .14)){ warn = (G.year+i)+' hit is '+Math.round(pc*100)+'% of the cap. Watch it.'; break; } }
+    caBox = '<div class="ct2-ca"><b>📊 CAP ANALYST · '+esc(ca.name.split(' ').pop())+' '+ca.rating+'</b><span>Lowest guarantee he takes: <b>'+money(minG)+'</b></span><span>At 70% guaranteed he takes <b>'+money(apy70)+'</b>/yr.</span>'+(warn?'<span class="dn">'+warn+'</span>':'<span class="up">No cap red flags.</span>')+'</div>';
+  } else caBox = '<div class="ct2-ca off"><b>📊 CAP ANALYST</b><span>Hire one on the Staff page to see his lowest guarantee and cap warnings.</span></div>';
+  const btn = d.mode === 'fa' ? (fzOn() ? (fzF().offers[p.id] ? 'Update offer' : 'Send offer') : 'Make offer') : d.mode === 'resign' ? 'Re-sign' : 'Extend';
+  h += '<div class="ct2-card"><div class="ct2-h">His read<em>agent</em></div><div class="ct2-meter"><b style="left:'+pos+'%"></b></div>' +
+    '<div class="ct2-kv"><span>Total value</span><b>'+money(s.total)+'</b></div><div class="ct2-kv"><span>Guaranteed</span><b class="up">'+money(R.gtd)+' · '+Math.round(R.share*100)+'%</b></div>' +
+    '<div class="ct2-kv"><span>Worth to him</span><b>'+money(R.worth)+'</b></div><div class="ct2-kv"><span>vs his ask</span>'+verdict+'</div>' + caBox +
+    '<div style="display:flex;gap:6px;margin-top:auto">'+(d.mode==='fa'&&fzOn()&&fzF().offers[p.id]?'<button class="btn" onclick="fzWithdraw('+p.id+')">Withdraw</button>':'')+'<button class="btn primary" style="flex:1" onclick="ctSubmit()">'+btn+'</button></div></div>';
+  return h + '</div></div>';
+}
+function ctApply(p, s, mode, team){
+  p.contract = { base: s.base.slice(), bonusProration: s.bonusProration, bonusYearsLeft: s.bonusYearsLeft, totalBonus: s.totalBonus, gtdYrs: s.gtdYrs, voids: s.voids };
+  if(team && team.idx === G.userTeam && currentCoach('CA')){ // analyst shaves 3% off the base
+    p.contract.base = p.contract.base.map(b => Math.round(b * .97 * 10) / 10);
+  }
+  p.years = s.base.length;
+  p.salary = schedHit(p.contract, 0);
+  p.contractYear = G.year;
+}
+function ctSubmit(){
+  const d = cDraft; if(!d) return; const p = ctPlayer(d.pid), me = meT(); if(!p) return;
+  const ask = ctAskApy(p, d.mode), R = ctRead(p, d, ask), s = R.s;
+  if(d.mode === 'fa' && fzOn()){
+    const r = fzPlaceOffer(p.id, d.apy, d.years, {bonusPct:d.bonusPct, gtdYrs:d.gtdYrs, shape:d.shape, voids:d.voids}, schedHit(s,0), R.worthApy);
+    if(r.kind === 'blocked'){ alert(r.msg); return; }
+    closeModal(); render(); return;
+  }
+  if(R.tier === 'lowg'){ alert(p.name+'\'s camp wants more guaranteed money. Raise the bonus or guarantee more base years.'); return; }
+  if(R.tier === 'reject'){ if(d.mode==='fa') bumpRel(p,'coach',-2); alert(p.name+'\'s camp turned it down. That is well under what he is worth to them.'); save(); return; }
+  if(R.tier === 'counter'){ alert(p.name+'\'s camp says close. They want about '+money(Math.round((R.ask - R.worthApy)*10)/10)+' more per year in value. Add money or guarantees.'); return; }
+  const hit = schedHit(s, 0);
+  if(d.mode === 'fa'){
+    if(rosterFrozen()){ alert('Roster moves are frozen during the playoffs.'); return; }
+    if(activeCount(me) >= rosterLimit()){ alert('Roster is full ('+rosterLimit()+' max right now). Cut someone first.'); return; }
+    if(hit > capRoom(me)){ alert('Year 1 cap hit '+money(hit)+' is more than your room ('+money(capRoom(me))+'). Add bonus or void years, or clear space.'); return; }
+    const i = G.fa.indexOf(p); if(i < 0) return;
+    G.fa.splice(i, 1);
+    ctApply(p, s, 'fa', me);
+    p.injWeeks = 0; p.dressed = true; ensureBio(p);
+    me.roster.push(p);
+    logEv(p, 'ct', 'Signed with '+me.city+': '+money(s.total)+' / '+d.years+' yrs, '+money(schedGtd(s))+' guaranteed', 0);
+    bumpRel(p, 'coach', 2); bumpFan(p.rating >= 85 ? 5 : p.rating >= 75 ? 2 : 0);
+    if(G.phase === 'fa') aiFAWave(RI(2,4));
+  } else {
+    if(hit - p.salary > capRoom(me)){ alert('That raises this year\'s hit by '+money(Math.round((hit-p.salary)*10)/10)+', more than your room. Add bonus or void years.'); return; }
+    // extending: the old deal's unpaid bonus rolls into the new proration
+    const c = contractOf(p), oldBonusLeft = Math.round(c.bonusProration * c.bonusYearsLeft * 10) / 10;
+    ctApply(p, s, d.mode, me);
+    if(oldBonusLeft > 0){ const pc = p.contract, yrs = Math.max(pc.bonusYearsLeft, Math.min(5, p.years)); pc.bonusProration = Math.round((pc.bonusProration*pc.bonusYearsLeft + oldBonusLeft) / yrs * 100) / 100; pc.bonusYearsLeft = yrs; pc.totalBonus += oldBonusLeft; p.salary = schedHit(pc, 0); }
+    p.resigned = d.mode === 'resign' || p.resigned; if(d.mode === 'extend') p.resigned = true;
+    if(p.demand || p.holdout){ if(p.holdout) logEv(p, 'ct', 'Ends holdout with a new deal', 0); p.demand = null; p.holdout = false; p.holdoutWeeks = 0; }
+    logEv(p, 'ct', (d.mode==='resign'?'Re-signed':'Extended')+': '+money(s.total)+' / '+d.years+' yrs, '+money(schedGtd(s))+' guaranteed', 0);
+    bumpRel(p, 'coach', 3 + (R.share >= .5 ? 1 : 0));
+  }
+  logOwnerMove((d.mode==='fa'?'Signed ':d.mode==='resign'?'Re-signed ':'Extended ')+p.name+' ('+PL(p)+'): '+money(s.total)+' over '+d.years+' yrs.');
+  cDraft = null; save(); closeModal(); render();
+}
+/* ---------- releases: normal vs post-June 1 ---------- */
+function pj1Left(){ const u = (G.pj1 && G.pj1.year === G.year) ? G.pj1.used : 0; return Math.max(0, 2 - u); }
+function inSeasonPhase(){ return ['hub','playoffs'].includes(G.phase); }
+function releaseSplit(p, pj1){
+  const c = contractOf(p), rem = c.bonusProration * c.bonusYearsLeft, gtd = c.gtdYrs || 0;
+  let gFuture = 0; for(let k=1; k<Math.min(gtd, c.base.length); k++) gFuture += c.base[k];
+  const thisBase = inSeasonPhase() ? (c.base[0]||0) : (gtd >= 1 ? (c.base[0]||0) : 0);
+  const thisPr = c.bonusYearsLeft > 0 ? c.bonusProration : 0;
+  if(pj1 || isPostJune1()) return { now: Math.round((thisPr + thisBase)*10)/10, next: Math.round((rem - thisPr + gFuture)*10)/10 };
+  return { now: Math.round((rem + thisBase + gFuture)*10)/10, next: 0 };
+}
+function chargeRelease(t, p, pj1){
+  const sp = releaseSplit(p, pj1);
+  if(sp.now > 0) chargeDeadCap(t, sp.now);
+  if(sp.next > 0){ G.deadCapNext = G.deadCapNext || {}; G.deadCapNext[t.idx] = Math.round(((G.deadCapNext[t.idx]||0) + sp.next) * 10) / 10; }
+  return sp;
+}
+function releaseHTML(pid){
+  const p = meT().roster.find(x => x.id === pid); if(!p) return '';
+  const a = releaseSplit(p, false), b = releaseSplit(p, true), canPJ = !isPostJune1() && pj1Left() > 0 && (a.now !== b.now);
+  const box = (h, sp, on, btn, note) => '<div class="ct2-opt'+(on?' on':'')+'"><div class="ct2-h">'+h+'</div><div class="ct2-kv"><span>'+G.year+' dead money</span><b class="dn">'+money(sp.now)+'</b></div><div class="ct2-kv"><span>'+(G.year+1)+' dead money</span><b'+(sp.next?' class="dn"':'')+'>'+money(sp.next)+'</b></div><div class="ct2-kv"><span>'+G.year+' room freed</span>'+(()=>{ const fr = Math.round((p.salary - sp.now)*10)/10; return '<b class="'+(fr>=0?'up':'dn')+'" style="font-size:18px">'+(fr>=0?'+':'−')+money(Math.abs(fr))+'</b>'; })()+'</div><div class="sub" style="font-size:10.5px">'+note+'</div>'+btn+'</div>';
+  let s = '<div class="sub" style="margin-bottom:6px"><b style="color:var(--chalk)">'+esc(p.name)+'</b> · '+PL(p)+' · '+p.age+' · '+money(p.salary)+' cap hit · '+p.years+' yr'+(p.years!==1?'s':'')+' left · bonus left '+money(Math.round(contractOf(p).bonusProration*contractOf(p).bonusYearsLeft*10)/10)+'</div><div class="ct2-two">';
+  s += box(isPostJune1() ? 'Release (after June 1)' : 'Normal cut', a, !canPJ, '<button class="btn" style="margin-top:auto" onclick="doCut('+pid+',false)">Cut now</button>', isPostJune1() ? 'After June 1, the dead money splits on its own: this year\'s share now, the rest next year.' : 'All remaining bonus and guaranteed money hits this year. Clean books next year.');
+  if(!isPostJune1()) s += box('Post-June 1 cut<em> '+pj1Left()+' of 2 left</em>', b, canPJ, '<button class="btn primary" style="margin-top:auto" '+(canPJ?'':'disabled')+' onclick="doCut('+pid+',true)">Designate &amp; cut</button>', canPJ ? 'Only this year\'s bonus share counts now. The rest lands next year. Roster spot opens today.' : (pj1Left() ? 'Same either way: no future bonus to split.' : 'Both post-June 1 designations used this year.'));
+  return s + '</div>';
+}
+/* ---------- restructures ---------- */
+function rsEligible(p){
+  if(p.years < 2) return 'Needs 2+ years left on his deal.';
+  if(p.contractYear && G.year - p.contractYear < 1) return 'Just signed. Wait a year.';
+  if(p.rsYear === G.year) return 'Already restructured this year.';
+  const c = contractOf(p); if((c.base[0]||0) < 2) return 'Base salary is too small to convert.';
+  return '';
+}
+let rsDraft = null;
+function openRestructure(pid){
+  const p = meT().roster.find(x => x.id === pid); if(!p) return;
+  const why = rsEligible(p); if(why){ alert(why); return; }
+  const c = contractOf(p);
+  rsDraft = { pid, amt: Math.round(Math.max(1, (c.base[0]-1.2) * .75) * 10) / 10, voids: 0 };
+  openModal('restructure', pid);
+}
+function rsSet(k, v){ const d = rsDraft; if(!d) return; const p = meT().roster.find(x => x.id === d.pid), c = contractOf(p);
+  if(k === 'amt') d.amt = clamp(Math.round((d.amt + v*Math.max(.5, c.base[0]*.05))*10)/10, .5, Math.round((c.base[0]-1.0)*10)/10);
+  else d.voids = clamp(v, 0, Math.max(0, 5 - p.years));
+  render(); }
+function rsPreview(p, amt, voids){
+  const c = contractOf(p), S = Math.max(c.bonusYearsLeft, Math.min(5, p.years + voids));
+  const remBonus = c.bonusProration * c.bonusYearsLeft + amt, pr = remBonus / S;
+  const after = { base: c.base.slice(), bonusProration: pr, bonusYearsLeft: S, gtdYrs: Math.max(c.gtdYrs||0, 0) };
+  after.base[0] = Math.round((after.base[0] - amt) * 10) / 10;
+  return { before: c, after, S };
+}
+function restructureHTML(pid){
+  const d = rsDraft, p = meT().roster.find(x => x.id === pid); if(!p || !d) return '';
+  const c = contractOf(p), P = rsPreview(p, d.amt, d.voids), ca = currentCoach('CA'), n = rsRecent(p);
+  let rows = '';
+  const yrs = Math.max(p.years, P.S);
+  for(let i=0;i<yrs;i++){
+    const b = i < p.years ? schedHit(c, i) : 0, a = i < p.years ? schedHit(P.after, i) : Math.round(P.after.bonusProration*(i < P.S ? 1 : 0)*10)/10;
+    const dv = Math.round((a-b)*10)/10;
+    rows += '<tr'+(i>=p.years?' class="void"':'')+'><td>'+(G.year+i)+(i>=p.years?' void':'')+'</td><td>'+(i<p.years?money(b):'—')+'</td><td class="hit">'+money(a)+(i>=p.years?' dead':'')+'</td><td class="'+(dv<0?'up':'dn')+'">'+(dv<0?'−':'+')+money(Math.abs(dv))+'</td></tr>';
+  }
+  const freed = Math.round((schedHit(c,0) - schedHit(P.after,0))*10)/10;
+  const dead1 = Math.round(Math.max(0, P.S-1)*P.after.bonusProration*10)/10, deadB = Math.round(Math.max(0, c.bonusYearsLeft-1)*c.bonusProration*10)/10;
+  let caTxt = '';
+  if(ca){ const nx = schedHit(P.after, 1) / (capNow()*1.04); caTxt = '<div class="ct2-ca"><b>📊 '+esc(ca.name.split(' ').pop())+' '+ca.rating+'</b><span>'+(p.age >= 31 ? 'He is '+p.age+'. That money lands when he may be declining.' : 'Reasonable. He is '+p.age+' and signed through '+(G.year+p.years-1)+'.')+'</span><span'+(nx>.18?' class="dn"':'')+'>Next year his hit is '+Math.round(nx*100)+'% of the projected cap.</span>'+(n?'<span class="dn">Restructured '+n+'× in 3 yrs. Another one wears on him.</span>':'')+'</div>'; }
+  else caTxt = '<div class="ct2-ca off"><b>📊 CAP ANALYST</b><span>Hire one to get a read on this move.</span></div>';
+  return '<div class="sub" style="margin-bottom:6px"><b style="color:var(--chalk)">'+esc(p.name)+'</b> · '+PL(p)+' · '+p.age+' · '+money(p.salary)+' cap hit · '+p.years+' yrs left</div><div class="ct2-body" style="grid-template-columns:1fr 1.3fr .95fr">' +
+    '<div class="ct2-card"><div class="ct2-h">Convert base to bonus</div><div class="ct2-kv"><span>'+G.year+' base salary</span><b>'+money(c.base[0])+'</b></div>' +
+    '<div class="ct2-st"><span>Convert</span><div><button onclick="rsSet(\'amt\',-1)">−</button><b>'+money(d.amt)+'</b><button onclick="rsSet(\'amt\',1)">+</button></div></div>' +
+    '<div class="ct2-st"><span>Spread over</span><div class="ct2-seg">'+[0,1,2].filter(v => v===0 || p.years+v<=5).map(v => '<i class="'+(d.voids===v?'on':'')+'" onclick="rsSet(\'voids\','+v+')">'+(v?'+'+v+' void':p.years+' yrs')+'</i>').join('')+'</div></div>' +
+    '<div class="sub" style="font-size:10px">Converted money becomes guaranteed bonus. '+(n ? '<b class="dn">He was restructured '+n+'× in the last 3 yrs. He may say no, and he will want more next deal.</b>' : 'First one in 3 yrs: he likes the guarantee (+3 relationship).')+'</div>' +
+    '<div class="ct2-kv" style="margin-top:auto"><span>Room freed now</span><b class="up" style="font-size:20px">+'+money(freed)+'</b></div></div>' +
+    '<div class="ct2-card"><div class="ct2-h">Before → after<em>cap hit</em></div><table class="ct2-t"><tr><th>Year</th><th>Before</th><th>After</th><th>Change</th></tr>'+rows+'</table><div class="sub" style="font-size:10px">Dead money if cut next year: '+money(deadB)+' → <b class="dn">'+money(dead1)+'</b>.</div></div>' +
+    '<div class="ct2-card"><div class="ct2-h">Cap Analyst</div>'+caTxt+'<button class="btn primary" style="margin-top:auto" onclick="doRestructure()">Restructure</button></div></div>';
+}
+/* core restructure used by you, the FO button, and AI (rules apply to all) */
+function applyRestructure(p, amt, voids, team){
+  const c = contractOf(p);
+  if(rsEligible(p)) return {ok:false, msg:rsEligible(p)};
+  const n = rsRecent(p);
+  if(n >= 1 && Math.random() < .3 + .2*(n-1)){ bumpRel(p, 'coach', -4); p.rsYear = G.year; return {ok:false, msg:p.name+' turned it down. He was restructured recently and wants his base salary.'}; }
+  const P = rsPreview(p, amt, voids || 0);
+  const before = p.salary;
+  c.base[0] = P.after.base[0]; c.bonusProration = Math.round(P.after.bonusProration*100)/100; c.bonusYearsLeft = P.S;
+  c.totalBonus = Math.round(((c.totalBonus||0) + amt)*10)/10; c.voids = Math.max(0, P.S - p.years);
+  p.salary = schedHit(c, 0);
+  p.rsYear = G.year; (p.rsHist = p.rsHist || []).push(G.year);
+  bumpRel(p, 'coach', n >= 1 ? -5 : 3);
+  return {ok:true, saved: Math.round((before - p.salary)*10)/10};
+}
+function doRestructure(){
+  const d = rsDraft, p = d && meT().roster.find(x => x.id === d.pid); if(!p) return;
+  const r = applyRestructure(p, d.amt, d.voids, meT());
+  if(!r.ok){ alert(r.msg); save(); closeModal(); render(); return; }
+  logEv(p, 'ct', 'Restructured: '+money(d.amt)+' of base converted to bonus, frees '+money(r.saved), 0);
+  logOwnerMove('Restructured '+p.name+' ('+PL(p)+'): freed '+money(r.saved)+'.');
+  rsDraft = null; save(); closeModal(); render();
+}
+function rsPickHTML(){
+  const me = meT(), list = me.roster.filter(p => p.years >= 2).sort((a,b) => b.salary - a.salary).slice(0, 14);
+  let s = '<p class="sub" style="margin-bottom:6px">Convert this year\'s base salary into bonus. Frees room now, adds cost later. Once per player per year.</p><table class="tbl"><tr><th>Player</th><th>Hit</th><th>Yrs</th><th>Could free</th><th></th></tr>';
+  list.forEach(p => { const why = rsEligible(p), c = contractOf(p), amt = Math.max(0, c.base[0]-1.0), fr = Math.round((amt - amt/Math.min(5,p.years))*10)/10;
+    s += '<tr><td>'+PL(p)+' '+esc(p.name)+(rsRecent(p)?' <span class="sub" style="color:var(--red)">· '+rsRecent(p)+'× in 3 yrs</span>':'')+'</td><td>'+money(p.salary)+'</td><td>'+p.years+'</td><td class="up">'+(why?'—':'up to '+money(fr))+'</td><td>'+(why?'<span class="sub">'+why+'</span>':'<button class="btn tiny primary" onclick="openRestructure('+p.id+')">Restructure</button>')+'</td></tr>'; });
+  return s + '</table>';
+}
+/* AI restructure rules: once/yr, 2+ yrs, not new, under 32, 75+ OVR, real years only, next-year guardrail */
+function aiNextYearCommit(t){
+  let s = (G.deadCapNext && G.deadCapNext[t.idx]) || 0;
+  t.roster.forEach(p => { if(p.years > 1){ const c = contractOf(p); s += (c.base[1]||0) + (c.bonusYearsLeft > 1 ? c.bonusProration : 0); } });
+  return s;
+}
+function aiCanRestructure(t, p){
+  if(rsEligible(p)) return false;
+  if(p.age >= 32 || p.rating < 75) return false;
+  const c = contractOf(p), amt = Math.max(0, c.base[0] - 1.2) * .65, add = amt / Math.min(5, p.years);
+  return aiNextYearCommit(t) + add <= capNow() * 1.04 * .95;
+}
+
+function foRestructureToCap(){
+  const me = meT(), before = capRoom(me);
+  if(before >= 0) return;
+  if(!uiConfirm('Your front office will convert base salary to bonus on your biggest multi-year deals until you are under the cap. This lowers this year\'s hits and adds cost to future years. Go?', foRestructureToCap)) return;
+  let guard = 15; const done = new Set();
+  while(capRoom(me) < 0 && guard-- > 0){
+    const c = me.roster.filter(p => p.years > 1 && !done.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1) && p.restructuredYear !== G.year).sort((a,b) => b.salary - a.salary)[0];
+    if(!c) break;
+    done.add(c.id);
+    const saved = restructureContract(c);
+    if(saved > 0){ c.restructuredYear = G.year; logEv(c, 'ct', 'Restructured to free up '+money(saved)+' in cap room', 0); logOwnerMove('Restructured '+c.name+' ('+c.spot+'): freed '+money(saved)+'.'); }
+  }
+  const after = capRoom(me);
+  alert(after >= 0 ? 'Done. Freed '+money(Math.round((after-before)*10)/10)+'. You are '+money(after)+' under the cap.' : 'Freed '+money(Math.round((after-before)*10)/10)+', still '+money(-after)+' over. Release players to finish.');
+  save(); render();
+}
+function enforceCapCompliance(t, opt){
+  opt = opt || {};
+  const noRestructure = t.idx === G.userTeam && G.mode !== 'player' && !opt.restructure;
   // first: try restructuring existing multi-year deals to free up room without losing the player
   let rguard = 15;
   const restructured = new Set();
   let playerCandidateBlocked = false;
-  while(capRoom(t) < 0 && rguard-- > 0){
+  while(!noRestructure && capRoom(t) < 0 && rguard-- > 0){
     const isMe = p => G.mode === 'player' && G.playerId && p.id === G.playerId;
-    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1) && !isMe(p));
+    const candidates = t.roster.filter(p => p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1) && !isMe(p) && (t.idx === G.userTeam || aiCanRestructure(t, p)));
     if(!candidates.length){
       // if the only remaining lever would be the player's own deal, don't touch it automatically — let them decide
       const meCandidate = t.roster.find(p => isMe(p) && p.years > 1 && !restructured.has(p.id) && p.salary > 3 && !(p.contractYear && (G.year - p.contractYear) < 1));
@@ -2481,7 +2815,7 @@ function enforceCapCompliance(t){
     const dead = deadCapCharge(p);
     if(p.salary - dead <= 0.05) break; // his cap hit is guaranteed either way (post-June-1) — cutting him wouldn't actually help, stop rather than cut for nothing
     t.roster = t.roster.filter(x => x.id !== p.id);
-    if(dead > 0) chargeDeadCap(t, dead);
+    chargeRelease(t, p, false);
     p.years = 0;
     if(t.idx === G.userTeam){
       logEv(p, 'ct', 'Released to get under the cap before the season opener', 0);
@@ -2580,6 +2914,7 @@ let faDraft = null;   // {pid, sal, yrs, lo, hi, step}
 let faSigned = null;  // {pid, name, msg} shown after a successful signing
 function toggleFAOffer(pid){
   const p = G.fa.find(x => x.id === pid); if(!p) return;
+  if(G.mode !== 'player'){ openContract('fa', pid); return; }
   initFADraft(p);
   lastFAOfferResult = null; faSigned = null; faOpenId = pid;
   openModal('faoffer', pid);
@@ -2660,15 +2995,14 @@ function cutPlayer(pid){
   const i = me.roster.findIndex(p => p.id === pid);
   if(i < 0) return;
   const p = me.roster[i];
-  const dead = deadCapCharge(p);
-  if(dead > 0){
-    if(!uiConfirm('Releasing '+p.name+' will charge '+money(dead)+' to your cap as dead money'+(isPostJune1()?' (his salary is guaranteed at this point in the year)':' (unamortized signing bonus)')+'. Continue?', () => cutPlayer(pid))) return;
-  }
+  const sp0 = releaseSplit(p, false);
+  if((sp0.now > 0 || sp0.next > 0) && !cutPlayer._go){ openModal('release', pid); return; }
+  cutPlayer._go = false;
+  const pj1 = !!cutPlayer._pj1; cutPlayer._pj1 = false;
   me.roster.splice(i,1);
-  if(dead > 0){
-    chargeDeadCap(me, dead);
-    logEv(p, 'ct', 'Released — '+money(dead)+' in unamortized bonus hits '+me.city+'\'s cap as dead money', 0);
-  }
+  const sp = chargeRelease(me, p, pj1), dead = sp.now;
+  if(pj1){ if(!G.pj1 || G.pj1.year !== G.year) G.pj1 = {year:G.year, used:0}; G.pj1.used++; }
+  if(sp.now > 0 || sp.next > 0) logEv(p, 'ct', 'Released'+(pj1?' (post-June 1)':'')+': '+money(sp.now)+' dead money this year'+(sp.next?', '+money(sp.next)+' next year':''), 0);
   bumpRel(p, 'coach', -8);
   bumpFan(p.rating >= 85 ? -5 : p.rating >= 75 ? -2 : 0);
   logOwnerMove('Released '+p.name+' ('+p.spot+')'+(dead>0?' — '+money(dead)+' dead cap':'')+'.');
@@ -2677,6 +3011,7 @@ function cutPlayer(pid){
   G.fa.sort((a,b) => b.rating - a.rating);
   save(); render();
 }
+function doCut(pid, pj1){ cutPlayer._go = true; cutPlayer._pj1 = pj1; closeModal(); cutPlayer(pid); }
 function toggleDress(pid){
   const p = meT().roster.find(x => x.id === pid);
   if(!p || p.injWeeks > 0) return;
@@ -2742,7 +3077,7 @@ function fzPT(t, p){ const better = t.roster.filter(x => x.spot === p.spot && x.
 function fzHome(t, p){ return hometownDisc(t, p) < 1 ? 1 : 0; }
 function fzFit(t, p){ const q = fzPri(p); return q.w*(fzCtd(t)-.5)*2 + q.pt*(fzPT(t,p)-.5)*2 + q.h*fzHome(t,p); }
 function fzRelB(t, p){ return t.idx === G.userTeam ? 1 - relationshipMult(p) : 0; }
-function fzScore(t, p, o){ return fzVal(o.sal, o.yrs) / fzAskVal(p) + fzFit(t,p)*.12 + fzRelB(t,p); }
+function fzScore(t, p, o){ const apy = o.counter ? o.counter.sal : (o.worth || o.sal); return fzVal(apy, o.yrs) / fzAskVal(p) + fzFit(t,p)*.12 + fzRelB(t,p); }
 function fzThr(){ const F = fzF(); return F && F.day >= 5 ? .96 : 1; }
 function fzMinFor(t, p, yrs){ yrs = yrs || fzYrs(p); const need = fzThr() - fzFit(t,p)*.12 - fzRelB(t,p); return Math.max(0.5, Math.ceil(need * fzAskVal(p) / (1+(yrs-1)*.05) * 10) / 10); }
 function fzCA(){ return currentCoach('CA'); }
@@ -2756,7 +3091,7 @@ function fzSlots(){
 function fzCallsMax(){ const ps = currentCoach('PS'); return !ps ? 2 : ps.rating >= 85 ? 4 : ps.rating >= 70 ? 3 : 2; }
 function fzCallsLeft(){ const F = fzF(); if(!F) return 0; if(F.calls.day !== F.day) F.calls = {day:F.day, used:0}; return Math.max(0, fzCallsMax() - F.calls.used); }
 function fzOffersOut(){ const F = fzF(); return F ? Object.keys(F.offers).length : 0; }
-function fzCommitted(){ const F = fzF(); return F ? Object.values(F.offers).reduce((s,o)=>s+o.sal, 0) : 0; }
+function fzCommitted(){ const F = fzF(); return F ? Object.values(F.offers).reduce((s,o)=>s+(o.hit||o.sal), 0) : 0; }
 function fzBids(pid){ const F = fzF(); return (F && F.bids[pid]) || []; }
 function fzWire(txt, mine){ const F = fzF(); F.wire.unshift({s:fzStamp(F), t:txt, m:!!mine}); F.wire = F.wire.slice(0, 40); }
 
@@ -2785,12 +3120,13 @@ function fzAIBids(){
   const committed = {}; Object.keys(F.bids).forEach(pid => F.bids[pid].forEach(b => committed[b.t] = (committed[b.t]||0) + b.sal));
   G.teams.forEach(t => {
     if(t.idx === G.userTeam || Math.random() > .6) return;
+    const crunch = capStatus(t) === 'red'; if(crunch && Math.random() < .7) return;
     if((open[t.idx]||0) >= 2 || t.roster.length + (open[t.idx]||0) >= LIMIT_OFF) return;
     const needs = teamTopNeeds(t, 3), room = capRoom(t) - (committed[t.idx]||0);
     const cands = G.fa.filter(p => (needs.includes(p.pos) || (p.rating >= 80 && !SPEC[p.pos])) && fzAsk(p) <= room && !fzBids(p.id).some(b => b.t === t.idx))
       .map(p => ({p, s: p.rating + (needs.includes(p.pos) ? 6 : 0) + R(0,7)})).sort((a,b) => b.s - a.s).slice(0, 4);
     if(!cands.length) return;
-    const p = pick(cands).p, sal = Math.min(room, Math.round(fzAsk(p) * R(.9, 1.1) * 10) / 10);
+    const p = pick(cands).p, sal = Math.min(room, Math.round(fzAsk(p) * R(.9, 1.1) * (crunch ? .92 : 1) * 10) / 10);
     if(sal < 0.5) return;
     (F.bids[p.id] = F.bids[p.id] || []).push({t:t.idx, sal, yrs:clamp(fzYrs(p) + RI(-1,1), 1, 5)});
     open[t.idx] = (open[t.idx]||0) + 1; committed[t.idx] = (committed[t.idx]||0) + sal;
@@ -2822,12 +3158,13 @@ function fzUpdate(first){
     if(mine && mine.sc >= thr - .02 && o.st === 'outbid') o.why += ' · you are close';
   });
 }
-function fzSign(p, t, sal, yrs){
+function fzSign(p, t, sal, yrs, struct){
   const F = fzF(), mine = t.idx === G.userTeam;
   const i = G.fa.indexOf(p); if(i < 0) return;
   G.fa.splice(i, 1);
-  if(mine && fzCA()) sal = Math.round(sal * .97 * 10) / 10;
-  p.salary = sal; p.years = yrs; p.injWeeks = 0; p.dressed = true; p.contractYear = G.year;
+  if(struct){ ctApply(p, buildSchedule(sal, yrs, struct.bonusPct, struct.shape, struct.voids, struct.gtdYrs), 'fa', t); }
+  else { if(mine && fzCA()) sal = Math.round(sal * .97 * 10) / 10; p.salary = sal; p.years = yrs; p.contract = { base: Array(yrs).fill(sal), bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0, gtdYrs: t.idx === G.userTeam ? 0 : (p.rating >= 80 ? 1 : 0) }; }
+  p.injWeeks = 0; p.dressed = true; p.contractYear = G.year;
   ensureBio(p);
   logEv(p, 'ct', 'Signed with '+t.city+' · '+money(sal)+'/yr × '+yrs, 0);
   t.roster.push(p);
@@ -2862,8 +3199,8 @@ function fzCheckpoint(){
         if(o) fzWire('Lost '+esc(p.name)+' to '+top.t.abbr+'.', true);
         fzSign(p, top.t, top.o.sal, top.o.yrs);
       } else {
-        if(activeCount(me) >= rosterLimit() || capRoom(me) < o.sal){ delete F.offers[pid]; fzWire(esc(p.name)+' said yes, but you had no '+(capRoom(me) < o.sal ? 'cap room' : 'roster spot')+'. Deal off.', true); return; }
-        fzSign(p, me, o.sal, o.yrs);
+        if(activeCount(me) >= rosterLimit() || capRoom(me) < (o.hit||o.sal)){ delete F.offers[pid]; fzWire(esc(p.name)+' said yes, but you had no '+(capRoom(me) < (o.hit||o.sal) ? 'cap room' : 'roster spot')+'. Deal off.', true); return; }
+        fzSign(p, me, o.sal, o.yrs, o.struct);
       }
       return;
     }
@@ -2895,13 +3232,14 @@ function fzSkip(){
 }
 function fzSimAll(){ let g = 20; while(fzOn() && g-- > 0) fzCheckpoint(); }
 /* user actions */
-function fzPlaceOffer(pid, sal, yrs){
+function fzPlaceOffer(pid, sal, yrs, struct, hit, worth){
   const F = fzF(), p = G.fa.find(x => x.id === pid), me = meT(); if(!F || !p) return {kind:'blocked', msg:'He is off the market.'};
   const had = F.offers[pid];
   if(!had && fzOffersOut() >= fzSlots()) return {kind:'blocked', msg:'All '+fzSlots()+' offer slots are in use. Withdraw one first.'};
   if(!had && activeCount(me) + fzOffersOut() >= rosterLimit()) return {kind:'blocked', msg:'No roster room for another signing. Cut someone first.'};
-  if(fzCommitted() - (had ? had.sal : 0) + sal > capRoom(me)) return {kind:'blocked', msg:'Open offers can\'t exceed your cap room ('+money(capRoom(me))+').'};
-  F.offers[pid] = {sal, yrs, st:'sent', why:'decides at the '+(F.half ? 'PM' : 'AM')+' checkpoint', at:fzStamp(F)};
+  const h1 = hit || sal;
+  if(fzCommitted() - (had ? (had.hit||had.sal) : 0) + h1 > capRoom(me)) return {kind:'blocked', msg:'Open offers (year 1 cap hits) can\'t exceed your cap room ('+money(capRoom(me))+').'};
+  F.offers[pid] = {sal, yrs, struct: struct || (had && had.struct) || null, hit: h1, worth: worth || sal, st:'sent', why:'decides at the '+(F.half ? 'PM' : 'AM')+' checkpoint', at:fzStamp(F)};
   const w = F.wars.find(x => x.pid === pid); if(w) w.ans = 'revised';
   fzUpdate(true);
   if(w) F.offers[pid].st = 'war';
@@ -2912,17 +3250,19 @@ function fzWithdraw(pid){ const F = fzF(); delete F.offers[pid]; F.wars = F.wars
 function fzAcceptCounter(pid){
   const F = fzF(), o = F.offers[pid], p = G.fa.find(x => x.id === pid), me = meT();
   if(!o || !o.counter || !p) return;
-  if(capRoom(me) < o.counter.sal){ alert('Not enough cap room for '+money(o.counter.sal)+'.'); return; }
+  if(capRoom(me) < (o.struct ? schedHit(buildSchedule(o.counter.sal, o.counter.yrs, o.struct.bonusPct, o.struct.shape, o.struct.voids, o.struct.gtdYrs), 0) : o.counter.sal)){ alert('Not enough cap room for '+money(o.counter.sal)+'.'); return; }
   if(activeCount(me) >= rosterLimit()){ alert('Roster is full. Cut someone first.'); return; }
-  fzSign(p, me, o.counter.sal, o.counter.yrs); save(); render();
+  fzSign(p, me, o.counter.sal, o.counter.yrs, o.struct); save(); render();
 }
 function fzWar(pid, how){
   const F = fzF(), w = F.wars.find(x => x.pid === pid), me = meT(); if(!w) return;
   const p = G.fa.find(x => x.id === pid);
   if(how === 'walk'){ delete F.offers[pid]; F.wars = F.wars.filter(x => x !== w); fzWire('You walked away from '+esc(p.name)+'.', true); save(); render(); return; }
-  const sal = how === 'beat' ? Math.round(w.sal * 1.05 * 10) / 10 : w.sal;
-  if(fzCommitted() - (F.offers[pid] ? F.offers[pid].sal : 0) + sal > capRoom(me)){ alert('That would push open offers past your cap room.'); return; }
-  F.offers[pid] = {sal, yrs:w.yrs, st:'war', why:(how==='beat'?'beat':'matched')+' '+G.teams[w.t].abbr, at:fzStamp(F)};
+  const prev = F.offers[pid], r = prev && prev.worth && prev.sal ? prev.worth / prev.sal : 1;
+  const target = how === 'beat' ? w.sal * 1.05 : w.sal, sal = Math.round(target / r * 10) / 10;
+  const struct = prev && prev.struct, hit = struct ? schedHit(buildSchedule(sal, w.yrs, struct.bonusPct, struct.shape, struct.voids, struct.gtdYrs), 0) : sal;
+  if(fzCommitted() - (prev ? (prev.hit||prev.sal) : 0) + hit > capRoom(me)){ alert('That would push open offers past your cap room.'); return; }
+  F.offers[pid] = {sal, yrs:w.yrs, struct, hit, worth: Math.round(target*10)/10, st:'war', why:(how==='beat'?'beat':'matched')+' '+G.teams[w.t].abbr, at:fzStamp(F)};
   w.ans = how; save(); render();
 }
 function fzCall(pid){
@@ -3217,8 +3557,7 @@ function aiCutdowns(){
     const cuts = t.roster.filter(p => !keep.has(p.id));
     t.roster = t.roster.filter(p => keep.has(p.id));
     cuts.forEach(p => {
-      const dead = deadCapCharge(p);
-      if(dead > 0) chargeDeadCap(t, dead);
+      chargeRelease(t, p, false);
       p.years = 0;
       G.fa.push(p);
     });
@@ -3310,8 +3649,8 @@ function userGame(){
 }
 /* ---------- player stats, stat-driven development, market value ---------- */
 const ST_STAT_KEYS = ['kr','kry','krtd','pr','pry','prtd','pu','puy','pin'];
-const ALL_STAT_KEYS = ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm','pen','peny','cmp','att','pint','car','rec','tgt','fga','xpm','xpa','drp'].concat(ST_STAT_KEYS);
-function blankStats(){ return {drp:0,cmp:0,att:0,pint:0,car:0,rec:0,tgt:0,fga:0,xpm:0,xpa:0,gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0,pen:0,peny:0,kr:0,kry:0,krtd:0,pr:0,pry:0,prtd:0,pu:0,puy:0,pin:0}; }
+const ALL_STAT_KEYS = ['py','ptd','ry','rtd','cy','ctd','tk','sk','int','ff','fgm','pen','peny','cmp','att','pint','car','rec','tgt','fga','xpm','xpa','drp','dtd'].concat(ST_STAT_KEYS);
+function blankStats(){ return {dtd:0,drp:0,cmp:0,att:0,pint:0,car:0,rec:0,tgt:0,fga:0,xpm:0,xpa:0,gp:0,py:0,ptd:0,ry:0,rtd:0,cy:0,ctd:0,tk:0,sk:0,int:0,ff:0,fgm:0,pen:0,peny:0,kr:0,kry:0,krtd:0,pr:0,pry:0,prtd:0,pu:0,puy:0,pin:0}; }
 function stOf(p){ if(!p.st) p.st = blankStats(); return p.st; }
 function statScore(p){
   const s = p.st; if(!s) return 0;
@@ -3356,7 +3695,7 @@ function snapshotStats(teamIdxList){
   teamIdxList.forEach(ti => G.teams[ti].roster.forEach(p => { snap[p.id] = p.st ? Object.assign({}, p.st) : blankStats(); }));
   return snap;
 }
-function lineScore(l){ return (l.py||0)*.025+(l.ptd||0)*4+(l.ry||0)*.09+(l.rtd||0)*5+(l.cy||0)*.09+(l.ctd||0)*5+(l.tk||0)*.45+(l.sk||0)*3.5+(l.int||0)*5+(l.fgm||0)*2+(l.kry||0)*.03+(l.pry||0)*.05+((l.krtd||0)+(l.prtd||0))*5+(l.pin||0)*2+(l.pu||0)*.6; }
+function lineScore(l){ return (l.dtd||0)*6+(l.py||0)*.025+(l.ptd||0)*4+(l.ry||0)*.09+(l.rtd||0)*5+(l.cy||0)*.09+(l.ctd||0)*5+(l.tk||0)*.45+(l.sk||0)*3.5+(l.int||0)*5+(l.fgm||0)*2+(l.kry||0)*.03+(l.pry||0)*.05+((l.krtd||0)+(l.prtd||0))*5+(l.pin||0)*2+(l.pu||0)*.6; }
 function buildGameReport(ga, gb, asScore, bsScore, snap, myRisers, injury){
   const report = { a:ga, b:gb, as:asScore, bs:bsScore, teams:{}, progressions: (myRisers||[]).slice(), injury: injury||null };
   [ga, gb].forEach(ti => {
@@ -4122,6 +4461,11 @@ function advanceToTag(){
         p.years--;
         c.base.shift();
         if(c.bonusYearsLeft > 0) c.bonusYearsLeft--;
+        if(c.gtdYrs) c.gtdYrs = Math.max(0, c.gtdYrs - 1);
+        if(p.years <= 0 && c.bonusYearsLeft > 0){ // void years: the rest of the bonus accelerates now
+          G.deadCapNext = G.deadCapNext || {}; G.deadCapNext[t.idx] = Math.round(((G.deadCapNext[t.idx]||0) + c.bonusProration*c.bonusYearsLeft)*10)/10;
+          c.bonusYearsLeft = 0; c.voids = 0;
+        }
         p.salary = Math.round(((c.base[0]||0) + (c.bonusYearsLeft > 0 ? c.bonusProration : 0)) * 10) / 10;
       }
       p.resigned = false;
@@ -4129,7 +4473,7 @@ function advanceToTag(){
     t.lastRecord = { w: t.w, l: t.l };
     t.w=0; t.l=0; t.pf=0; t.pa=0; t.preW=0; t.preL=0;
   });
-  G.deadCap = {};
+  G.deadCap = G.deadCapNext || {}; G.deadCapNext = {};
   // position coaches nudge their group's development, on top of normal aging — user's staff only
   meT().roster.forEach(p => {
     const coach = posCoachOf(p.pos);
@@ -4303,6 +4647,7 @@ function advanceDraftPointer(steps){
       const pr = aiSelectProspect(t);
       if(pr) draftProspect(pr.id, owner, pickObj);
       if(t.roster.length > LIMIT_OFF) aiMakeRoom(t);
+      if(G.trPat && G.trPat[owner] && trPatience(owner) < 5){ trSetPatience(owner, 5); try { warToast(t.abbr+' made their pick. They will take your calls again.'); } catch(e){} }
     } else {
       G.draftPicks = G.draftPicks.filter(pk => pk.id !== pickObj.id);
     }
@@ -4371,7 +4716,7 @@ function aiMakeRoom(t){
     const pool = vets.length ? vets : t.roster;
     const w = pool.slice().sort((a,b) => (a.rating - b.rating) || (b.age - a.age))[0];
     t.roster.splice(t.roster.indexOf(w), 1);
-    const dead = deadCapCharge(w); if(dead > 0) chargeDeadCap(t, dead);
+    chargeRelease(t, w, false);
     w.years = 0; (G.fa = G.fa || []).push(w);
   }
 }
@@ -5173,6 +5518,38 @@ function endQuarter(){
   }
   logQ(['','','2nd Quarter','3rd Quarter','4th Quarter'][GM.q] || 'Quarter ' + GM.q);
 }
+/* turnover returns: defender speed vs the offense players near the ball, and how far he has to go */
+function decideReturn(res){
+  if(res.retDone || (res.type !== 'int' && res.type !== 'fumble')) return;
+  res.retDone = true;
+  const off = offT(), def = defT();
+  const spotAfter = clamp(GM.spot + (res.yards||0), 1, 99), need = spotAfter;
+  let p = res.type === 'int' ? res.pickBy : res.recBy;
+  try {
+    const dLu = lineupFor(def, defFormOf(def), defFormKeyOf(def)).filter(x => x.p).map(x => x.p);
+    if(!p){ p = res.type === 'int' ? pickWeighted(dLu.filter(x => x.pos==='CB'||x.pos==='S')) : pickWeighted(dLu); }
+    if(res.type === 'int') res.pickBy = p; else res.recBy = p;
+  } catch(e){}
+  if(!p){ res.retYds = 0; return; }
+  const spd = stAttr(p).spd || 75;
+  let chase = 70;
+  try {
+    const oLu = lineupFor(off, offFormOf(off), offFormKeyOf(off)).filter(x => x.p);
+    const qb = (oLu.find(x => x.spot==='QB')||{}).p, near = res.type === 'int' ? res.target : (res.carrier || qb);
+    const deep = res.type === 'int' && DEEP_OC.includes(res.oc);
+    chase = Math.max(near ? stAttr(near).spd - (deep ? 0 : 4) : 70, qb ? stAttr(qb).spd - 12 : 60);
+    res.chaser = near || qb;
+  } catch(e){}
+  // most fumbles are just fallen on; some picks are made going to the ground or at the sideline
+  const runChance = res.type === 'fumble' ? .3 : clamp(.65 + (spd-80)*.01, .5, .78);
+  if(Math.random() > runChance){ res.retYds = 0; res.noRet = true; return; }
+  let odds = .32 * Math.exp(-need/18) * (1 + (spd-80)*.035) * (1 - (chase-80)*.03) * (res.type === 'fumble' ? 1.4 : 1.05);
+  odds = clamp(odds, .002, .5);
+  res.retOdds = odds;
+  if(Math.random() < odds){ res.retTD = true; res.retYds = need; return; }
+  const burst = Math.random() < odds*3 ? RI(10, 28) : 0;
+  res.retYds = clamp(Math.round(RI(0,7) + (spd-80)*.3 - (chase-80)*.15 + burst), 0, Math.max(0, need - 2));
+}
 function startPossession(teamIdx, spot){
   GM.poss = teamIdx; GM.spot = spot; GM.down = 1; GM.dist = 10;
 }
@@ -5243,13 +5620,13 @@ function attributePlay(res, offIdx, dIdx, isTD){
 
   if(res.type === 'run'){
     const carrier = res.carrier || (res.qbKeep && qb) || pickWeighted(rbs) || qb;
-    if(carrier) creditLive(offIdx, carrier, { ry: res.yards, rtd: isTD?1:0, car:1, rlg:res.yards });
+    if(carrier){ res.carrier = carrier; creditLive(offIdx, carrier, { ry: res.yards, rtd: isTD?1:0, car:1, rlg:res.yards }); }
     const tackler = pickWeighted(defenders);
     if(tackler && res.yards <= 8) creditLive(dIdx, tackler, { tk: 1 });
   } else if(res.type === 'pass'){
-    if(qb) creditLive(offIdx, qb, { py: res.yards, ptd: isTD?1:0, cmp:1, att:1 });
+    if(qb){ res.qbP = qb; creditLive(offIdx, qb, { py: res.yards, ptd: isTD?1:0, cmp:1, att:1 }); }
     const target = res.target || pickWeighted(recvs);
-    if(target) creditLive(offIdx, target, { cy: res.yards, ctd: isTD?1:0, rec:1, tgt:1, clg:res.yards });
+    if(target){ res.target = target; creditLive(offIdx, target, { cy: res.yards, ctd: isTD?1:0, rec:1, tgt:1, clg:res.yards }); }
     if(!isTD){
       const tackler = pickWeighted(defenders);
       if(tackler) creditLive(dIdx, tackler, { tk: 1 });
@@ -5262,11 +5639,11 @@ function attributePlay(res, offIdx, dIdx, isTD){
   } else if(res.type === 'int'){
     if(qb) creditLive(offIdx, qb, { att:1, pint:1 });
     const tg = res.target || pickWeighted(recvs); if(tg) creditLive(offIdx, tg, { tgt:1 });
-    const picker = pickWeighted(cbs.concat(ss));
-    if(picker) creditLive(dIdx, picker, { int: 1 });
+    const picker = res.pickBy || (res.cover && def.roster.includes(res.cover) ? res.cover : null) || pickWeighted(cbs.concat(ss));
+    if(picker){ res.pickBy = picker; creditLive(dIdx, picker, { int: 1 }); }
   } else if(res.type === 'sack'){
-    const sacker = pickWeighted(dls.concat(lbs));
-    if(sacker) creditLive(dIdx, sacker, { sk: 1 });
+    const sacker = (res.sackBy && def.roster.includes(res.sackBy) ? res.sackBy : null) || pickWeighted(dls.concat(lbs));
+    if(sacker){ res.sackBy = sacker; creditLive(dIdx, sacker, { sk: 1 }); }
   } else if(res.type === 'fumble'){
     const forcer = pickWeighted(defenders);
     if(forcer) creditLive(dIdx, forcer, { ff: 1 });
@@ -5285,11 +5662,24 @@ function applyPlay(res){
   if(userOnO()){ if(OFF_PLAYS[res.oc].fam==='run') GM.runTend++; else GM.passTend++; }
   if(res.type==='int' || res.type==='fumble'){
     const spotAfter = clamp(GM.spot + res.yards, 1, 99);
-    logMsg(offName + ' — ' + (res.type==='int' ? 'INTERCEPTED! ' : 'FUMBLE! ') + tName(defIdx()) + ' take over.', 'bad');
+    const _dn = p => p ? ' #'+jerseyOf(p)+' '+p.name.split(' ').slice(-1)[0] : '';
+    if(res.type==='int' && !res.pickBy){ try { const dl = lineupFor(defT(), defFormOf(defT()), defFormKeyOf(defT())).filter(x => x.p && (x.p.pos==='CB'||x.p.pos==='S')).map(x => x.p); res.pickBy = (res.cover && dl.includes(res.cover)) ? res.cover : pickWeighted(dl); } catch(e){} }
+    decideReturn(res);
+    logMsg(offName + ' — ' + (res.type==='int' ? 'INTERCEPTED by'+(_dn(res.pickBy||res.cover)||' the defense')+'! ' : 'FUMBLE! '+(res.recBy?'Recovered by'+_dn(res.recBy)+'. ':'')) + tName(defIdx()) + ' take over.', 'bad');
     if(userOnO()) fieldFlash(res.type==='int' ? 'Intercepted!' : 'Fumble!', 'opp');
     else fieldFlash(res.type==='int' ? 'Interception!' : 'Fumble!', 'td');
     attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
-    startPossession(defIdx(), 100 - spotAfter);
+    const dI = defIdx(), who = res.type==='int' ? res.pickBy : res.recBy;
+    if(res.retTD){
+      if(who) creditLive(dI, who, { dtd:1 });
+      startPossession(dI, 99);
+      runoff({type:'to'});
+      touchdown({type:'ret', kind:res.type, retBy:who, tdYds:res.retYds, chaser:res.chaser});
+      return;
+    }
+    if(res.retYds > 0 && who) logMsg(tName(dI)+' — '+_dn(who).trim()+' returns it '+res.retYds+' yds.');
+    else if(res.noRet && res.type==='int' && who) logMsg(tName(dI)+' — '+_dn(who).trim()+' goes down with it. No return.');
+    startPossession(dI, Math.min(99, 100 - spotAfter + (res.retYds||0)));
     runoff({type:'to'});
     return;
   }
@@ -5314,12 +5704,12 @@ function applyPlay(res){
       if(!GM.stPending && !GM.over) queueKickoff(concede, 30);
       updateGameUI(); return;
     }
-    if(isTD){ GM.spot = 99; attributePlay(res, offIdxAtSnap, dIdxAtSnap, true); touchdown(res); return; }
+    if(isTD){ res.tdYds = Math.max(1, 100 - GM.spot); GM.spot = 99; attributePlay(res, offIdxAtSnap, dIdxAtSnap, true); touchdown(res); return; }
     attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
     GM.spot = newSpot;
     GM.dist -= res.yards;
     if(res.type==='sack'){ if(userOnO()) fieldFlash('Sacked!','opp'); else fieldFlash('Sack!','fd'); }
-    const verb = res.type==='run' ? OFF_PLAYS[res.oc].label : (res.type==='sack' ? 'SACKED' : OFF_PLAYS[res.oc].label);
+    const verb = res.type==='run' ? OFF_PLAYS[res.oc].label : (res.type==='sack' ? 'SACKED'+(res.sackBy ? ' by #'+jerseyOf(res.sackBy)+' '+res.sackBy.name.split(' ').slice(-1)[0] : '') : OFF_PLAYS[res.oc].label);
     logMsg(offName + ' — ' + verb + ': ' + (res.yards>=0?'+':'') + res.yards + ' yds' + (res.oob?' (out of bounds)':'') + '.', res.yards>=15?'big':null);
     if(GM.dist <= 0){ GM.down=1; GM.dist=Math.min(10,100-GM.spot); logMsg('First down, '+offName+'.'); if(userOnO()) fieldFlash('First Down','fd'); }
     else GM.down++;
@@ -5332,6 +5722,12 @@ function applyPlay(res){
 }
 function touchdown(res){
   addPts(GM.poss, 6);
+  try {
+    const nm = p => '#'+jerseyOf(p)+' '+p.name.split(' ').slice(-1)[0], y = res.tdYds || res.yards, ab = G.teams[GM.poss].abbr;
+    if(res.type === 'pass' && res.target) logMsg(ab+' — '+nm(res.target)+' catches a '+y+'-yd TD'+(res.qbP ? ' from '+res.qbP.name.split(' ').slice(-1)[0] : '')+'.', 'big');
+    else if(res.type === 'run' && res.carrier) logMsg(ab+' — '+nm(res.carrier)+' runs it in from '+y+' yds out.', 'big');
+    else if(res.type === 'ret' && res.retBy) logMsg(ab+' — '+(res.kind==='int' ? 'PICK-SIX! ' : 'SCOOP AND SCORE! ')+nm(res.retBy)+' takes it '+y+' yds to the house'+(res.chaser ? ', '+res.chaser.name.split(' ').slice(-1)[0]+' can\'t catch him' : '')+'.', 'big');
+  } catch(e){}
   logMsg('TOUCHDOWN ' + tName(GM.poss).toUpperCase() + '!', 'big');
   if(GM.poss === G.userTeam) fieldFlash('Touchdown!','td');
   else fieldFlash('Touchdown ' + G.teams[GM.poss].abbr, 'opp');
@@ -6194,7 +6590,7 @@ function demandsHTML(){
     s += '<div class="panel" style="margin-top:8px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><div><b>'+pn(p)+'</b> <span class="sub">'+p.spot+' · '+p.rating+' OVR · '+p.age+'</span>' +
       '<div class="sub">Makes '+money(p.salary)+' · '+p.years+' yr'+(p.years!==1?'s':'')+' left · asking <b style="color:var(--gold)">'+money(d.ask)+'/yr</b></div>' +
       '<div class="sub">Status: <b style="color:'+(p.holdout?'var(--red)':d.promised?'var(--gold)':'var(--chalk)')+'">'+(p.holdout?'HOLDING OUT'+(p.holdoutWeeks?' · '+p.holdoutWeeks+' wk':''):d.promised?'Promised next year':d.refused?'Refused':'Demanding')+'</b>'+(d.burned?' · <span style="color:var(--red)">broken promise</span>':'')+'</div></div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+(iRun('contracts') ? '<button class="btn primary" onclick="openModal(\'extend\','+p.id+')">Negotiate</button>'+(!d.promised&&!p.holdout?'<button class="btn" onclick="demandPromise('+p.id+')">Promise next year</button>':'')+(!d.refused&&!p.holdout?'<button class="btn danger" onclick="demandRefuse('+p.id+')">Refuse</button>':'') : '<span class="sub">'+esc(whoName(dutyBy('contracts')))+' handles contracts</span>')+'</div></div></div>';
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">'+(iRun('contracts') ? '<button class="btn primary" onclick="openContract(\'extend\','+p.id+')">Negotiate</button>'+(!d.promised&&!p.holdout?'<button class="btn" onclick="demandPromise('+p.id+')">Promise next year</button>':'')+(!d.refused&&!p.holdout?'<button class="btn danger" onclick="demandRefuse('+p.id+')">Refuse</button>':'') : '<span class="sub">'+esc(whoName(dutyBy('contracts')))+' handles contracts</span>')+'</div></div></div>';
   });
   return s;
 }
@@ -7718,6 +8114,9 @@ function animatePlay(res, cb){
 
   /* ---- defense: every defender runs his job from the call (rush, zone spot, man, spy) ---- */
   const DEF = [...DLs, ...LBs, CBT, CBB, S1, S2];
+  const dOrd = (() => { try { const dLu = lineupFor(def, defFormOf(def), defFormKeyOf(def)).filter(x => x.p), g = pos => dLu.filter(x => x.p.pos === pos).map(x => x.p);
+    const dl = g('DL'), lb = g('LB'), cb = g('CB'), sf = g('S'); return [dl[0],dl[1],dl[2],dl[3], lb[0],lb[1],lb[2], cb[0],cb[1], sf[0],sf[1]]; } catch(e){ return []; } })();
+  const who = d => dOrd[DEF.indexOf(d)] || null;
   const jobs = defJobs(res.dc, mid);
   const recvMap = {WRT, WRB, SLOT, TE:TEr, RB};
   const rushers = [], cover = [];
@@ -7743,12 +8142,14 @@ function animatePlay(res, cb){
   if(res.type==='inc' && res.incKind==='pbu' && target && cover.length){
     const cv = nearAt(cover, tCatch, xAir, yAir), side = posAt(cv,tCatch*.7).y < yAir ? -1 : 1;
     closeOn(cv, tCatch, xAir+4, yAir+side*5, [xAir+20, yAir+side*10]);
+    if(who(cv)) res.cover = who(cv);
   }
   /* ---- sack: the free rusher gets home (blitzers first on pressure calls) ---- */
   if(sackLike && rushers.length){
     const extra = rushers.filter(d => DLs.indexOf(d) < 0);
     const rusher = extra.length && Math.random() < .65 ? pick(extra) : rushers.reduce((b,d)=>Math.abs(d.y0i-mid)<Math.abs(b.y0i-mid)?d:b, rushers[0]);
     rusher.wp = [{t:0,x:rusher.x0i,y:rusher.y0i}];
+    if(who(rusher)) res.sackBy = who(rusher);
     to(rusher,.5, x0-30-drop*.5, mid+R(-10,10));
     to(rusher,.72, xEnd+8, CYf(mid+gauss()*22));
     to(rusher,.96, xEnd+6, CYf(mid+gauss()*22));
@@ -7758,7 +8159,11 @@ function animatePlay(res, cb){
   if(res.type==='int'){
     picker = cover.length ? nearAt(cover, tCatch, xAir, yAir) : S1;
     closeOn(picker, tCatch, xAir, yAir, null);
-    to(picker,1, xAir-46, CYf(yAir+gauss()*24));
+    if(who(picker)) res.pickBy = who(picker);
+    decideReturn(res);
+    if(res.retTD){ to(picker,.82, Math.max(xAt(GM.spot)-40, xAt(2)), CYf(yAir+gauss()*30)); to(picker,1, xAt(-4), CYf(mid+gauss()*60)); }
+    else if(res.noRet){ to(picker,.8, xAir-4, yAir+3); to(picker,1, xAir-5, yAir+4); }
+    else to(picker,1, xAir - Math.max(10, (res.retYds||0)*PXY), CYf(yAir+gauss()*24));
   }
 
   /* ---- pursuit: the three nearest defenders converge on the tackle point (trail on a TD) ---- */
@@ -7999,7 +8404,7 @@ let frontTab = 'summary';
 function setLeagueTab(t){ leagueTab = t; render(); }
 function leagueHTML(){
   let s = '<div class="filterbar" style="margin-bottom:8px;align-items:center">';
-  [['schedule','Schedule'],['standings','Standings'],['stats','Stats'],['awards','Awards'],['hof','Hall of Fame'],['coaches','Coaches']].forEach(t => {
+  [['schedule','Schedule'],['standings','Standings'],['stats','Stats'],['cap','Cap'],['awards','Awards'],['hof','Hall of Fame'],['coaches','Coaches']].forEach(t => {
     s += '<button class="fbtn'+(leagueTab===t[0]?' on':'')+'" onclick="setLeagueTab(\''+t[0]+'\')">'+t[1]+'</button>';
   });
   if(leagueTab==='schedule') s += '<span class="sch-sels">'+schedTeamSel()+schedSeasonSel()+'</span>' + (tradesOpen() ? '<span class="sch-chip">🔁 Trades open to <b>'+fmtDate(tradeDeadline(G.year)).replace(/^\w+, /,'').replace(/, \d{4}$/,'')+'</b></span>' : '');
@@ -8007,6 +8412,7 @@ function leagueHTML(){
   if(leagueTab==='schedule') s += scheduleBoardHTML();
   else if(leagueTab==='standings') s += standingsHTML();
   else if(leagueTab==='stats') s += statsHTML();
+  else if(leagueTab==='cap') s += capTabHTML();
   else if(leagueTab==='awards') s += awardsHistoryHTML();
   else if(leagueTab==='hof') s += hofHTML();
   else if(leagueTab==='coaches') s += leagueCoachesHTML();
@@ -8243,7 +8649,7 @@ function trainBtnHTML(p){
 }
 function extendBtnHTML(p){
   if(!meT().roster.includes(p)) return '';
-  return '<button class="btn tiny" onclick="openModal(\'extend\','+p.id+')">📝 Extend</button> ';
+  return '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">📝 Extend</button> ';
 }
 function tagBtnHTML(p){
   if(!meT().roster.includes(p) || G.phase !== 'tag' || p.years > 0 || p.tagged) return '';
@@ -8297,7 +8703,7 @@ function profileHTML(pid){
   if(p.num == null){ const jr = JERSEY_RANGES[p.pos] || [1,99]; p.num = jr[0] + (p.id % (jr[1]-jr[0]+1)); }
   let s = '<div class="panel pf-head" style="margin-bottom:12px"><div style="display:flex;gap:12px;align-items:center"><img class="pf-face" src="'+faceURL(p.face||p.id, fc[0], fc[1], p.num)+'" alt=""><div>' +
     '<div class="hd disp" style="font-size:20px">'+esc(p.name)+'</div>' +
-    '<p class="sub"><b style="color:var(--chalk)">'+p.spot+'</b> · '+(t ? esc(t.city+' '+t.name) : 'Free Agent')+' · age '+p.age+' · '+ft+'\'' + inch + '"' +
+    (capCasualty(p, t) ? '<span class="countpill" style="color:var(--red);border-color:var(--red);font-size:10.5px;margin-bottom:3px;display:inline-block" title="His team is in a cap crunch and he is a pricey contract. Cheaper in trades, likely to be released.">⚠️ Cap casualty risk · '+money(p.salary)+'</span>' : '') + '<p class="sub"><b style="color:var(--chalk)">'+p.spot+'</b> · '+(t ? esc(t.city+' '+t.name) : 'Free Agent')+' · age '+p.age+' · '+ft+'\'' + inch + '"' +
     ((p.pos==='DL'||p.pos==='LB') ? ' · '+SCHEME_TAG[p.scheme]+' scheme' : '')+' · discipline '+discOf(p)+(p.st&&p.st.pen?' · '+p.st.pen+' flags this year':'')+'</p>'+awardBadgesHTML(p)+(p.holdout?'<p class="sub" style="font-size:11px;color:var(--red);font-weight:700">HOLDING OUT · wants '+money(p.demand?p.demand.ask:0)+'/yr</p>':p.demand?'<p class="sub" style="font-size:11px;color:var(--gold)">💰 Wants a new deal · '+money(p.demand.ask)+'/yr</p>':'')+(p.draftInfo?(()=>{ const v=draftVerdict(p); return '<p class="sub" style="font-size:11px;margin-top:2px">'+v.d.year+' Rd '+v.d.round+' · graded <b style="color:'+gradeColor(v.gradeL)+'">'+v.gradeL+'</b> → <b style="color:'+v.color+'">'+v.verdict+'</b></p>'; })():'')+'</div></div>' +
     '<div style="text-align:right"><div class="pf-ovr">'+p.rating+'</div><div class="sub" style="font-size:10px;letter-spacing:.14em">OVERALL</div></div></div>';
   s += '<div class="filterbar" style="margin-bottom:12px">';
@@ -8349,7 +8755,7 @@ function profileHTML(pid){
       '<br>Market value today: <b style="color:var(--gold)">'+money(marketFor(p))+'</b>/yr'+(disc<1?' → <b style="color:var(--green)">'+money(Math.round(marketFor(p)*disc*10)/10)+'</b> with the hometown discount':'')+
       (hasBonus ? '<br>Bonus proration: <b style="color:var(--gold)">'+money(pc.bonusProration)+'</b>/yr for '+pc.bonusYearsLeft+' more yr'+(pc.bonusYearsLeft!==1?'s':'')+' · dead cap if he leaves early: <b style="color:var(--red)">'+money(deadCapCharge(p))+'</b>' : '')+
       '</p>' +
-      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + extendBtnHTML(p) + tagBtnHTML(p) + tradeBtnHTML(p, t) + cutBtnHTML(p) + '</div></div>';
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">' + extendBtnHTML(p) + (meT().roster.includes(p) && p.years >= 2 && G.mode !== 'player' ? '<button class="btn tiny" onclick="openRestructure('+p.id+')">🔁 Restructure</button> ' : '') + tagBtnHTML(p) + tradeBtnHTML(p, t) + cutBtnHTML(p) + '</div></div>';
     const evs = (p.history||[]).filter(e => e.k==='ct'||e.k==='move');
     s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Transaction History</div>' +
       '<div style="max-height:280px;overflow-y:auto"><table class="tbl">';
@@ -8937,7 +9343,7 @@ function poachCoach(ti, role){
   save(); render();
 }
 
-function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', effwhy:'Why This Rating', campbattles:'Position Battles', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
+function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', contract:'Contract', tvguide:'Trade Values', release:'Release', restructure:'Restructure', rspick:'Restructure a Contract', effwhy:'Why This Rating', campbattles:'Position Battles', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
   if(v === 'postgame') return postgameHTML();
@@ -8946,6 +9352,11 @@ function modalBodyHTML(v){
   if(v === 'office') return officeModalBody(modalArg);
   if(v === 'extend') return extendHTML(modalArg);
   if(v === 'faoffer') return faOfferHTML(modalArg);
+  if(v === 'contract') return contractHTML();
+  if(v === 'tvguide') return tvGuideHTML(modalArg);
+  if(v === 'release') return releaseHTML(modalArg);
+  if(v === 'restructure') return restructureHTML(modalArg);
+  if(v === 'rspick') return rsPickHTML();
   if(v === 'effwhy') return effWhyHTML(modalArg);
   if(v === 'campbattles') return campBattlesHTML();
   if(v === 'fzcall') return fzCallHTML(modalArg);
@@ -8991,7 +9402,7 @@ function modalHTML(){
   if(!modalView) return '';
   const closeLabel = modalBack ? '← Back' : '✕ Close';
   return '<div class="modal-wrap" onclick="if(event.target===this)closeModal()">' +
-    '<div class="modal-panel'+(modalView==='prospect'||modalView==='postgame'?' wide':'')+'">' +
+    '<div class="modal-panel'+(['prospect','postgame','contract','restructure','release','rspick','tvguide'].includes(modalView)?' wide':'')+'">' +
     '<div class="modal-hd"><span class="disp">'+modalTitle(modalView)+'</span><span><button class="btn tiny" onclick="closeModal()">'+closeLabel+'</button></span></div>' +
     '<div class="modal-body">'+modalBodyHTML(modalView)+'</div>' +
     '</div></div>';
@@ -11734,7 +12145,15 @@ function draftLive(){ return userRunsDraft() && G.phase === 'draft'; }
 function draftNextPick(){ G.draftCall = null; advanceDraftPointer(1); save(); render(); }
 function draftToMine(){ G.draftCall = null; advanceDraftPointer(); save(); render(); }
 let tuSel = new Set(), tuSlot = null;
-function openTradeUp(idx){ tuSlot = idx; tuSel = new Set(); openModal('tradeup', idx); }
+function openTradeUp(idx){
+  const sl = tuSlots(); const s = sl.find(x => x.idx === idx) || sl[0];
+  if(!s){ alert('No other team has a pick left to trade.'); return; }
+  const t = G.teams[s.pk.team]; tradeTeam = t.idx;
+  const c = tradeCart(t.idx); c.get = []; c.getPicks = [s.pk.id];
+  modalView = null; modalArg = null;
+  G.activePage = 'gm'; gmTab = 'trades'; trView = 'deal'; trBrowse = 'mine'; trBrowsePos = 'Picks';
+  save(); render();
+}
 function tuSlots(){
   const out = [];
   for(let i = G.draftPickIdx; i < DRAFT_ROUNDS*16 && out.length < 24; i++){
@@ -12903,7 +13322,7 @@ function ownerHandleWeek(){
     const them = G.teams[offer.fromTeam];
     const askP = offer.theirAsk.map(id => { const p = me.roster.find(x=>x.id===id); return p ? p.name+' ('+PL(p)+')' : '?'; });
     const giveP = offer.theirGive.map(id => { const p = them.roster.find(x=>x.id===id); return p ? p.name+' ('+PL(p)+')' : '?'; });
-    const askVal = offer.theirAsk.reduce((s,id)=>{ const p=me.roster.find(x=>x.id===id); return s+(p?tradeValue(p):0); },0);
+    const askVal = offer.theirAsk.reduce((s,id)=>{ const p=me.roster.find(x=>x.id===id); return s+(p?p.salary:0); },0);
     if(askVal >= G.approvalThreshold || offer.theirAsk.some(id => { const p = me.roster.find(x=>x.id===id); return p && isPremiumFA(p); })){
       requestApproval({
         type:'trade', teamIdx: offer.fromTeam,
@@ -13719,7 +14138,7 @@ function rosterHTML(){
       if(!mine) return '';
       if(G.mode === 'player' && p.id !== G.playerId) return '<span class="sub">—</span>';
       let a = trainBtnHTML(p);
-      a += '<button class="btn tiny" onclick="openModal(\'extend\','+p.id+')">Extend</button> ';
+      a += '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">Extend</button> ';
       a += '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">Position</button> ';
       if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button> ';
       if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR — frees his roster spot">IR</button> ';
@@ -14636,14 +15055,83 @@ function tradesOpen(){
   if(G.phase === 'hub' && G.week <= 9) return true;
   return false;
 }
-function tradeValue(p){ return p.rating - Math.max(0, p.age - 27) * 1.5 + (p.years >= 2 ? 1 : 0); }
-const PICK_BASE_VALUE = {1:26, 2:14, 3:7, 4:3};
-function pickValue(pk){
-  const base = PICK_BASE_VALUE[pk.round] || 3;
-  const yearsOut = Math.max(0, pk.year - G.year);
-  return base * Math.pow(0.85, yearsOut);
+/* ================= ONE TRADE VALUE SCALE (draft chart points: #1 pick = 1000) ================= */
+const TV_POS = {QB:1.5, OL:.95, DL:1.05, CB:1.05, WR:1.0, LB:.9, S:.85, TE:.85, RB:.75, K:.3, P:.3, LS:.1};
+const TV_SPOT = {LT:1.1, RT:1.0, LG:.85, RG:.85, C:.9, LE:1.15, RE:1.15, DT:.95, OLB:.95, MLB:.9};
+function tvBase(ovr){ return 700 * Math.exp((ovr - 88) / 8); }
+function tvAge(a){ return a <= 24 ? 1.12 : a <= 26 ? 1.06 : a <= 29 ? 1 : a === 30 ? .8 : a === 31 ? .7 : a === 32 ? .6 : .45; }
+function tvBreak(p){
+  const pos = TV_SPOT[p.spot] || TV_POS[p.pos] || 1;
+  const mk = (typeof marketFor === 'function') ? marketFor(p) : p.salary;
+  const deal = clamp(1 + (mk - (p.salary||0)) / (mk + 5) * .3, .78, 1.2);
+  const yrs = (p.years||0) >= 2 ? 1.05 : .9;
+  const v = tvBase(p.rating) * pos * tvAge(p.age) * deal * yrs;
+  return {v: Math.max(5, Math.round(v)), pos, age: tvAge(p.age), deal, yrs};
 }
-function pickLabel(pk){ return pk.year+' · Round '+pk.round; }
+function tradeValue(p){ return tvBreak(p).v; }
+/* future picks: project the slot from the owner's strength, then discount per year out */
+function tvProjSlot(teamIdx){
+  const order = G.teams.slice().sort((a,b) => { const ra = a.lastRecord || {w:a.w,l:a.l}, rb = b.lastRecord || {w:b.w,l:b.l};
+    const pa = (ra.w+ra.l) ? ra.w/(ra.w+ra.l) : .5, pb = (rb.w+rb.l) ? rb.w/(rb.w+rb.l) : .5; return (pa - pb) || (teamOverall(a) - teamOverall(b)); });
+  return order.findIndex(t => t.idx === teamIdx) + 1;
+}
+function pickSlotOf(pk){ return pk.year === G.year && G.draftOrderList && G.draftOrderList.length ? pickOverall(pk) : (pk.round-1)*16 + tvProjSlot(pk.orig); }
+function pickValue(pk){
+  const n = pickSlotOf(pk), out = Math.max(0, pk.year - G.year - (['hub','playoffs'].includes(G.phase) ? 1 : 0));
+  return Math.round(dvPickValue(n) * Math.pow(.9, out));
+}
+function tvPickEq(v){
+  if(v >= 1000) return '#1 overall';
+  const n = Math.max(1, Math.round(1 + Math.log(v/1000) / Math.log(.958)));
+  if(n > DRAFT_ROUNDS*16) return 'late Rd '+DRAFT_ROUNDS;
+  const r = Math.ceil(n/16), k = n - (r-1)*16, ord = ['','1st','2nd','3rd','4th','5th','6th','7th'][r] || r+'th';
+  if(n <= 5) return 'top 5';
+  return (k <= 5 ? 'early ' : k <= 11 ? 'mid ' : 'late ')+ord;
+}
+function tvEqTag(p){ return '<span class="tv-eq" title="Trade value '+tradeValue(p)+'" onclick="event.stopPropagation();openModal(\'tvguide\','+p.id+')">≈ '+tvPickEq(tradeValue(p))+'</span>'; }
+/* team mode for context */
+function tvMode(t){
+  const rec = t.lastRecord && (t.lastRecord.w + t.lastRecord.l) ? t.lastRecord : {w:t.w, l:t.l};
+  const pct = (rec.w+rec.l) ? rec.w/(rec.w+rec.l) : .5, ovr = teamOverall(t);
+  const lo = G.teams.map(teamOverall).sort((a,b)=>a-b), med = lo[Math.floor(lo.length/2)];
+  if(pct >= .6 || ovr >= med + 3) return 'contend';
+  if(pct <= .35 || ovr <= med - 3) return 'rebuild';
+  return 'mid';
+}
+const TV_MODE_TAG = {contend:'🏆 Contender', rebuild:'🔨 Rebuilding', mid:'⚖️ Middle'};
+function tvDraftLiveSlot(){ return (G.phase === 'draft' && typeof draftLive === 'function' && draftLive()) ? G.draftPickIdx : -1; }
+/* adjusted value of each asset from the AI team's point of view, with a list of reasons */
+function tvContext(them, giveP, givePk, getP, getPk){
+  const mode = tvMode(them), need = teamNeed(them), why = [];
+  let give = 0, get = 0;
+  giveP.forEach(p => { let v = tradeValue(p), m = 1;
+    if(mode === 'rebuild' && p.age >= 30) m *= .85; if(mode === 'contend' && p.rating >= 78) m *= 1.15; if(p.pos === need) m *= 1.08;
+    give += v*m; if(m !== 1) why.push([p.name.split(' ').pop()+(p.pos===need?' fills '+need:'')+(mode==='rebuild'&&p.age>=30?' · vet to a rebuilder':'')+(mode==='contend'&&p.rating>=78?' · starter to a contender':''), Math.round(v), Math.round(v*m)]); });
+  givePk.forEach(pk => { const v = pickValue(pk), m = mode === 'rebuild' ? 1.2 : mode === 'contend' ? .9 : 1; give += v*m; if(m !== 1) why.push([pickLabel(pk)+(mode==='rebuild'?' · rebuilders love picks':' · contenders want help now'), v, Math.round(v*m)]); });
+  const live = tvDraftLiveSlot();
+  getP.forEach(p => { const v = tradeValue(p), m = capCrunchMult(p); get += v*m; if(m !== 1) why.push([p.name.split(' ').pop()+' · cap crunch discount', v, Math.round(v*m)]); });
+  getPk.forEach(pk => { const v = pickValue(pk); let m = 1;
+    if(live >= 0 && pk.year === G.year && pickOverall(pk) - 1 === live){ m = 1.12; }
+    else if(live >= 0 && pk.year === G.year && pickOverall(pk) - 1 <= live + 3){ m = 1.06; }
+    get += v*m; if(m !== 1) why.push([pickLabel(pk)+(m>1.1?' · on the clock':' · coming up soon'), v, Math.round(v*m)]); });
+  return {give: Math.round(give), get: Math.round(get), mode, need, why};
+}
+function tvGuideHTML(pid){
+  const ex = [['QB','QB',93,26,8,3],['DL','LE',88,27,14,3],['CB','CB',81,27,9,3],['WR','WR',84,31,12,2],['OL','RG',77,29,5,2],['S','SS',72,30,2,1],['K','K',88,28,3,2]]
+    .map(e => { const p = {pos:e[0], spot:e[1], rating:e[2], age:e[3], salary:e[4], years:e[5]}; return {p, v:tradeValue(p)}; });
+  let focus = '';
+  if(pid != null){ const hit = findPlayer(pid); if(hit){ const p = hit.p, b = tvBreak(p);
+    focus = '<div class="panel" style="margin-bottom:8px"><b>'+esc(p.name)+'</b> <span class="sub">'+PL(p)+' · '+p.rating+' OVR · '+p.age+' · '+money(p.salary)+' × '+p.years+'</span>' +
+      '<div class="tv-row"><span>Overall '+p.rating+'</span><b>'+Math.round(tvBase(p.rating))+'</b></div><div class="tv-row"><span>Position ('+p.spot+')</span><b>×'+b.pos.toFixed(2)+'</b></div><div class="tv-row"><span>Age '+p.age+'</span><b>×'+b.age.toFixed(2)+'</b></div><div class="tv-row"><span>Contract vs market</span><b>×'+b.deal.toFixed(2)+'</b></div><div class="tv-row"><span>Years left</span><b>×'+b.yrs.toFixed(2)+'</b></div><div class="tv-row"><span><b>Trade value</b></span><b style="color:var(--gold)">'+b.v+' · ≈ '+tvPickEq(b.v)+'</b></div></div>'; } }
+  let s = focus + '<div class="ct2-two"><div class="ct2-card"><div class="ct2-h">Player value<em>examples · #1 pick = 1000</em></div><table class="tbl"><tr><th>Player</th><th>Value</th><th>≈ Pick</th></tr>' +
+    ex.map(x => '<tr><td><b>'+x.p.spot+'</b> '+x.p.rating+' · '+x.p.age+'</td><td>'+x.v+'</td><td>'+tvPickEq(x.v)+'</td></tr>').join('') + '</table><div class="sub" style="font-size:10.5px">Overall drives it, steeply. Then position, age, contract vs market, and years left.</div></div>';
+  s += '<div class="ct2-card"><div class="ct2-h">Team context<em>changes what they pay</em></div>' +
+    [['🔨 Rebuilding','picks +20% · vets 30+ −15%'],['🏆 Contender','starters 78+ +15% · picks −10%'],['🎯 Fills their need','+8%'],['🔴 Cap crunch','their $8M+ players −18%'],['📞 Draft day, on the clock','+12% (next 3 picks +6%)'],['📅 Future picks','−10% per year out, slot projected from record']].map(r => '<div class="ct2-kv"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join('') +
+    '<div class="ct2-h" style="margin-top:6px">Patience<em>shared across every trade screen</em></div><div class="ct2-kv"><span>Regular days</span><b>3 misses, refills weekly</b></div><div class="ct2-kv"><span>Draft day</span><b>2 misses, then no more calls</b></div></div></div>';
+  return s;
+}
+
+function pickLabel(pk){ try { if(pk.year === G.year && G.draftOrderList && G.draftOrderList.length && G.draftOrderList.includes(pk.orig)) return pk.year+' Rd '+pk.round+' · #'+pickOverall(pk); return pk.year+' Rd '+pk.round+' · proj #'+((pk.round-1)*16+tvProjSlot(pk.orig)); } catch(e){ return pk.year+' · Round '+pk.round; } }
 
 /* persistent per-team negotiation carts — switching teams (via dropdown or an incoming offer) never loses progress */
 function tradeCart(teamIdx){
@@ -14713,7 +15201,7 @@ function isOnBlock(p, t){
 
 
 /* ---------- bonus-transfer clauses: who eats the unamortized signing bonus ---------- */
-const CLAUSE_PTS_PER_M = 0.9; // trade points per $1M of bonus a club agrees to carry
+const CLAUSE_PTS_PER_M = 6; // trade points per $1M of bonus a club agrees to carry
 function bonusLeftInfo(p){
   const c = contractOf(p);
   return { amt: tradeDeadCharge(p), per: c.bonusProration||0, yrs: c.bonusYearsLeft||0 };
@@ -14749,15 +15237,59 @@ function clauseRowHTML(p, kind, on){
     : 'Unchecked: he arrives on base salary only.';
   return '<label class="clause-row"><input type="checkbox" '+(on?'checked':'')+' onchange="'+(kind==='xfer'?'toggleXfer':'toggleAbsorb')+'('+p.id+')"><span>'+label+'<br><span class="sub">'+(on?'Clause on.':off)+'</span></span></label>';
 }
-function tradeSideValue(giveP, givePk, getP, getPk){
-  const giveVal = giveP.reduce((s,p)=>s+tradeValue(p),0) + givePk.reduce((s,pk)=>s+pickValue(pk),0);
-  const getVal = getP.reduce((s,p)=>s+tradeValue(p),0) + getPk.reduce((s,pk)=>s+pickValue(pk),0);
-  return {giveVal, getVal};
+
+/* ---------- league cap health ---------- */
+function aiCapCasualtyCuts(){
+  G.teams.forEach(t => {
+    if(t.idx === G.userTeam || capStatus(t) !== 'red') return;
+    const cands = t.roster.filter(p => capCasualty(p, t) && posCount(t, p.pos) > (MIN53[p.pos]||1)).map(p => ({p, save: p.salary - releaseSplit(p, false).now})).filter(x => x.save > 2).sort((a,b) => b.save - a.save);
+    cands.slice(0, RI(1,2)).forEach(x => {
+      const p = x.p; t.roster = t.roster.filter(q => q.id !== p.id); chargeRelease(t, p, false);
+      logEv(p, 'ct', 'Released by '+t.city+' in a cap crunch', 0); p.years = 0; G.fa.push(p);
+      try { G.news = G.news || []; } catch(e){}
+    });
+  });
+  G.fa.sort((a,b) => b.rating - a.rating);
+}
+function capNextRoom(t){ return Math.round((capNow()*1.04 - aiNextYearCommit(t))*10)/10; }
+function capStatus(t){ const r = capRoom(t), n = capNextRoom(t); return (r < 2 || n < 0) ? 'red' : (r < 10 || n < 15) ? 'yellow' : 'green'; }
+const CAP_TAG = {red:'🔴 Crunch', yellow:'🟡 Tight', green:'🟢 Flexible'};
+function capCasualty(p, t){
+  if(!t || t.idx === G.userTeam || capStatus(t) !== 'red' || p.salary < 5) return false;
+  const pr = t.roster.filter(x => x.pos === p.pos).sort((a,b) => b.rating - a.rating);
+  return p.age >= 29 || pr.indexOf(p) > 0 || p.salary / Math.max(1, p.rating - 55) > .45;
+}
+function capCrunchMult(p){ const hit = findPlayer(p.id), t = hit && hit.t; return (t && t.idx !== G.userTeam && capStatus(t) === 'red' && p.salary >= 8) ? .82 : 1; }
+let capSort = {k:'room', d:1};
+function sMoney(v){ return v < 0 ? '−'+money(-v) : money(v); }
+function setCapSort(k){ if(capSort.k === k) capSort.d *= -1; else capSort = {k, d: k==='name' ? 1 : (k==='room'||k==='nroom') ? 1 : -1}; render(); }
+function capTabHTML(){
+  const rows = G.teams.map(t => ({t, name:t.city+' '+t.name, room:capRoom(t), dead:deadCapFor(t), ndead:(G.deadCapNext&&G.deadCapNext[t.idx])||0, commit:aiNextYearCommit(t), nroom:capNextRoom(t), rs:t.roster.filter(p => p.rsYear === G.year).length, st:capStatus(t)}));
+  const ord = {red:0, yellow:1, green:2};
+  rows.sort((a,b) => { const k = capSort.k, va = k==='st' ? ord[a.st] : a[k], vb = k==='st' ? ord[b.st] : b[k]; return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * capSort.d; });
+  const th = (k, l) => '<th class="sorth'+(capSort.k===k?' on':'')+'" onclick="setCapSort(\''+k+'\')" style="cursor:pointer;text-align:'+(k==='name'?'left':'right')+'">'+l+(capSort.k===k?(capSort.d>0?' ▲':' ▼'):'')+'</th>';
+  const cnt = {red:0,yellow:0,green:0}; rows.forEach(r => cnt[r.st]++);
+  let s = '<div class="panel"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><span class="sub">Cap '+money(capNow())+' · next year ~'+money(Math.round(capNow()*1.04*10)/10)+'</span><span class="countpill">🔴 '+cnt.red+'</span><span class="countpill">🟡 '+cnt.yellow+'</span><span class="countpill">🟢 '+cnt.green+'</span>' +
+    '<span class="sub" style="margin-left:auto;font-size:10.5px">🔴 teams take less for big salaries in trades, bid light in free agency, and cut players.</span></div>';
+  s += '<div style="overflow-x:auto"><table class="tbl cap-tbl"><tr>'+th('name','Team')+th('st','Status')+th('room','Room')+th('dead','Dead $')+th('ndead','Dead next yr')+th('commit','Next yr owed')+th('nroom','Next yr room')+th('rs','Restructures')+'</tr>';
+  rows.forEach(r => {
+    const mine = r.t.idx === G.userTeam, c = v => v < 0 ? 'var(--red)' : v < 10 ? '#F2A24A' : 'var(--green)';
+    s += '<tr'+(mine?' style="background:rgba(255,212,71,.07)"':'')+' onclick="openModal(\'team\','+r.t.idx+')" style="cursor:pointer"><td>'+teamLogo(r.t,18,'vertical-align:-4px;margin-right:5px')+'<b>'+esc(r.t.abbr)+'</b> <span class="sub">'+esc(r.t.name)+'</span></td><td style="text-align:right;white-space:nowrap">'+CAP_TAG[r.st]+'</td>' +
+      '<td style="text-align:right;color:'+c(r.room)+';font-weight:700">'+sMoney(Math.round(r.room*10)/10)+'</td><td style="text-align:right">'+(r.dead?'<span style="color:var(--red)">'+money(r.dead)+'</span>':'—')+'</td><td style="text-align:right">'+(r.ndead?'<span style="color:var(--red)">'+money(r.ndead)+'</span>':'—')+'</td>' +
+      '<td style="text-align:right">'+money(Math.round(r.commit*10)/10)+'</td><td style="text-align:right;color:'+c(r.nroom)+';font-weight:700">'+sMoney(r.nroom)+'</td><td style="text-align:right">'+(r.rs||'—')+'</td></tr>';
+  });
+  return s + '</table></div></div>';
+}
+function tradeSideValue(giveP, givePk, getP, getPk, them){
+  them = them || (tradeTeam != null ? G.teams[tradeTeam] : null);
+  if(!them){ const giveVal = giveP.reduce((s,p)=>s+tradeValue(p),0) + givePk.reduce((s,pk)=>s+pickValue(pk),0), getVal = getP.reduce((s,p)=>s+tradeValue(p),0) + getPk.reduce((s,pk)=>s+pickValue(pk),0); return {giveVal, getVal, why:[]}; }
+  const c = tvContext(them, giveP, givePk, getP, getPk);
+  return {giveVal: c.give, getVal: c.get, why: c.why, mode: c.mode};
 }
 /* shared value read used both for the live bar (as you build) and for real accept/counter/reject resolution */
 function tradeVerdict(giveVal, getVal, needBonus){
   if(!giveVal && !getVal) return {tier:'empty', color:'var(--muted)', text:'No offer built yet — add players or picks below.'};
-  const needed = Math.max(0, getVal + 1.5 - needBonus);
+  const needed = Math.max(0, getVal*1.02 + 5 - needBonus);
   const ratio = needed <= 0 ? 999 : giveVal / needed;
   if(ratio >= 1) return {tier:'accept', color:'var(--green)', text: ratio > 1.3 ? 'Very generous — you could probably offer less.' : 'Favorable to you — they may still ask for a bit more.'};
   if(ratio >= 0.85) return {tier:'soft', color:'var(--gold)', text:'Close — they may counter rather than accept outright.'};
@@ -14823,7 +15355,7 @@ function proposeTrade(){
   const sv = tradeSideValue(giveP, givePk, getP, getPk);
   const giveVal = sv.giveVal + clauseAdj(cart, giveP, getP).pts, getVal = sv.getVal;
   const need = teamNeed(them);
-  const needBonus = giveP.filter(p => p.pos === need).length * 3;
+  const needBonus = 0;
   const verdict = tradeVerdict(giveVal, getVal, needBonus);
   const tI = them.idx;
   trMsg(tI, 'me', 'Offer: '+trAssetsText(giveP, givePk)+' for '+trAssetsText(getP, getPk)+'.');
@@ -14849,7 +15381,7 @@ function proposeTrade(){
     return;
   }
   if(verdict.tier === 'soft'){
-    const needed = Math.max(0, getVal + 1.5 - needBonus);
+    const needed = Math.max(0, getVal*1.02 + 5 - needBonus);
     const gap = needed - giveVal;
     const suggestion = suggestCounterAsset(tradeTeam, gap);
     if(!suggestion){
@@ -14864,8 +15396,9 @@ function proposeTrade(){
     save(); render();
     return;
   }
-  const lowball = giveVal < Math.max(.1, getVal + 1.5 - needBonus) * .6;
-  trSetPatience(tI, trPatience(tI) - (lowball ? 2 : 1));
+  const lowball = giveVal < Math.max(.1, getVal*1.02 + 5 - needBonus) * .6;
+  const dday = tvDraftLiveSlot() >= 0;
+  trSetPatience(tI, trPatience(tI) - (dday ? 3 : (lowball ? 3 : 2)));
   trMsg(tI, 'them', trPatience(tI) <= 0 ? trLine('angry') : trLine('reject'));
   save(); render();
 }
@@ -14901,13 +15434,13 @@ function suggestTrade(){
   if(ask) cart.get.push(ask.id);
   if(offer && ask){
     const {giveVal, getVal} = tradeSideValue([offer],[],[ask],[]);
-    const needBonus = offer.pos===theirNeed ? 3 : 0;
-    const gap = (getVal + 1.5) - (giveVal + needBonus);
-    if(gap > 0.5){
+    const needBonus = 0;
+    const gap = (getVal*1.02 + 5) - (giveVal + needBonus);
+    if(gap > 5){
       const myPicks = G.draftPicks.filter(pk=>pk.team===me.idx).sort((a,b)=>pickValue(a)-pickValue(b));
       const fit = myPicks.find(pk=>pickValue(pk) >= gap);
       if(fit) cart.givePicks.push(fit.id);
-    } else if(gap < -3){
+    } else if(gap < -25){
       const theirPicks = G.draftPicks.filter(pk=>pk.team===them.idx).sort((a,b)=>pickValue(a)-pickValue(b));
       const fit = theirPicks.find(pk=>pickValue(pk) >= -gap);
       if(fit) cart.getPicks.push(fit.id);
@@ -14942,7 +15475,7 @@ function generateIncomingOffers(){
   let offerGive = [], offerGivePicks = [], remaining = offerBudget;
   const fitPlayer = theirPlayers.find(p => tradeValue(p) <= remaining*1.2 && tradeValue(p) >= remaining*0.5);
   if(fitPlayer){ offerGive.push(fitPlayer.id); remaining -= tradeValue(fitPlayer); }
-  for(const pk of theirPicks){ if(remaining <= 1) break; offerGivePicks.push(pk.id); remaining -= pickValue(pk); }
+  for(const pk of theirPicks){ if(remaining <= 10) break; offerGivePicks.push(pk.id); remaining -= pickValue(pk); }
   if(!offerGive.length && !offerGivePicks.length) return;
   G.incomingOffers.push({
     id: G.nextId++, fromTeam: aiTeam.idx,
@@ -15039,7 +15572,7 @@ function tradeRosterTableHTML(which, team, selectedIds, toggleFnName, showBlock)
     s += '<div class="picksub">Draft Picks</div>';
     picks.forEach(pk => {
       const added = selPicks.includes(pk.id);
-      s += '<div class="pickrow"><span>'+pickLabel(pk)+' <span class="sub">('+pickValue(pk).toFixed(1)+')</span></span>' +
+      s += '<div class="pickrow"><span>'+pickLabel(pk)+' <span class="sub">('+Math.round(pickValue(pk))+')</span></span>' +
         '<button class="btn tiny'+(added?' primary':'')+'" onclick="'+pickToggle+'('+pk.id+')">'+(added?'✓ Added':'+ Add')+'</button></div>';
     });
   }
@@ -15120,9 +15653,9 @@ function tradeHTMLLegacy(){
 
   s += '<div style="margin:10px 0">' +
     '<div class="valuetrack"><div class="give" style="width:'+(giveVal/total*100)+'%"></div><div class="get" style="width:'+(getVal/total*100)+'%"></div></div>' +
-    '<div class="valuelabels"><span style="color:var(--gold)">You give: '+giveVal.toFixed(1)+'</span><span style="color:#7FA8E0">You get: '+getVal.toFixed(1)+'</span></div>' +
+    '<div class="valuelabels"><span style="color:var(--gold)">You give: '+Math.round(giveVal)+'</span><span style="color:#7FA8E0">You get: '+Math.round(getVal)+'</span></div>' +
     '<p class="sub" style="margin-top:4px;color:'+verdict.color+'">'+verdict.text+'</p>' +
-    (cl.out||cl.inn ? '<p class="sub" style="margin-top:2px">Bonus clauses: <b style="color:'+(cl.pts>=0?'var(--green)':'var(--red)')+'">'+(cl.pts>=0?'+':'')+cl.pts.toFixed(1)+' pts</b> to your offer</p>' : '') +
+    (cl.out||cl.inn ? '<p class="sub" style="margin-top:2px">Bonus clauses: <b style="color:'+(cl.pts>=0?'var(--green)':'var(--red)')+'">'+(cl.pts>=0?'+':'')+Math.round(cl.pts)+' pts</b> to your offer</p>' : '') +
     ((giveP.length||getP.length) ? '<p class="sub" style="margin-top:2px">Cap after deal: you '+money(capNow()-capAfter.mine)+' room · them '+money(capNow()-capAfter.theirs)+' room</p>' : '') + '</div>';
 
   s += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">';
@@ -15194,7 +15727,7 @@ function tagHTML(){
         const sal = userPrice(p, 1);
         const afford = true;
         s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+' <span class="sub">/yr</span></td>' +
-          '<td><button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="resignPlayer('+p.id+')" title="Re-sign at market rate">Re-sign</button></td></tr>';
+          '<td><button class="btn tiny primary" '+(afford?'':'disabled')+' onclick="openContract(\'resign\','+p.id+')" title="Build the re-sign deal">Re-sign</button></td></tr>';
       }
     });
     s += '</table>';
@@ -15347,6 +15880,7 @@ function foDashHTML(confDesc, confDetail){
     '<div class="fod-h" style="margin-top:4px">Cap<em>room <b style="color:'+(room>10?'var(--green)':'var(--red)')+'">'+money(room)+'</b></em></div>' +
     '<div class="fod-bar"><i style="width:'+clamp(pr/cap*100,0,100)+'%;background:'+(pr/cap>.92?'var(--red)':'var(--gold)')+'"></i></div>' +
     '<div class="sub">Payroll '+money(pr)+' of '+money(cap)+(dead>0?' · dead <b style="color:var(--red)">'+money(dead)+'</b>':'')+'</div>' +
+    '<div style="display:flex;gap:4px;flex-wrap:wrap">' + (room < 0 ? '<button class="btn tiny" onclick="foRestructureToCap()">🔧 Get under the cap</button>' : '') + '<button class="btn tiny" onclick="openModal(\'rspick\')">🔁 Restructure…</button></div>' +
     '<div class="fod-tiles"><div><b>'+c.w+'–'+c.l+'</b><span>Record</span></div><div><b>'+(c.seasons+1)+'</b><span>Seasons</span></div><div><b>'+c.berths+'</b><span>Playoffs</span></div><div><b style="color:var(--gold)">'+c.titles+'</b><span>Titles</span></div></div></div>';
   // column 2: facilities + fan relations
   const market = me.market || 3;
@@ -15533,36 +16067,25 @@ function updateGameUI(){
 function renderStatBox(){
   const el = document.getElementById('statbox');
   if(!el || !GM || !GM.liveBox) return;
-  function topLines(teamIdx){
-    const box = GM.liveBox[teamIdx] || {};
-    return Object.values(box).filter(p => p.gp).sort((a,b) => lineScore(b)-lineScore(a)).slice(0,3);
-  }
-  function fmtLine(p){
-    const parts = [];
-    if(p.py) parts.push(p.py+' pass yds'+(p.ptd?', '+p.ptd+' TD':''));
-    if(p.ry) parts.push(p.ry+' rush yds'+(p.rtd?', '+p.rtd+' TD':''));
-    if(p.cy) parts.push(p.cy+' rec yds'+(p.ctd?', '+p.ctd+' TD':''));
-    if(p.tk) parts.push(p.tk+' tkl');
-    if(p.sk) parts.push(p.sk+' sack'+(p.sk!==1?'s':''));
-    if(p.int) parts.push(p.int+' INT');
-    if(p.fgm) parts.push(p.fgm+' FG');
-    if(p.pen) parts.push(p.pen+' flag'+(p.pen>1?'s':'')+' ('+(p.peny||0)+' yds)');
-    if(p.pu) parts.push(p.pu+' punts, '+Math.round((p.puy||0)/p.pu)+' avg');
-    if(p.kr) parts.push(p.kr+' KR '+(p.kry||0)+' yds');
-    if(p.pr) parts.push(p.pr+' PR '+(p.pry||0)+' yds');
-    return '<div class="statbox-line"><b>'+esc(p.name)+'</b> <span class="sub">('+PL(p)+')</span><span class="sub">'+parts.join(', ')+'</span></div>';
-  }
   const H = G.teams[GM.home], A = G.teams[GM.away];
-  let s = '<div class="hd disp" style="font-size:13px">Live Stats</div><div class="statbox-cols">';
-  [[GM.home,H],[GM.away,A]].forEach(([idx,t]) => {
-    const lines = topLines(idx);
-    s += '<div class="statbox-team"><div class="statbox-team-name">'+esc(t.abbr)+'</div>';
-    if(!lines.length) s += '<p class="sub">No stats yet</p>';
-    else lines.forEach(p => { s += fmtLine(p); });
-    s += '</div>';
-  });
-  s += '</div>';
-  el.innerHTML = s;
+  const rows = [];
+  [[GM.home,H],[GM.away,A]].forEach(([idx,t]) => Object.values(GM.liveBox[idx] || {}).forEach(p => rows.push({p, t})));
+  const nm = r => '<span class="ls-tm" style="background:'+r.t.c1+';color:'+(colorLuminance(r.t.c1)>.55?'#111':'#fff')+'">'+esc(r.t.abbr)+'</span><b>'+esc(r.p.name.split(' ').slice(-1)[0])+'</b> <span class="sub">'+PL(r.p)+'</span>';
+  const sec = (title, cols, list, cells) => {
+    if(!list.length) return '';
+    return '<div class="ls-h">'+title+'</div><table class="ls-t"><tr><th></th>'+cols.map(c => '<th>'+c+'</th>').join('')+'</tr>' +
+      list.map(r => '<tr><td>'+nm(r)+'</td>'+cells(r.p).map(v => '<td>'+v+'</td>').join('')+'</tr>').join('') + '</table>';
+  };
+  const by = k => (a,b) => (b.p[k]||0) - (a.p[k]||0);
+  let s = '';
+  s += sec('Passing', ['C/ATT','YDS','TD','INT'], rows.filter(r => r.p.att).sort(by('py')), p => [(p.cmp||0)+'/'+(p.att||0), p.py||0, p.ptd||0, p.pint||0]);
+  s += sec('Rushing', ['CAR','YDS','AVG','TD','LG'], rows.filter(r => r.p.car).sort(by('ry')), p => [p.car, p.ry||0, (p.car ? ((p.ry||0)/p.car).toFixed(1) : '0.0'), p.rtd||0, p.rlg||0]);
+  s += sec('Receiving', ['REC','TGT','YDS','TD','LG'], rows.filter(r => r.p.rec || r.p.tgt).sort(by('cy')), p => [p.rec||0, p.tgt||0, p.cy||0, p.ctd||0, p.clg||0]);
+  s += sec('Defense', ['TKL','SK','INT','FF','TD'], rows.filter(r => r.p.tk || r.p.sk || r.p.int || r.p.ff || r.p.dtd).sort((a,b) => ((b.p.tk||0)+(b.p.sk||0)*2+(b.p.int||0)*3) - ((a.p.tk||0)+(a.p.sk||0)*2+(a.p.int||0)*3)), p => [p.tk||0, p.sk||0, p.int||0, p.ff||0, p.dtd||0]);
+  s += sec('Returns', ['KR','YDS','PR','YDS','TD'], rows.filter(r => r.p.kr || r.p.pr).sort((a,b) => ((b.p.kry||0)+(b.p.pry||0)) - ((a.p.kry||0)+(a.p.pry||0))), p => [p.kr||0, p.kry||0, p.pr||0, p.pry||0, (p.krtd||0)+(p.prtd||0)]);
+  const kk = rows.filter(r => r.p.fgm || r.p.fga || r.p.pu);
+  s += sec('Kicking', ['FG','PUNTS','AVG'], kk, p => [(p.fgm||0)+'/'+(p.fga||p.fgm||0), p.pu||0, p.pu ? Math.round((p.puy||0)/p.pu) : '—']);
+  el.innerHTML = s || '<p class="sub">No stats yet.</p>';
 }
 function coachSimLabel(isOn){
   return G.mode === 'player' ? '🎯 Sim to Player: '+(isOn?'ON':'OFF') : '🎯 Coach Sim: '+(isOn?'ON':'OFF');
@@ -16217,7 +16740,7 @@ function offseasonHTML(){
     expiring.forEach(p => {
       const sal = marketFor(p, 1);
       s += '<tr><td>'+pn(p)+'</td><td><b>'+p.spot+'</b></td><td>'+p.age+'</td><td style="color:var(--gold);font-weight:700">'+p.rating+'</td><td>'+money(sal)+' · 2-3yr</td>' +
-        '<td><button class="btn tiny primary" onclick="resignPlayer('+p.id+')">Re-sign</button></td></tr>';
+        '<td><button class="btn tiny primary" onclick="openContract(\'resign\','+p.id+')">Re-sign</button></td></tr>';
     });
     s += '</table>';
   } else s += '<p class="sub" style="margin-top:8px">All your key contracts are locked up — nobody left to re-sign.</p>';
@@ -17355,9 +17878,9 @@ function trAvail(p, t){
   if(teamTopNeeds(t,3).includes(p.pos)) return 2;
   return 3;
 }
-function trNeedBonus(them, giveP){ const need = teamNeed(them); return giveP.filter(p => p.pos === need).length * 3; }
+function trNeedBonus(them, giveP){ return 0; const need = teamNeed(them); return giveP.filter(p => p.pos === need).length * 3; }
 function trOdds(giveVal, getVal, needBonus){
-  const needed = Math.max(.1, getVal + 1.5 - needBonus), ratio = giveVal / needed;
+  const needed = Math.max(.1, getVal*1.02 + 5 - needBonus), ratio = giveVal / needed;
   return clamp(Math.round(50 + (ratio - .9) * 300), 3, 97);
 }
 function trMyPicks(){ return G.draftPicks.filter(pk => pk.team === G.userTeam).sort((a,b) => pickValue(a) - pickValue(b)); }
@@ -17381,12 +17904,12 @@ function trPackages(ti, pid){
     if(capAfter.mine > capNow() || capAfter.theirs > capNow()) return;
     out.push({ name, giveP, givePk, note, give: sv.giveVal, odds: trOdds(sv.giveVal, sv.getVal, nb) });
   };
-  mk('Pick heavy', [], trFillPicks(getVal + 1.5), 'Keeps your roster whole.');
-  const swap = tradeable.filter(p => p.pos === need && tradeValue(p) < getVal + 6).sort((a,b) => tradeValue(b) - tradeValue(a))[0]
+  mk('Pick heavy', [], trFillPicks(getVal*1.02 + 5), 'Keeps your roster whole.');
+  const swap = tradeable.filter(p => p.pos === need && tradeValue(p) < getVal*1.15).sort((a,b) => tradeValue(b) - tradeValue(a))[0]
     || tradeable.filter(p => p.onBlock).sort((a,b) => tradeValue(b) - tradeValue(a))[0];
-  if(swap){ const gap = getVal + 1.5 - tradeValue(swap) - (swap.pos === need ? 3 : 0); mk('Player swap', [swap], trFillPicks(gap), swap.pos === need ? 'Fills their '+need+' need.' : 'Moves a player off your block.'); }
+  if(swap){ const gap = getVal*1.02 + 5 - tradeValue(swap)*(swap.pos === need ? 1.08 : 1); mk('Player swap', [swap], trFillPicks(gap), swap.pos === need ? 'Fills their '+need+' need.' : 'Moves a player off your block.'); }
   const young = tradeable.filter(p => p.age <= 24 && p.id !== (swap && swap.id)).sort((a,b) => tradeValue(b) - tradeValue(a))[0];
-  if(young){ const gap = getVal + 1.5 - tradeValue(young) - (young.pos === need ? 3 : 0); mk('Youth for vet', [young], trFillPicks(gap), 'Young upside for a proven player.'); }
+  if(young){ const gap = getVal*1.02 + 5 - tradeValue(young)*(young.pos === need ? 1.08 : 1); mk('Youth for vet', [young], trFillPicks(gap), 'Young upside for a proven player.'); }
   return out.slice(0,3);
 }
 function trLoadCart(ti, giveIds, givePkIds, getIds, getPkIds){
@@ -17445,7 +17968,7 @@ function trMarketHTML(){
     '<div class="tr-scroll" style="padding:0 6px"><table class="tr-mt"><thead><tr><th>Player</th><th>Tm</th><th>Pos</th><th>OVR</th><th>Age</th><th class="tr-hs">Contract</th><th>Avail</th><th>Value</th></tr></thead><tbody>';
   if(!pool.length) m += '<tr><td colspan="8" class="sub" style="padding:14px">No players match. Loosen the filters.</td></tr>';
   pool.forEach(x => { const on = trTarget && trTarget.pid === x.p.id;
-    m += '<tr class="'+(on?'sel':'')+'" onclick="trSelTarget('+x.t.idx+','+x.p.id+')"><td><b>'+esc(shortName(x.p.name))+'</b>'+(x.p.gem&&x.p.gemSeen?' 💎':'')+'</td><td>'+trLogo(x.t,18)+'</td><td>'+x.p.spot+'</td><td class="tr-ovr">'+x.p.rating+'</td><td>'+x.p.age+'</td><td class="tr-hs">'+trContract(x.p)+'</td><td>'+trDots(x.av)+'</td><td class="tr-pvt">'+tradeValue(x.p).toFixed(1)+'</td></tr>'; });
+    m += '<tr class="'+(on?'sel':'')+'" onclick="trSelTarget('+x.t.idx+','+x.p.id+')"><td><b>'+esc(shortName(x.p.name))+'</b>'+(x.p.gem&&x.p.gemSeen?' 💎':'')+'</td><td>'+trLogo(x.t,18)+'</td><td>'+x.p.spot+'</td><td class="tr-ovr">'+x.p.rating+'</td><td>'+x.p.age+'</td><td class="tr-hs">'+trContract(x.p)+'</td><td>'+trDots(x.av)+'</td><td class="tr-pvt">'+Math.round(tradeValue(x.p))+'</td></tr>'; });
   m += '</tbody></table></div></div>';
   let r = '<div class="tr-col">';
   if(trTarget){
@@ -17457,7 +17980,7 @@ function trMarketHTML(){
       r += '<div class="disp" style="font-size:11px;color:var(--gold);margin-bottom:5px">Packages they\'d take</div>';
       if(!pk.length) r += '<p class="sub" style="font-size:11.5px">No package from your roster fits under both caps. Try building your own.</p>';
       pk.forEach((x,i) => { const oc = x.odds >= 70 ? 'var(--green)' : x.odds >= 45 ? 'var(--gold)' : 'var(--red)';
-        r += '<div class="tr-pkg"><div class="t">'+x.name+'<span style="color:'+oc+'">'+x.odds+'%</span></div><div class="ln">You send <b>'+esc(trAssetsText(x.giveP, x.givePk))+'</b>. '+x.note+' <span class="tr-pv">'+x.give.toFixed(1)+'</span> for <span class="tr-pv get">'+tradeValue(p).toFixed(1)+'</span></div>' +
+        r += '<div class="tr-pkg"><div class="t">'+x.name+'<span style="color:'+oc+'">'+x.odds+'%</span></div><div class="ln">You send <b>'+esc(trAssetsText(x.giveP, x.givePk))+'</b>. '+x.note+' <span class="tr-pv">'+Math.round(x.give)+'</span> for <span class="tr-pv get">'+Math.round(tradeValue(p))+'</span></div>' +
           '<div style="display:flex;gap:4px;margin-top:5px"><button class="btn tiny primary" onclick="trPkgGo('+t.idx+','+p.id+','+i+',true)">Send</button><button class="btn tiny" onclick="trPkgGo('+t.idx+','+p.id+','+i+',false)">Edit</button></div></div>'; });
       r += '<button class="btn" style="width:100%" onclick="trBuildOwn('+t.idx+','+p.id+')">Build my own offer →</button>';
     }
@@ -17469,10 +17992,10 @@ function trMarketHTML(){
 function trAssetHTML(p, kind, cart){
   const get = kind === 'get', t = G.teams[tradeTeam];
   const tag = !get && p.onBlock ? '<span class="tr-chip blk">BLOCK</span>' : get && p.pos === teamNeed(meT()) ? '<span class="tr-chip need">YOUR NEED</span>' : !get && p.pos === teamNeed(t) ? '<span class="tr-chip need">THEIR NEED</span>' : '';
-  return '<div class="tr-asset"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><div class="nm"><span class="pname" onclick="openModal(\'player\','+p.id+')">'+esc(shortName(p.name))+'</span> '+tag+'</div><div class="meta">'+p.spot+' · '+p.age+' · '+trContract(p)+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+tradeValue(p).toFixed(1)+'</span><span class="x" onclick="'+(get?'toggleGet':'toggleGive')+'('+p.id+')">✕</span></div>' +
+  return '<div class="tr-asset"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><div class="nm"><span class="pname" onclick="openModal(\'player\','+p.id+')">'+esc(shortName(p.name))+'</span> '+tag+'</div><div class="meta">'+p.spot+' · '+p.age+' · '+trContract(p)+'</div><div class="meta">'+tvEqTag(p)+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+tradeValue(p)+'</span><span class="x" onclick="'+(get?'toggleGet':'toggleGive')+'('+p.id+')">✕</span></div>' +
     clauseRowHTML(p, get ? 'absorb' : 'xfer', (get ? cart.absorb : cart.xfer).includes(p.id));
 }
-function trPickHTML(pk, get){ return '<div class="tr-asset pick"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><div class="nm">'+pickLabel(pk)+'</div><div class="meta">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+pickValue(pk).toFixed(1)+'</span><span class="x" onclick="'+(get?'toggleGetPick':'toggleGivePick')+'('+pk.id+')">✕</span></div>'; }
+function trPickHTML(pk, get){ return '<div class="tr-asset pick"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><div class="nm">'+pickLabel(pk)+'</div><div class="meta">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(get?' get':'')+'">'+Math.round(pickValue(pk))+'</span><span class="x" onclick="'+(get?'toggleGetPick':'toggleGivePick')+'('+pk.id+')">✕</span></div>'; }
 function trDealHTML(){
   const me = meT();
   if(tradeTeam === null || tradeTeam === G.userTeam) tradeTeam = G.teams.find(t => t.idx !== G.userTeam).idx;
@@ -17482,7 +18005,7 @@ function trDealHTML(){
   const sv = tradeSideValue(giveP, givePk, getP, getPk), cl = clauseAdj(cart, giveP, getP);
   const giveVal = Math.max(0, sv.giveVal + cl.pts), getVal = sv.getVal, nb = trNeedBonus(them, giveP);
   const verdict = tradeVerdict(giveVal, getVal, nb), capAfter = tradeCapAfter(me, them, giveP, getP, cart);
-  const tot = (giveVal + nb + getVal) || 1, needed = Math.max(.1, getVal + 1.5 - nb), ratio = (giveVal) / needed;
+  const tot = (giveVal + nb + getVal) || 1, needed = Math.max(.1, getVal*1.02 + 5 - nb), ratio = (giveVal) / needed;
   const pos = !giveVal && !getVal ? 50 : clamp(50 + (ratio - 1) * 120, 3, 97);
   const face = verdict.tier === 'accept' ? (ratio > 1.3 ? '🤑' : '🙂') : verdict.tier === 'soft' ? '🤔' : verdict.tier === 'reject' ? '😒' : '😐';
   const mood = { accept:'Interested', soft:'Thinking', reject:'Not interested', empty:'Listening' }[verdict.tier];
@@ -17490,20 +18013,23 @@ function trDealHTML(){
   let L = '<div class="tr-col"><div class="tr-hd">'+trLogo(me,24)+'<span class="disp">You give</span><span class="sub" style="margin-left:auto;font-size:10.5px">Room after '+money(capNow()-capAfter.mine)+'</span></div><div class="tr-scroll">';
   giveP.forEach(p => L += trAssetHTML(p, 'give', cart)); givePk.forEach(pk => L += trPickHTML(pk, false));
   L += '<div class="tr-add" onclick="trBrowse=\'mine\';render()">'+(giveP.length||givePk.length?'+ Add more':'Tap your players or picks on the right')+'</div></div>' +
-    '<div class="tr-tot">Total'+(nb?' <span>need bonus <b style="color:var(--green)">+'+nb.toFixed(1)+'</b></span>':'')+(cl.pts?' <span>clauses <b style="color:'+(cl.pts>=0?'var(--green)':'var(--red)')+'">'+(cl.pts>=0?'+':'')+cl.pts.toFixed(1)+'</b></span>':'')+'<b class="v" style="color:var(--gold)">'+(giveVal+nb).toFixed(1)+'</b></div></div>';
+    '<div class="tr-tot">Total'+(nb?' <span>need bonus <b style="color:var(--green)">+'+Math.round(nb)+'</b></span>':'')+(cl.pts?' <span>clauses <b style="color:'+(cl.pts>=0?'var(--green)':'var(--red)')+'">'+(cl.pts>=0?'+':'')+Math.round(cl.pts)+'</b></span>':'')+'<b class="v" style="color:var(--gold)">'+Math.round((giveVal+nb))+'</b></div></div>';
   const counter = tradeCounterFor(tradeTeam);
   let M = '<div class="tr-col tr-scale"><div style="font-size:28px;line-height:1">'+face+'</div><div style="font-weight:700;color:'+verdict.color+'">'+mood+'</div>' +
-    '<div class="tr-vl"><span style="color:var(--gold)">Give '+(giveVal+nb).toFixed(1)+'</span><span style="color:#7FA8E0">Get '+getVal.toFixed(1)+'</span></div>' +
+    '<div class="tr-vl"><span style="color:var(--gold)">Give '+Math.round((giveVal+nb))+'</span><span style="color:#7FA8E0">Get '+Math.round(getVal)+'</span></div>' +
     '<div class="tr-vt"><i style="width:'+((giveVal+nb)/tot*100)+'%;background:var(--gold)"></i><i style="width:'+(getVal/tot*100)+'%;background:#4c7fd0"></i></div>' +
     '<div class="tr-meter"><i style="left:'+pos+'%"></i></div><div class="tr-lb"><span>Overpay</span><span>Fair</span><span>Steal</span></div>' +
-    '<div class="sub" style="font-size:10.5px;line-height:1.35;color:'+verdict.color+'">'+esc(verdict.text)+'</div>';
+    '<div class="sub" style="font-size:10.5px;line-height:1.35;color:'+verdict.color+'">'+esc(verdict.text)+'</div>' +
+    '<div class="tv-ctx"><span class="tv-pill">'+TV_MODE_TAG[tvMode(them)]+'</span><span class="tv-pill">'+CAP_TAG[capStatus(them)]+'</span>'+(tvDraftLiveSlot()>=0?'<span class="tv-pill live">● Draft day</span>':'')+'</div>' +
+    ((sv.why||[]).length ? '<div class="tv-why">'+sv.why.slice(0,5).map(w => '<div><span>'+esc(w[0])+'</span><b class="'+(w[2]>=w[1]?'up':'dn')+'">'+w[1]+' → '+w[2]+'</b></div>').join('')+'</div>' : '') +
+    '<button class="btn tiny" style="width:100%" onclick="openModal(\'tvguide\')">ⓘ How values work</button>';
   if(counter) M += '<div class="tr-counter">🔁 Wants <b>'+esc(counter.suggestion.label)+'</b> added.<div style="display:flex;gap:3px;margin-top:4px;justify-content:center"><button class="btn tiny primary" onclick="acceptCounter()">Accept</button><button class="btn tiny danger" onclick="walkAwayFromCounter()">Walk</button></div></div>';
   M += '<div style="flex:1"></div><div class="tr-pat" title="Their patience">'+[1,2,3,4,5].map(i => '<i class="'+(i<=pat?'':'e')+'"></i>').join('')+'</div>' +
     '<button class="btn primary" style="width:100%" '+((giveP.length||givePk.length)&&(getP.length||getPk.length)&&pat>0?'':'disabled')+' onclick="proposeTrade()">'+(pat>0?'Propose':'Not taking calls')+'</button>' +
     '<button class="btn" style="width:100%" onclick="suggestTrade()">✨ Make it work</button><button class="btn ghost" style="width:100%" onclick="resetTradeCart();render()">Clear</button></div>';
   let Rr = '<div class="tr-col"><div class="tr-hd">'+trLogo(them,24)+'<span class="disp">You get</span><span class="sub" style="margin-left:auto;font-size:10.5px">Room after '+money(capNow()-capAfter.theirs)+'</span></div><div class="tr-scroll">';
   getP.forEach(p => Rr += trAssetHTML(p, 'get', cart)); getPk.forEach(pk => Rr += trPickHTML(pk, true));
-  Rr += '<div class="tr-add" onclick="trBrowse=\'theirs\';render()">'+(getP.length||getPk.length?'+ Add more':'Tap their players or picks on the right')+'</div></div><div class="tr-tot">Total <b class="v" style="color:#7FA8E0">'+getVal.toFixed(1)+'</b></div></div>';
+  Rr += '<div class="tr-add" onclick="trBrowse=\'theirs\';render()">'+(getP.length||getPk.length?'+ Add more':'Tap their players or picks on the right')+'</div></div><div class="tr-tot">Total <b class="v" style="color:#7FA8E0">'+Math.round(getVal)+'</b></div></div>';
   // browser
   const bt = trBrowse === 'mine' ? me : them, mine = trBrowse === 'mine';
   const selIds = mine ? cart.give : cart.get, selPk = mine ? cart.givePicks : cart.getPicks;
@@ -17515,12 +18041,12 @@ function trDealHTML(){
     const pks = G.draftPicks.filter(pk => pk.team === bt.idx).sort((a,b) => a.year - b.year || a.round - b.round);
     if(!pks.length) B += '<p class="sub">No picks.</p>';
     pks.forEach(pk => { const on = selPk.includes(pk.id);
-      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGivePick':'toggleGetPick')+'('+pk.id+')"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><b>'+pickLabel(pk)+'</b><div class="sub" style="font-size:10.5px">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+pickValue(pk).toFixed(1)+'</span><span class="r">'+(on?'✓':'+')+'</span></div>'; });
+      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGivePick':'toggleGetPick')+'('+pk.id+')"><span class="tr-ovr" style="color:#9fc1ff">R'+pk.round+'</span><div><b>'+pickLabel(pk)+'</b><div class="sub" style="font-size:10.5px">'+(pk.orig!==pk.team?'via '+esc(G.teams[pk.orig].abbr):'Own pick')+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+Math.round(pickValue(pk))+'</span><span class="r">'+(on?'✓':'+')+'</span></div>'; });
   } else {
     let ps = bt.roster.filter(p => !p.ir && (trBrowsePos === 'All' || p.pos === trBrowsePos)).sort((a,b) => tradeValue(b) - tradeValue(a));
     ps.forEach(p => { const on = selIds.includes(p.id), prot = isProtectedForTeam(p, bt), blk = isOnBlock(p, bt);
       const chip = prot ? '<span class="tr-chip prot">PROT</span>' : blk ? '<span class="tr-chip blk">BLOCK</span>' : (!mine && p.pos === teamNeed(me)) ? '<span class="tr-chip need">NEED</span>' : (p.gem&&p.gemSeen) ? '<span class="tr-chip gem">GEM</span>' : '';
-      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGive':'toggleGet')+'('+p.id+')"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><b>'+esc(shortName(p.name))+'</b> '+chip+'<div class="sub" style="font-size:10.5px">'+p.spot+' · '+p.age+' · '+trContract(p)+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+tradeValue(p).toFixed(1)+'</span>' +
+      B += '<div class="tr-prow'+(on?' on':'')+'" onclick="'+(mine?'toggleGive':'toggleGet')+'('+p.id+')"><span class="tr-ovr">'+p.rating+'</span><div style="min-width:0"><b>'+esc(shortName(p.name))+'</b> '+chip+'<div class="sub" style="font-size:10.5px">'+p.spot+' · '+p.age+' · '+trContract(p)+' '+tvEqTag(p)+'</div></div><span class="tr-pv'+(mine?'':' get')+'">'+Math.round(tradeValue(p))+'</span>' +
         (mine ? '<span class="r tr-blk" title="Trade block status" onclick="event.stopPropagation();cycleBlockStatus('+p.id+')">'+(p.onBlock?'🎯':p.protectedAsset?'🔒':'·')+'</span>' : '<span class="r">'+(prot?'🔒':on?'✓':'+')+'</span>') + '</div>'; });
     if(mine) B += '<p class="sub" style="font-size:10.5px;margin-top:4px">Tap 🎯/🔒/· to cycle: on block, protected, normal.</p>';
   }
@@ -17558,7 +18084,7 @@ function trPhoneHTML(){
       const askP = o.theirAsk.map(id => me.roster.find(x=>x.id===id)).filter(Boolean), askPk = o.theirAskPicks.map(id => G.draftPicks.find(x=>x.id===id)).filter(Boolean);
       const gv = giveP.reduce((s,p)=>s+tradeValue(p),0)+givePk.reduce((s,pk)=>s+pickValue(pk),0), av = askP.reduce((s,p)=>s+tradeValue(p),0)+askPk.reduce((s,pk)=>s+pickValue(pk),0);
       C += '<div class="tr-msg them">I like '+esc(askP.map(p=>p.name).join(' and ')||'what you have')+'. Here\'s what I can do.</div>' +
-        '<div class="tr-offer"><div class="disp" style="font-size:10.5px;color:var(--gold);margin-bottom:4px">Their offer</div><div class="cols"><div><b>You give <span class="tr-pv">'+av.toFixed(1)+'</span></b>'+askP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(askPk.map(pickLabel)).join('<br>')+'</div><div><b>You get <span class="tr-pv get">'+gv.toFixed(1)+'</span></b>'+giveP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(givePk.map(pickLabel)).join('<br>')+'</div></div></div>';
+        '<div class="tr-offer"><div class="disp" style="font-size:10.5px;color:var(--gold);margin-bottom:4px">Their offer</div><div class="cols"><div><b>You give <span class="tr-pv">'+Math.round(av)+'</span></b>'+askP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(askPk.map(pickLabel)).join('<br>')+'</div><div><b>You get <span class="tr-pv get">'+Math.round(gv)+'</span></b>'+giveP.map(p=>esc(p.name)+' '+p.spot+' '+p.rating).concat(givePk.map(pickLabel)).join('<br>')+'</div></div></div>';
       replies = '<button class="btn primary" onclick="resolveIncomingOffer('+o.id+',\'accept\')">Accept</button><button class="btn" onclick="resolveIncomingOffer('+o.id+',\'counter\');trView=\'deal\';render()">Counter in table</button><button class="btn danger" onclick="resolveIncomingOffer('+o.id+',\'decline\')">Decline</button>';
     } else if(cur.key[0] === 'r'){
       const p = t.roster.find(x => x.id === cur.pid);
