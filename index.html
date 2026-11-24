@@ -849,6 +849,7 @@ th.sorth.on{color:var(--gold)}
 .gdd-go{grid-area:go;font-size:10.5px;font-weight:700;color:var(--green)}
 .gd .cs-hd{gap:6px;white-space:nowrap}
 .gd .cs-hd #cs-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.cs-read{display:flex;gap:4px;align-items:center;flex-wrap:nowrap;overflow:hidden;font-size:10.5px;color:#5b4a2e;padding:1px 2px 3px;white-space:nowrap}.cs-read b{color:#8a5a12;margin-right:2px;font-weight:800}.cs-read span{background:rgba(0,0,0,.07);border-radius:9px;padding:0 6px;color:#2a2116;font-weight:700}
 .gd .cs-hd #cs-side{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:10px}
 .cs-lu{flex:0 0 auto}
 @media (max-height:430px){.gd .playgrid{grid-auto-rows:minmax(36px,1fr)!important}.gd .play{padding:5px 7px!important;font-size:12px!important}.gd .play small{font-size:9.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cs-tabs button{padding:4px!important;font-size:11px!important}.gd .cs-hd{margin-bottom:4px}}
@@ -4983,6 +4984,79 @@ function aiOffCall(){
   if(late && !trailing) return pick(['ir','ir','or','sp','pw']);
   return Math.random() < runBias ? pick(['ir','or','pw','dr','js','ro']) : pick(['sp','mp','pa','dp','sc','ms','fv']);
 }
+/* ================= DEFENSE LOOKS: alignment by call, zone/man/rush after the snap, pre-snap reads ================= */
+// defender order everywhere: DL0-3, LB0-2, CB top, CB bottom, S top, S bottom
+const DLOOK_SHOW = {c2:'c3', c3:'c2', ni:'c2', bl:'ni', c0:'bl', zb:'bl', dm:'ni', st:'ba', sy:'ba', ba:'c3'};
+function defLookPts(dc, x0, mid){
+  mid = mid || 250;
+  const DL = [[x0+14,mid-45],[x0+14,mid-15],[x0+14,mid+15],[x0+14,mid+45]];
+  const L = {
+    ba:[...DL, [x0+48,mid-55],[x0+48,mid],[x0+48,mid+55], [x0+42,95],[x0+42,405], [x0+112,mid-25],[x0+78,mid+80]],
+    st:[...DL, [x0+36,mid-45],[x0+36,mid+5],[x0+36,mid+55], [x0+12,92],[x0+12,408], [x0+118,mid],[x0+40,mid+100]],
+    ni:[...DL, [x0+48,mid-30],[x0+48,mid+35],[x0+30,mid-66], [x0+48,95],[x0+48,405], [x0+108,mid-95],[x0+108,mid+95]],
+    bl:[...DL, [x0+28,mid-40],[x0+40,mid+5],[x0+28,mid+48], [x0+12,92],[x0+12,408], [x0+26,mid-66],[x0+118,mid]],
+    pr:[...DL, [x0+80,mid-90],[x0+85,mid],[x0+80,mid+90], [x0+105,98],[x0+105,402], [x0+180,mid-70],[x0+180,mid+70]],
+    c2:[...DL, [x0+48,mid-55],[x0+48,mid],[x0+48,mid+55], [x0+18,92],[x0+18,408], [x0+108,mid-100],[x0+108,mid+100]],
+    c3:[...DL, [x0+48,mid-55],[x0+48,mid],[x0+48,mid+55], [x0+55,95],[x0+55,405], [x0+118,mid],[x0+58,mid+100]],
+    c0:[...DL, [x0+24,mid-40],[x0+30,mid+10],[x0+24,mid+50], [x0+12,92],[x0+12,408], [x0+24,mid-66],[x0+28,mid+105]],
+    zb:[...DL, [x0+26,mid-12],[x0+44,mid+30],[x0+48,mid+72], [x0+55,95],[x0+55,405], [x0+118,mid],[x0+56,mid-88]],
+    gl:[[x0+10,mid-39],[x0+10,mid-13],[x0+10,mid+13],[x0+10,mid+39], [x0+24,mid-52],[x0+24,mid],[x0+24,mid+52], [x0+10,96],[x0+10,404], [x0+30,mid-92],[x0+30,mid+92]],
+    sy:[...DL, [x0+46,mid-55],[x0+58,mid],[x0+46,mid+55], [x0+14,92],[x0+14,408], [x0+118,mid],[x0+28,mid-66]],
+    dm:[...DL, [x0+38,mid-66],[x0+56,mid],[x0+38,mid+66], [x0+46,95],[x0+46,405], [x0+118,mid-90],[x0+118,mid+90]]
+  };
+  return L[dc] || L.ba;
+}
+// post-snap job per defender: r = rush, z:[dx,y] = zone spot, m:'WRT'|'WRB'|'SLOT'|'TE'|'RB' = man, s = spy
+function defJobs(dc, mid){
+  mid = mid || 250;
+  const R4 = ['r','r','r','r'];
+  const thirds = [{z:[230,80]},{z:[230,420]},{z:[240,mid]}];
+  const J = {
+    c2:[...R4, {z:[80,mid-75]},{z:[90,mid]},{z:[80,mid+75]}, {z:[55,70]},{z:[55,430]}, {z:[210,mid-110]},{z:[210,mid+110]}],
+    c3:[...R4, {z:[75,mid-60]},{z:[80,mid+5]},{z:[75,mid+70]}, thirds[0],thirds[1], thirds[2],{z:[60,440]}],
+    ba:[...R4, {z:[75,mid-60]},{z:[80,mid+5]},{z:[75,mid+70]}, thirds[0],thirds[1], thirds[2],{z:[60,440]}],
+    ni:[...R4, {z:[70,mid-50]},{z:[70,mid+50]},{z:[55,120]}, {z:[210,90]},{z:[210,410]}, {z:[200,mid-60]},{z:[200,mid+60]}],
+    dm:[...R4, {z:[90,mid-95]},{z:[80,mid]},{z:[90,mid+95]}, {z:[220,90]},{z:[220,410]}, {z:[240,mid-60]},{z:[240,mid+60]}],
+    pr:['r','r','r',{z:[60,mid+60]}, {z:[140,mid-90]},{z:[140,mid]},{z:[140,mid+90]}, {z:[260,90]},{z:[260,410]}, {z:[320,mid-80]},{z:[320,mid+80]}],
+    bl:[...R4, 'r',{m:'TE'},'r', {m:'WRT'},{m:'WRB'}, {m:'SLOT'},{z:[230,mid]}],
+    c0:[...R4, 'r',{m:'TE'},'r', {m:'WRT'},{m:'WRB'}, {m:'SLOT'},'r'],
+    zb:[{z:[50,120]},'r','r','r', 'r','r',{z:[75,mid+70]}, thirds[0],thirds[1], thirds[2],{z:[70,mid-70]}],
+    st:[...R4, {z:[50,mid-60]},{z:[55,mid]},{z:[50,mid+60]}, {m:'WRT'},{m:'WRB'}, {z:[240,mid]},{z:[90,mid+40]}],
+    gl:[...R4, 'r','r',{m:'TE'}, {m:'WRT'},{m:'WRB'}, {z:[40,mid-90]},{m:'SLOT'}],
+    sy:[...R4, {m:'TE'},'s',{m:'RB'}, {m:'WRT'},{m:'WRB'}, {z:[240,mid]},{m:'SLOT'}]
+  };
+  return J[dc] || J.ba;
+}
+function dlookDisguiseOdds(t){
+  const dc = t && t.staff && t.staff.DC; const r = dc ? dc.rating : 70;
+  return clamp(.1 + (r - 70) * .012, .05, .4);
+}
+function readKey(){ return GM ? [GM.poss,GM.down,GM.dist,GM.spot,GM.q,GM.hs,GM.as].join('|') : ''; }
+function ensureAIRead(){
+  if(!GM || GM.over || GM.stPending || !userOnO()) return null;
+  const k = readKey();
+  if(!GM.read || GM.read.key !== k){
+    const dc = aiDefCall();
+    let show = dc;
+    if(DLOOK_SHOW[dc] && Math.random() < dlookDisguiseOdds(defT())) show = DLOOK_SHOW[dc];
+    GM.read = {key:k, dc, show};
+  }
+  return GM.read;
+}
+function takeDefCall(){
+  if(GM && GM.read && GM.read.key === readKey() && userOnO()){ const r = GM.read; GM.read = null; GM.lastRead = r; return r.dc; }
+  const dc = aiDefCall(); if(GM) GM.lastRead = {dc, show:dc}; return dc;
+}
+function curShowDc(){ if(!GM) return 'ba'; if(userOnO()){ const r = ensureAIRead(); return r ? r.show : 'ba'; } return GM.lastUserDc || 'ba'; }
+function readSummary(show, x0){
+  const pts = defLookPts(show, x0, 250);
+  const box = pts.filter(p => p[0] <= x0 + 52 && Math.abs(p[1] - 250) <= 112).length;
+  const high = [pts[9], pts[10]].filter(p => p[0] >= x0 + 95).length;
+  const press = [pts[7], pts[8]].filter(p => p[0] <= x0 + 24).length;
+  const walk = pts.slice(4,7).filter(p => p[0] <= x0 + 30).length;
+  return (high===0 ? '0 deep' : high===1 ? '1-high' : '2-high') + ' · ' + box + ' in box' + (press ? ' · press' : ' · CBs off') + (walk >= 2 ? ' · LBs up' : '');
+}
+
 function aiDefCall(){
   const total = GM.runTend + GM.passTend;
   const userRunPct = total > 4 ? GM.runTend/total : .5;
@@ -5053,7 +5127,11 @@ function resolvePlayCore(oc, dc){
   if(Math.random() < Math.max(.004, intc)){
     res.type='int'; res.yards = Math.round(p.mean*.7); return res;
   }
-  let comp = p.comp + edge*.32 + mod*.02 + (dc==='pr' && !deep ? .06 : 0) + (dc==='pr' && deep ? -.14 : 0) + (dc==='c2' && deep ? -.08 : 0) + (dc==='dm' ? (deep ? -.06 : .03) : 0) + (dc==='c0' && !deep ? .03 : 0) + fx.comp + (deep ? fx.deep : (oc==='pa'||oc==='mp') ? fx.deep*.5 : 0);
+  const tgt = pickPassTarget(res, off), cov = coverDefender(tgt, def);
+  res.target = tgt; res.cover = cov;
+  const mEdge = (tgt && cov) ? (matchEff(tgt, off) - matchEff(cov, def)) / 100 : 0;
+  res.mEdge = mEdge;
+  let comp = p.comp + mEdge*(deep ? .6 : .35) + edge*.32 + mod*.02 + (dc==='pr' && !deep ? .06 : 0) + (dc==='pr' && deep ? -.14 : 0) + (dc==='c2' && deep ? -.08 : 0) + (dc==='dm' ? (deep ? -.06 : .03) : 0) + (dc==='c0' && !deep ? .03 : 0) + fx.comp + (deep ? fx.deep : (oc==='pa'||oc==='mp') ? fx.deep*.5 : 0);
   if(oc==='hm') comp = clamp(.13 + edge*.1 + (dc==='pr'||dc==='dm' ? -.04 : 0), .05, .22);
   if(Math.random() > clamp(comp,.12,.95)){ res.type='inc'; res.yards=0; return res; }
   let y = p.mean + mod + edge*9 + gauss()*p.sd;
@@ -5098,18 +5176,40 @@ function endQuarter(){
 function startPossession(teamIdx, spot){
   GM.poss = teamIdx; GM.spot = spot; GM.down = 1; GM.dist = 10;
 }
+/* who the ball goes to, and who is covering him */
+function pickPassTarget(res, off){
+  const lu = lineupFor(off, offFormOf(off), offFormKeyOf(off));
+  const recvs = res.oc==='sc' ? lu.filter(s => s.spot==='RB' && s.p).map(s => s.p) : lu.filter(s => (s.spot==='WR'||s.spot==='TE') && s.p).map(s => s.p);
+  return pickWeighted(recvs);
+}
+function coverDefender(tg, def){
+  if(!tg) return null;
+  const lu = lineupFor(def, defFormOf(def), defFormKeyOf(def)).filter(s => s.p);
+  const by = sp => lu.filter(s => sp.includes(s.spot)).map(s => s.p);
+  const pool = tg.pos==='WR' ? by(['CB']) : tg.pos==='TE' ? by(['SS','MLB','OLB']) : by(['OLB','MLB']);
+  const alt = by(['CB','SS','FS']);
+  const list = pool.length ? pool : alt; if(!list.length) return null;
+  return tg.pos==='WR' ? list.sort((a,b) => b.rating - a.rating)[Math.random() < .55 ? 0 : Math.min(1, list.length-1)] : pick(list);
+}
+function matchEff(p, t){ const f = p.form == null ? 100 : p.form; return p.rating * (0.94 + 0.06*f/100); }
 function rollTargetAndDrop(res){
   if(res.type !== 'pass' && res.type !== 'inc') return;
-  if(res.target) return;
-  const off = offT(), lu = lineupFor(off, offFormOf(off), offFormKeyOf(off));
-  const recvs = res.oc==='sc' ? lu.filter(s => s.spot==='RB' && s.p).map(s => s.p) : lu.filter(s => (s.spot==='WR'||s.spot==='TE') && s.p).map(s => s.p);
-  const tg = pickWeighted(recvs); if(!tg) return;
-  res.target = tg;
+  if(!res.target){ const tg = pickPassTarget(res, offT()); if(!tg) return; res.target = tg; }
+  const tg = res.target;
   const hands = stAttr(tg).hands || 70;
   if(res.type === 'pass'){
     const extra = clamp((82 - hands) * .007, 0, .14);
-    if(Math.random() < extra){ res.type = 'inc'; res.yards = 0; res.drop = true; res.oob = false; }
-  } else if(Math.random() < clamp(.16 + (80 - hands) * .01, .05, .4)) res.drop = true;
+    if(Math.random() < extra){ res.type = 'inc'; res.yards = 0; res.drop = true; res.oob = false; res.incKind = 'drop'; }
+    return;
+  }
+  if(res.incKind) return;
+  // why it fell incomplete: dropped (hands), broken up (coverage), or off target (throw)
+  if(Math.random() < clamp(.12 + (80 - hands) * .01, .03, .35)){ res.drop = true; res.incKind = 'drop'; return; }
+  const deep = DEEP_OC.includes(res.oc), m = res.mEdge || 0;
+  let qbR = 75; try { const ql = lineupFor(offT(), offFormOf(offT()), offFormKeyOf(offT())).find(s => s.spot==='QB' && s.p); if(ql) qbR = ql.p.rating; } catch(e){}
+  const pbu = clamp(.5 - m*2.5 + (deep ? -.08 : .05) + (qbR - 80)*.012, .15, .85);
+  res.incKind = Math.random() < pbu ? 'pbu' : (deep ? 'over' : 'off');
+  if(res.incKind === 'pbu' && !res.cover){ try { res.cover = coverDefender(tg, defT()); } catch(e){} }
 }
 function pickWeighted(players){
   if(!players || !players.length) return null;
@@ -5195,7 +5295,12 @@ function applyPlay(res){
   }
   if(res.type==='inc'){
     attributePlay(res, offIdxAtSnap, dIdxAtSnap, false);
-    logMsg(offName + ' — ' + OFF_PLAYS[res.oc].label + ': incomplete' + (res.drop && res.target ? ', dropped by #' + jerseyOf(res.target) + ' ' + res.target.name.split(' ').slice(-1)[0] : '') + '.');
+    const ln = p => '#' + jerseyOf(p) + ' ' + p.name.split(' ').slice(-1)[0];
+    const why = res.drop && res.target ? ', dropped by ' + ln(res.target)
+      : res.incKind === 'pbu' && res.cover ? ', broken up by ' + ln(res.cover) + (res.target ? ' on ' + res.target.name.split(' ').slice(-1)[0] : '')
+      : res.incKind === 'over' && res.target ? ', overthrown. ' + res.target.name.split(' ').slice(-1)[0] + ' had a step'
+      : res.incKind === 'off' && res.target ? ', off target to ' + res.target.name.split(' ').slice(-1)[0] : '';
+    logMsg(offName + ' — ' + OFF_PLAYS[res.oc].label + ': incomplete' + why + '.');
     GM.down++;
   } else {
     const newSpot = GM.spot + res.yards;
@@ -5309,8 +5414,8 @@ function userCall(code){
   if(busy || !GM || GM.over || GM.stPending || GM.spectate) return;
   busy = true;
   let oc, dc;
-  if(userOnO()){ oc = code; dc = aiDefCall(); }
-  else { dc = code; oc = GM.down===4 ? null : aiOffCall(); }
+  if(userOnO()){ oc = code; dc = takeDefCall(); }
+  else { dc = code; GM.lastUserDc = code; GM.lastRead = {dc:code, show:code}; oc = GM.down===4 ? null : aiOffCall(); }
   if(!userOnO() && GM.down === 4){
     const choice = aiFourthDown();
     if(choice==='punt'){ busy=false; doPunt(); return; }
@@ -5318,7 +5423,9 @@ function userCall(code){
     oc = aiOffCall();
   }
   const res = resolvePlay(oc, dc);
+  if(userOnO() && GM.lastRead && DEF_PLAYS[dc]){ const sh = GM.lastRead.show; GM.defNote = sh && sh !== dc ? '🎭 Disguised: showed '+DEF_PLAYS[sh].label+', played '+DEF_PLAYS[dc].label+'.' : 'Defense played '+DEF_PLAYS[dc].label+'.'; }
   animatePlay(res, () => {
+    if(GM.defNote){ logMsg(GM.defNote); GM.defNote = null; }
     applyPlay(res);
     busy = !!GM.stAnim;
     if(GM.coordGo && (GM.down !== 4 || res.type==='pen')) GM.coordGo = GM.down === 4;
@@ -5399,7 +5506,7 @@ function coachSimStep(){
     if(choice==='fg'){ doFG(); if(!busy) coachSimStep(); return; }
   }
   busy = true;
-  const res = resolvePlay(aiOffCall(), aiDefCall());
+  const res = resolvePlay(aiOffCall(), takeDefCall());
   animatePlay(res, () => {
     applyPlay(res);
     busy = !!GM.stAnim;
@@ -5421,7 +5528,7 @@ function simQuarter(){
       if(c==='punt'){ doPunt(); continue; }
       if(c==='fg'){ doFG(); continue; }
     }
-    const res = resolvePlay(aiOffCall(), aiDefCall());
+    const res = resolvePlay(aiOffCall(), takeDefCall());
     applyPlay(res);
     if(GM.q >= 5 && GM.ot && GM.hs !== GM.as){ finishGame(); break; }
   }
@@ -5444,7 +5551,7 @@ function simDrive(){
       if(c==='punt'){ doPunt(); plays++; continue; }
       if(c==='fg'){ doFG(); plays++; continue; }
     }
-    const res = resolvePlay(aiOffCall(), aiDefCall());
+    const res = resolvePlay(aiOffCall(), takeDefCall());
     applyPlay(res); plays++;
     if(GM.q >= 5 && GM.ot && GM.hs !== GM.as){ finishGame(); break; }
   }
@@ -5464,7 +5571,7 @@ function simRest(){
       if(c==='punt'){ doPunt(); continue; }
       if(c==='fg'){ doFG(); continue; }
     }
-    const res = resolvePlay(aiOffCall(), aiDefCall());
+    const res = resolvePlay(aiOffCall(), takeDefCall());
     applyPlay(res);
     if(GM.q >= 5 && GM.ot && GM.hs !== GM.as){ finishGame(); break; }
   }
@@ -7394,9 +7501,7 @@ function drawFormation(){
   const pts = [];
   for(let i=-2;i<=2;i++) pts.push([x0-12,mid+i*26,off,fo,'block']);
   [[x0-42,mid],[x0-62,mid+22],[x0-16,90],[x0-16,410],[x0-16,mid-66],[x0-14,mid+66]].forEach(q=>pts.push([q[0],q[1],off,fo,'run']));
-  for(let i=-1.5;i<=1.5;i++) pts.push([x0+14,mid+i*30,def,-fo,'block']);
-  for(let i=-1;i<=1;i++) pts.push([x0+48,mid+i*55,def,-fo,'run']);
-  [[x0+22,95],[x0+22,405],[x0+105,mid-45],[x0+105,mid+45]].forEach(q=>pts.push([q[0],q[1],def,-fo,'run']));
+  defLookPts(curShowDc(), x0, mid).forEach((q,i) => pts.push([q[0], q[1], def, -fo, i < 4 ? 'block' : 'run']));
   const numList = nums.off.concat(nums.def);
   g.innerHTML = pts.map((q,i)=>({q,i,p:legacyToIso(q[0],q[1],0)})).sort((a,b)=>a.p.y-b.p.y).map(({q,i,p})=>vinylSVG(p.x,p.y,q[2],numList[i],q[3],0,{k,pose:q[4]==='block'?'block':'run'})).join('');
   isoPaintEndzones();
@@ -7532,10 +7637,12 @@ function animatePlay(res, cb){
   const RB=A(x0-62, mid+22, off);
   const WRT=A(x0-16, 90, off), WRB=A(x0-16, FH-90, off);
   const SLOT=A(x0-16, mid-66, off), TEr=A(x0-14, mid+66, off);
-  const DLs=[]; for(let i=-1.5;i<=1.5;i++) DLs.push(A(x0+14, mid+i*30, def));
-  const LBs=[]; for(let i=-1;i<=1;i++) LBs.push(A(x0+48, mid+i*55, def));
-  const CBT=A(x0+22, 95, def), CBB=A(x0+22, FH-95, def);
-  const S1=A(x0+105, mid-45, def), S2=A(x0+105, mid+45, def);
+  const showDc = (GM.lastRead && GM.lastRead.dc === res.dc && GM.lastRead.show) ? GM.lastRead.show : res.dc;
+  const LP = defLookPts(showDc, x0, mid);
+  const DLs = LP.slice(0,4).map(q => A(q[0], q[1], def));
+  const LBs = LP.slice(4,7).map(q => A(q[0], q[1], def));
+  const CBT=A(LP[7][0], LP[7][1], def), CBB=A(LP[8][0], LP[8][1], def);
+  const S1=A(LP[9][0], LP[9][1], def), S2=A(LP[10][0], LP[10][1], def);
 
   /* ---- pick the catch point + target receiver ---- */
   let xAir = CXf(xAt(clamp(GM.spot + depth, 2, 99)));
@@ -7544,6 +7651,13 @@ function animatePlay(res, cb){
   if(isPassBall){
     if(res.tgtKey==='w1'||res.tgtKey==='w2'){ target = res.tgtKey==='w1' ? WRT : WRB; yAir = CYf(target.y0i + (mid-target.y0i)*.2 + gauss()*18); }
     else if(res.oc==='sc'){ target = RB; xAir = CXf(x0 - 10); yAir = CYf(mid + (Math.random()<.5?-1:1)*R(70,130)); }
+    else if(res.target && res.target.pos !== 'RB'){
+      const ofl = lineupFor(off, offFormOf(off), offFormKeyOf(off)).filter(s => s.p);
+      const wrs = ofl.filter(s => s.spot==='WR').map(s => s.p.id), tes = ofl.filter(s => s.spot==='TE').map(s => s.p.id);
+      const wi = wrs.indexOf(res.target.id), ti = tes.indexOf(res.target.id);
+      target = wi === 0 ? WRT : wi === 1 ? WRB : wi >= 2 ? SLOT : ti === 0 ? TEr : ti >= 1 ? SLOT : WRT;
+      yAir = CYf(target.y0i + (mid-target.y0i)*(res.oc==='sp'?.45:.2) + gauss()*18);
+    }
     else {
       const recs=[WRT,WRB,SLOT,TEr];
       target = recs.reduce((b,r)=>Math.abs(r.y0i-yAir)<Math.abs(b.y0i-yAir)?r:b, recs[0]);
@@ -7561,10 +7675,6 @@ function animatePlay(res, cb){
     else { to(o,.35, o.x0i-6, o.y0i+R(-4,4)); to(o,1, o.x0i-9+R(-3,3), o.y0i+R(-7,7)); }
   });
   /* ---- defensive line: shed vs run, rush vs pass ---- */
-  DLs.forEach(d=>{
-    if(playIsRun) to(d,.55, d.x0i-8+R(-5,5), d.y0i+R(-9,9));
-    else to(d,.5, d.x0i-16+R(-7,4), d.y0i+R(-9,9));
-  });
 
   /* ---- QB: mesh on runs, drop by pass depth, driven back on sacks ---- */
   const drop = res.oc==='hm' ? 58 : fam==='shot' ? 48 : (res.oc==='mp' ? 36 : 24);
@@ -7599,47 +7709,55 @@ function animatePlay(res, cb){
     const dir = target.y0i < mid ? 1 : -1;
     target.wp = [{t:0, x:target.x0i, y:target.y0i}];
     to(target, tCatch*.55, target.x0i + dpx*.6, target.y0i + dir*Math.min(30, Math.abs(yAir-target.y0i)*.4));
-    to(target, tCatch, xAir, yAir);
+    if(res.type==='inc' && res.incKind==='over') to(target, tCatch, xAir-24, yAir); else to(target, tCatch, xAir, yAir);
     if(res.type==='pass') to(target,1, xEnd, yEnd);
     else if(res.type==='int') to(target,.85, xAir-12, yAir+dir*6);
+    else if(res.incKind==='over'){ to(target,.82, xAir+6, yAir+dir*3); to(target,1, xAir+12, yAir+dir*5); }
     else to(target,.9, xAir+18, yAir+dir*12);
   }
 
-  /* ---- linebackers: blitz, plug the run, or drop into zones by the D call ---- */
-  LBs.forEach((l,i)=>{
-    if(!playIsRun && res.dc==='bl' && i!==1){ to(l,.55, x0-34+R(-6,6), CYf(mid+(i-1)*42)); }
-    else if(playIsRun || res.dc==='st'){ to(l,.5, l.x0i-18, CYf(l.y0i+(yEnd-l.y0i)*.35)); }
-    else { to(l,.55, l.x0i+(res.dc==='pr'?55:34), l.y0i+R(-12,12)); }
+  /* ---- defense: every defender runs his job from the call (rush, zone spot, man, spy) ---- */
+  const DEF = [...DLs, ...LBs, CBT, CBB, S1, S2];
+  const jobs = defJobs(res.dc, mid);
+  const recvMap = {WRT, WRB, SLOT, TE:TEr, RB};
+  const rushers = [], cover = [];
+  DEF.forEach((d,i) => {
+    const j = jobs[i] || 'r';
+    if(playIsRun){
+      if(i < 4 || j === 'r'){ to(d,.5, x0-6+R(-5,5), CYf(d.y0i+(yEnd-d.y0i)*(i<4?.15:.35)+R(-8,8))); return; }
+      if(j.m && j.m !== 'RB' && j.m !== 'TE'){ const r = recvMap[j.m]; const p = posAt(r,.6); to(d,.6, p.x+10, p.y); return; }
+      const deep = d.x0i > x0 + 90;
+      to(d, deep ? .62 : .5, x0 + (deep ? 42 : 14), CYf(d.y0i + (yEnd-d.y0i)*(deep ? .5 : .45)));
+      return;
+    }
+    if(j === 'r'){ rushers.push(d); const lane = d.y0i + (mid-d.y0i)*.55; to(d,.45, x0-22+R(-6,6), CYf(lane+R(-8,8))); to(d,.95, x0-32+R(-6,6), CYf(lane+R(-10,10))); return; }
+    cover.push(d);
+    if(j === 's'){ to(d,.4, x0+42, mid+R(-8,8)); const q = posAt(QB,.9); to(d,.92, Math.max(x0+20, q.x+60), q.y); return; }
+    if(j.m){ const r = recvMap[j.m]; if(!r) return; const sg = r.y0i < mid ? 1 : -1;
+      [.2,.4,.6,.8,.92].forEach(t => { const p = posAt(r, Math.max(0, t-.05)); to(d, t, p.x+10, p.y+sg*7); }); return; }
+    if(j.z){ to(d,.5, CXf(x0+j.z[0]), CYf(j.z[1])); to(d,.88, CXf(x0+j.z[0]+10), CYf(j.z[1]+R(-12,12))); }
   });
-
-  /* ---- corners trail their receiver; safeties deepen or come downhill ---- */
-  [[CBT,WRT],[CBB,WRB]].forEach(pr=>{
-    const c=pr[0], w=pr[1];
-    if(playIsRun){ to(c,.65, x0+10, c.y0i+(mid-c.y0i)*.25); }
-    else { const we=w.wp[w.wp.length-1]; to(c,.9, we.x+15, we.y+(c.y0i<mid?-11:11)); }
-  });
-  [S1,S2].forEach(sf=>{
-    if(playIsRun) to(sf,.6, x0+30, CYf(sf.y0i+(yEnd-sf.y0i)*.5));
-    else to(sf,.45, sf.x0i+42, sf.y0i+R(-8,8));
-  });
-
-  /* ---- sack: one rusher breaks through and rides the QB down ---- */
-  if(sackLike){
-    const rusher = res.dc==='bl' ? LBs[0]
-      : DLs.reduce((b,d)=>Math.abs(d.y0i-mid)<Math.abs(b.y0i-mid)?d:b, DLs[0]);
+  const nearAt = (list, t, x, y) => list.reduce((b,d) => { const p = posAt(d,t), q = posAt(b,t); return Math.hypot(p.x-x,p.y-y) < Math.hypot(q.x-x,q.y-y) ? d : b; }, list[0]);
+  const closeOn = (d, t, x, y, after) => { const keep = d.wp.filter(w => w.t < t*.75); d.wp = keep.length ? keep : [{t:0,x:d.x0i,y:d.y0i}]; to(d, t, x, y); if(after) to(d, 1, after[0], after[1]); };
+  /* ---- pass breakup: whoever is actually covering that spot closes as the ball arrives ---- */
+  if(res.type==='inc' && res.incKind==='pbu' && target && cover.length){
+    const cv = nearAt(cover, tCatch, xAir, yAir), side = posAt(cv,tCatch*.7).y < yAir ? -1 : 1;
+    closeOn(cv, tCatch, xAir+4, yAir+side*5, [xAir+20, yAir+side*10]);
+  }
+  /* ---- sack: the free rusher gets home (blitzers first on pressure calls) ---- */
+  if(sackLike && rushers.length){
+    const extra = rushers.filter(d => DLs.indexOf(d) < 0);
+    const rusher = extra.length && Math.random() < .65 ? pick(extra) : rushers.reduce((b,d)=>Math.abs(d.y0i-mid)<Math.abs(b.y0i-mid)?d:b, rushers[0]);
     rusher.wp = [{t:0,x:rusher.x0i,y:rusher.y0i}];
     to(rusher,.5, x0-30-drop*.5, mid+R(-10,10));
     to(rusher,.72, xEnd+8, CYf(mid+gauss()*22));
-    to(rusher,1, xEnd+6, CYf(mid+gauss()*22));
+    to(rusher,.96, xEnd+6, CYf(mid+gauss()*22));
   }
-
-  /* ---- interception: nearest DB jumps the route and heads the other way ---- */
+  /* ---- interception: the defender sitting in that window jumps it ---- */
   let picker = null;
   if(res.type==='int'){
-    const dbs=[CBT,CBB,S1,S2,LBs[1]];
-    picker = dbs.reduce((b,d)=>Math.hypot(d.x0i-xAir,d.y0i-yAir)<Math.hypot(b.x0i-xAir,b.y0i-yAir)?d:b, dbs[0]);
-    picker.wp = [{t:0,x:picker.x0i,y:picker.y0i}];
-    to(picker,tCatch, xAir, yAir);
+    picker = cover.length ? nearAt(cover, tCatch, xAir, yAir) : S1;
+    closeOn(picker, tCatch, xAir, yAir, null);
     to(picker,1, xAir-46, CYf(yAir+gauss()*24));
   }
 
@@ -7684,7 +7802,14 @@ function animatePlay(res, cb){
     if(t<tThrow) return posAt(QB,t);
     const rel=posAt(QB,tThrow);
     if(t<tCatch){ const u=(t-tThrow)/(tCatch-tThrow); return {x:rel.x+(xAir-rel.x)*u, y:rel.y+(yAir-rel.y)*u}; }
-    return carrier ? posAt(carrier,t) : {x:xAir,y:yAir};
+    if(carrier) return posAt(carrier,t);
+    if(res.type==='inc'){
+      const u = clamp((t-tCatch)/.3, 0, 1);
+      if(res.incKind==='over'){ const ext = (t-tCatch)/(tCatch-tThrow); return {x:xAir + (xAir-rel.x)*Math.min(ext,.35), y:yAir + (yAir-rel.y)*Math.min(ext,.35)}; }
+      if(res.incKind==='pbu') return {x:xAir - 18*u, y:yAir + (yAir<mid?-1:1)*22*u};
+      if(res.incKind==='off') return {x:xAir + 10*u, y:yAir + (yAir<mid?-1:1)*34*u};
+    }
+    return {x:xAir,y:yAir};
   }
 
   const qbOn = qbActive(), qbWrap = document.getElementById('fieldwrap'), T0 = qbOn && res.t0 ? res.t0 : 0;
@@ -15356,7 +15481,7 @@ function gameHTML(){
     '<div class="gd-main"><div class="gd-field">' +
     '<div id="fieldwrap">'+fieldSVG()+'<div id="wxfx" class="wxfx '+wxOverlayClass()+'"></div><div id="playbanner"></div></div>' + gameConditionsHTML() + '</div>' +
     '<div class="gd-side">' +
-    '<div class="callsheet"><div class="cs-hd"><span id="cs-title">Call Sheet</span><span id="cs-side"></span><button class="cs-lu" onclick="gdDepthOpen()">🔄 Lineup</button></div><div class="playgrid" id="playgrid"></div></div>' +
+    '<div class="callsheet"><div class="cs-hd"><span id="cs-title">Call Sheet</span><span id="cs-side"></span><button class="cs-lu" onclick="gdDepthOpen()">🔄 Lineup</button></div><div id="cs-read" class="cs-read"></div><div class="playgrid" id="playgrid"></div></div>' +
     '<div class="gamectl">' +
     '<button class="btn" onclick="simDrive()">▶︎ Sim Drive</button>' +
     '<button class="btn" onclick="simQuarter()">⏭ Sim Quarter</button>' +
@@ -15454,7 +15579,7 @@ function playBtn(code, cls, label, sub, handler){
 function buildCallsheet(){
   const grid = document.getElementById('playgrid');
   const title = document.getElementById('cs-title');
-  const side = document.getElementById('cs-side');
+  const side = document.getElementById('cs-side'); { const rl0 = document.getElementById('cs-read'); if(rl0) rl0.style.display = 'none'; }
   if(!grid) return;
   if(GM.over){ grid.innerHTML=''; title.textContent='Game Over'; side.textContent=''; return; }
   if(GM.stAnim){ title.textContent='Special Teams'; side.textContent='ball in the air'; grid.innerHTML='<button class="play st" onclick="GM.stSkip=true">⏩ Skip ahead<small>finish the play</small></button>'; return; }
@@ -15507,7 +15632,9 @@ function buildCallsheet(){
   if(userOnO()){
     if(G.mode === 'player'){ renderPlayerOffenseCallsheet(); return; }
     title.textContent = 'Offense — ' + ordinal(GM.down) + ' & ' + (GM.spot+GM.dist>=100?'Goal':GM.dist);
+    const rd = ensureAIRead(), rl = document.getElementById('cs-read');
     side.textContent = coachSimPausedFor4th ? 'Coach Sim paused — your call' : 'you have the ball';
+    if(rl){ rl.innerHTML = rd ? '👀 <b>Shows</b> ' + readSummary(rd.show, 0).split(' · ').map(x => '<span>'+x+'</span>').join('') : ''; rl.style.display = rd ? '' : 'none'; }
     let st = '', s = '';
     if(GM.down === 4 && !isCoord()){
       const fgDist = (100-GM.spot)+17;
@@ -15550,7 +15677,7 @@ function playerLiveMechanic(){
 function playerAutoPlay(){
   if(busy || !GM || GM.over) return;
   busy = true;
-  const oc = aiOffCall(), dc = aiDefCall();
+  const oc = aiOffCall(), dc = takeDefCall();
   const res = resolvePlay(oc, dc);
   animatePlay(res, () => {
     applyPlay(res); busy = false; checkAITurn(); updateGameUI();
@@ -15606,7 +15733,7 @@ function renderPlayerOffenseCallsheet(){
   const oc = aiOffCall();
   if(OFF_PLAYS[oc].fam === 'run'){
     if(mech === 'rb'){
-      const dc = aiDefCall();
+      const dc = takeDefCall();
       livePlayState = buildRBPlayState(oc, dc);
       title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
       side.textContent = 'your read';
@@ -15618,7 +15745,7 @@ function renderPlayerOffenseCallsheet(){
     grid.innerHTML = '<button class="play st" onclick="playerRunHandoff(\''+oc+'\')">▶ Snap It<small>hand it off</small></button>';
     return;
   }
-  const dc = aiDefCall();
+  const dc = takeDefCall();
   if(mech === 'qb'){
     livePlayState = buildQBPlayState(oc, dc);
     title.textContent = 'Coach Calls: ' + OFF_PLAYS[oc].label;
@@ -15638,7 +15765,7 @@ function renderPlayerOffenseCallsheet(){
 function playerRunHandoff(oc){
   if(busy || !GM || GM.over) return;
   busy = true;
-  const dc = aiDefCall();
+  const dc = takeDefCall();
   const res = resolvePlay(oc, dc);
   animatePlay(res, () => {
     applyPlay(res); busy = false; checkAITurn(); updateGameUI();
@@ -17136,9 +17263,7 @@ function qbFormationPts(){
   const x0=xAt(GM.spot), mid=250, pts=[];
   for(let i=-2;i<=2;i++) pts.push([x0-12,mid+i*26]);
   [[x0-42,mid],[x0-62,mid+22],[x0-16,90],[x0-16,410],[x0-16,mid-66],[x0-14,mid+66]].forEach(q=>pts.push(q));
-  for(let i=-1.5;i<=1.5;i++) pts.push([x0+14,mid+i*30]);
-  for(let i=-1;i<=1;i++) pts.push([x0+48,mid+i*55]);
-  [[x0+22,95],[x0+22,405],[x0+105,mid-45],[x0+105,mid+45]].forEach(q=>pts.push(q));
+  defLookPts(curShowDc(), x0, mid).forEach(q => pts.push(q));
   return pts;
 }
 let qbLastKey = '';
