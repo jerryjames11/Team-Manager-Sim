@@ -992,6 +992,34 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 .ra-acts{display:flex;gap:2px;align-items:center}.ra-acts .btn.tiny{padding:2px 4px;font-size:10px;letter-spacing:0;white-space:nowrap}
 table.tbl.lt-tbl td,table.tbl.lt-tbl th{padding:3px 4px}
 .lt-tbl td:first-child{max-width:148px;overflow:hidden;text-overflow:ellipsis}.ra-acts .btn[disabled]{opacity:.38}
+.fc2-cb{display:inline-block;width:34px;height:4px;border-radius:2px;background:rgba(0,0,0,.35);vertical-align:middle;overflow:hidden;position:relative}.fc2-cb u{position:absolute;left:0;top:0;bottom:0;background:var(--gold)}
+.fc2-rd{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:11px}
+.fc2-rd button{background:none;border:none;color:var(--gold);font:800 13px Inter,sans-serif;padding:1px 9px;cursor:pointer}.fc2-rd button[disabled]{opacity:.3}
+.fc2-rd b{padding:2px 8px;background:color-mix(in srgb,var(--gold) 16%,transparent);white-space:nowrap}
+.fc2-wall{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;background:#ECE6D6;border-radius:9px;padding:4px;margin-bottom:5px}
+.fc2-t{position:relative;background:#FAF6EC;border:1px solid #D9CFB6;border-radius:5px;color:#1B1B1B;padding:2px 4px 3px;display:flex;flex-direction:column;gap:0;font-size:10px;cursor:pointer;min-width:0}
+.fc2-t.open{outline:2px solid #2a7fff;z-index:30}
+.fc2-t.you{border:2px solid #E3B21B;background:#FFF4C9;cursor:default}.fc2-t.clock{animation:fcpulse 1.2s infinite}
+.fc2-t.done{background:#EFEBE0;cursor:default}.fc2-t.void{opacity:.6;cursor:default}
+.fc2-n{display:flex;align-items:center;gap:3px;font-weight:800;font-size:9.5px;white-space:nowrap}.fc2-n i{font-style:normal;border-radius:3px;padding:0 3px;font-size:8.5px}
+.fc2-via{font-size:8px;color:#777;font-weight:600}
+.fc2-nm{font-weight:800;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc2-t.fog .fc2-nm{filter:blur(3.5px);color:#666}
+.fc2-p{display:flex;justify-content:space-between;color:#555;font-size:9.5px}.fc2-p b.hit{color:#1f8a4c;font-size:8px}.fc2-p b.miss{color:#b3462f;font-size:8px}
+.fc2-pop{display:none;position:absolute;top:calc(100% + 6px);left:-2px;width:236px;background:#FBF7EC;color:#222;border-radius:9px;box-shadow:0 10px 28px rgba(0,0,0,.55);padding:7px 9px;cursor:default;z-index:40}
+.fc2-pop.r{left:auto;right:-2px}
+.fc2-t.open .fc2-pop{display:block}
+.fc2-pop h4{font:800 11px Inter,sans-serif;display:flex;align-items:center;gap:5px;margin-bottom:3px}.fc2-pop h4 i{font-style:normal;border-radius:3px;padding:0 4px;font-size:9px}
+.fc2-pop .r{display:flex;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid #E5DCC6;font-size:10.5px}
+.fc2-pop .r .nn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fc2-pop .r a{color:#111}
+.fc2-pop .bb{width:44px;height:4px;background:#ddd;border-radius:2px;overflow:hidden}.fc2-pop .bb u{display:block;height:100%;background:#c0392b}
+.fc2-pop .why{color:#666;font-size:9.5px;margin:3px 0}
+.fc2-cols{grid-template-columns:1.45fr 1fr .85fr}
+.fc2-yp{display:flex;align-items:center;gap:6px;margin-bottom:3px}.fc2-yp b.disp{font-size:18px;color:var(--gold);line-height:1}
+.fc2-bb td,.fc2-bb th{padding:2px 4px !important}
+.fc2-li{display:flex;align-items:center;gap:6px;font-size:10.5px;padding:2px 0;border-bottom:1px solid var(--line)}.fc2-li .nn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc2:not(.fit-page) .fc2-cols{height:300px}
+@keyframes fcpulse{50%{box-shadow:0 0 0 3px rgba(227,178,27,.45)}}
 .dd-pop.wh{padding:0;width:270px;height:200px;max-height:none;overflow:hidden}
 .wh-band{position:absolute;left:5px;right:5px;top:5px;height:32px;border:1.5px solid var(--gold);border-radius:8px;background:rgba(255,212,71,.08);pointer-events:none;z-index:2}
 .wh-band:after{content:'FILTER';position:absolute;right:7px;top:9px;font:800 8px Inter,sans-serif;letter-spacing:.12em;color:var(--gold)}
@@ -11365,8 +11393,8 @@ function prospectsHTML(){
     '<div class="lt-filt"><button class="btn tiny" onclick="openModal(\'scoutinfo\')">ⓘ Costs'+(nNew?' · 📰':'')+'</button></div></div>';
   boardTabsHTML._filters = '';
   const btabs = boardTabsHTML(cls);
-  if(boardTab !== 'list') s += btabs;
-  if(boardTab === 'forecast') return s + forecastHTML(cls);
+  if(boardTab !== 'list' && boardTab !== 'forecast') s += btabs;
+  if(boardTab === 'forecast') return s + forecastHTML(cls, btabs);
   if(boardTab === 'tiers') return s + tiersHTML(cls);
   if(boardTab === 'map') return s + scoutMapHTML(cls);
   const prPos = posDDHTML(prospectsFilter||'ALL', 'setProsPos', (pos, sp) => { const l = cls.pool.filter(p => p.pos===pos && (sp===pos || p.spot===sp)); return {txt: l.length+' prospects'+(l.length?' · top media #'+Math.min(...l.map(p=>ranks[p.id])):'')}; }, cls.pool.length+' prospects', true);
@@ -11772,7 +11800,15 @@ function runForecast(cls){
 }
 function fcAvail(fc, slotIdx, pid){ return (fc.avail[slotIdx+':'+pid] || 0) / fc.N; }
 let fcRound = 0, boardTab = 'forecast', FC_LASTIDX = null;
-function forecastHTML(cls){
+function fcPopToggle(el, ev){
+  if(ev && ev.target.closest && ev.target.closest('.fc2-pop button')) return;
+  const was = el.classList.contains('open');
+  document.querySelectorAll('.fc2-t.open').forEach(x => x.classList.remove('open'));
+  if(!was) el.classList.add('open');
+}
+document.addEventListener('click', e => { if(!e.target.closest || !e.target.closest('.fc2-t')) document.querySelectorAll('.fc2-t.open').forEach(x => x.classList.remove('open')); }, true);
+function fcRoundStep(d){ fcRound = clamp(fcRound + d, 0, DRAFT_ROUNDS-1); render(); }
+function forecastHTML(cls, tabsHTML){
   const fc = runForecast(cls);
   const q = fc.q, fog = q < .3, conf = Math.round((0.4 + q*0.5)*100);
   const ps = currentCoach('PS'), cs = currentCoach('CS');
@@ -11781,60 +11817,88 @@ function forecastHTML(cls){
   const cur = G.phase === 'draft' ? Math.min(DRAFT_ROUNDS-1, Math.floor((G.draftPickIdx||0)/16)) : null;
   if(G.phase === 'draft' && FC_LASTIDX !== G.draftPickIdx){ fcRound = cur; FC_LASTIDX = G.draftPickIdx; }
   const pid2 = id => cls.pool.find(p => p.id === id) || (G.draftPool||[]).find(p => p.id === id);
-  let wall = '<div class="fc-tabs">' + Array.from({length:DRAFT_ROUNDS},(_,r)=>'<button class="'+(r===fcRound?'on':'')+'" onclick="fcRound='+r+';render()">Rd '+(r+1)+(cur===r?' •':'')+(fc.slots.some(s=>s.round===r+1&&s.team===G.userTeam)?' ★':'')+'</button>').join('') + '</div><div class="fc-wall">';
-  fc.slots.filter(s => s.round === fcRound+1).forEach(s => {
-    const t = s.team != null ? G.teams[s.team] : null, mine = s.team === G.userTeam;
-    const chip = t ? '<span class="fc-tm" style="background:'+t.c1+';color:'+(colorLuminance(t.c1)>.55?'#111':'#fff')+'">'+t.abbr+'</span>' : '<span class="fc-tm" style="background:#999">—</span>';
-    const traded = s.pickObj && s.pickObj.team !== s.orig ? '<span class="fc-via">via '+G.teams[s.orig].abbr+'</span>' : '';
-    const onClock = G.phase === 'draft' && s.idx === G.draftPickIdx;
-    if(s.made){
-      const projTop = G.draftProj && G.draftProj[s.idx];
-      const hit = projTop != null && projTop === s.made.pid;
-      s.made.pid && pid2(s.made.pid);
-      const nm = s.made.name.split(' ');
-      s && (wall += '<div class="fc-slot done'+(mine?' mine':'')+'"><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div><div class="fc-nm"><small>'+esc(nm[0])+'</small>'+esc(nm.slice(1).join(' '))+'</div><div class="fc-ps"><span>'+PL(s.made)+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJECTED':'SURPRISE')+'</b>':'')+'</div></div>');
+  const last = n => n.split(' ').slice(1).join(' ') || n;
+  const init = n => { const w = n.split(' '); return w.length > 1 ? w[0][0]+'. '+w.slice(1).join(' ') : n; };
+  const pc = a => a > 60 ? '#4cd07d' : a > 30 ? 'var(--gold)' : '#ff8a8a';
+  const confTip = 'Pro scout '+(ps?ps.name+' '+ps.rating:'none')+' reads other clubs. College scout '+(cs?cs.name+' '+cs.rating:'none')+' knows the class. '+fc.N+' simulated drafts.';
+  /* toolbar */
+  const mineIn = r => fc.slots.some(x => x.round === r+1 && x.team === G.userTeam);
+  let s = '<div class="lt-bar">'+(tabsHTML ? tabsHTML.replace('<div class="filterbar" style="margin:0 0 10px">','<div class="lt-tabs">') : '') +
+    '<div class="lt-filt"><span class="fz-pill" title="'+esc(confTip)+'" style="cursor:pointer" onclick="openModal(\'scoutinfo\')">Confidence <b>'+conf+'%</b> <span class="fc2-cb"><u style="width:'+conf+'%"></u></span> ⓘ</span>' +
+    '<span class="fc2-rd"><button onclick="fcRoundStep(-1)" '+(fcRound<=0?'disabled':'')+'>‹</button><b>Rd '+(fcRound+1)+(mineIn(fcRound)?' ★':'')+(cur===fcRound?' •':'')+'</b><button onclick="fcRoundStep(1)" '+(fcRound>=DRAFT_ROUNDS-1?'disabled':'')+'>›</button></span></div></div>';
+  /* wall */
+  let wall = '<div class="fc2-wall">';
+  const slots = fc.slots.filter(x => x.round === fcRound+1);
+  slots.forEach((sl, k) => {
+    const t = sl.team != null ? G.teams[sl.team] : null, mine = sl.team === G.userTeam;
+    const chip = t ? '<i style="background:'+t.c1+';color:'+(colorLuminance(t.c1)>.55?'#111':'#fff')+'">'+t.abbr+'</i>' : '<i style="background:#999">-</i>';
+    const via = sl.pickObj && sl.pickObj.team !== sl.orig ? '<span class="fc2-via">via '+G.teams[sl.orig].abbr+'</span>' : '';
+    const onClock = G.phase === 'draft' && sl.idx === G.draftPickIdx;
+    const head = '<div class="fc2-n">#'+(sl.idx+1)+' '+(mine?'<i style="background:var(--gold);color:#14100a">YOU</i>':chip)+via+'</div>';
+    const side = (k % 8) >= 5 ? ' r' : '';
+    if(sl.made){
+      const projTop = G.draftProj && G.draftProj[sl.idx], hit = projTop != null && projTop === sl.made.pid;
+      wall += '<div class="fc2-t done'+(mine?' you':'')+'">'+head+'<div class="fc2-nm">'+esc(init(sl.made.name))+'</div><div class="fc2-p"><span>'+sl.made.spot+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJ':'SURPRISE')+'</b>':'')+'</div></div>';
       return;
     }
-    if(!t){ wall += '<div class="fc-slot void"><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div><div class="fc-nm sub">Forfeited</div></div>'; return; }
+    if(!t){ wall += '<div class="fc2-t void">'+head+'<div class="fc2-nm sub">Forfeited</div></div>'; return; }
     if(mine){
-      const best = fc.cand.filter(p => fcAvail(fc, s.idx, p.id) >= .45).sort((a,b) => a._myRank - b._myRank)[0];
-      wall += '<div class="fc-slot mine'+(onClock?' clock':'')+'"><div class="fc-pk"><span>#'+(s.idx+1)+'</span><span class="fc-you">YOU</span></div>'+traded+'<div class="fc-nm" style="color:#8C6A1E;font-style:normal"><small>'+(onClock?'On the clock':'Best likely left')+'</small>'+(best?esc(best.name.split(' ').slice(1).join(' '))+' <span style="font-size:.75em">'+Math.round(fcAvail(fc,s.idx,best.id)*100)+'%</span>':'?')+'</div><div class="fc-ps"><span>'+(best?best.spot:'')+'</span></div></div>';
+      const best = fc.cand.filter(p => fcAvail(fc, sl.idx, p.id) >= .45).sort((a,b) => a._myRank - b._myRank)[0];
+      wall += '<div class="fc2-t you'+(onClock?' clock':'')+'">'+head+'<div class="fc2-p" style="color:#8a6a00"><span>'+(onClock?'On the clock':'Best likely')+'</span></div><div class="fc2-nm" style="color:#8a6a00">'+(best?esc(last(best.name))+' '+best.spot:'?')+'</div></div>';
       return;
     }
-    const pr = fc.proj[s.idx] || [];
-    const p0 = pr[0] ? pid2(pr[0].pid) : null, p1 = pr[1] ? pid2(pr[1].pid) : null;
-    const pct = pr[0] ? Math.round(pr[0].p*100) : 0;
-    const nm = p0 ? p0.name.split(' ') : ['',''];
-    wall += '<div class="fc-slot proj'+(fog?' fog':'')+'"'+(draftLive()&&s.idx>=G.draftPickIdx?' style="cursor:pointer" title="Call '+t.abbr+' about this pick" onclick="openTradeUp('+s.idx+')"':'')+'><div class="fc-pk"><span>#'+(s.idx+1)+'</span>'+chip+'</div>'+traded+
-      '<div class="fc-nm"><small>'+esc(nm[0])+'</small>'+esc(nm.slice(1).join(' '))+'</div>' +
-      '<div class="fc-ps"><span>'+(p0?p0.spot:'')+(fog&&fc.needs[s.team]?' · need '+fc.needs[s.team]:'')+'</span><span>'+pct+'%</span></div>' +
-      (p1 && !fog ? '<div class="fc-alt">or '+esc(p1.name.split(' ').slice(1).join(' '))+' '+p1.spot+' '+Math.round(pr[1].p*100)+'%</div>' : '') +
-      '<div class="fc-bar"><i style="width:'+pct+'%;background:'+(pct>45?'#2F8F57':pct>25?'#C99A2E':'#B65A4B')+'"></i></div></div>';
+    const pr = fc.proj[sl.idx] || [];
+    const p0 = pr[0] ? pid2(pr[0].pid) : null, pct = pr[0] ? Math.round(pr[0].p*100) : 0;
+    let pop = '<div class="fc2-pop'+side+'"><h4>#'+(sl.idx+1)+' '+chip+' could take</h4>';
+    if(fog){
+      const byPos = {}; pr.forEach(x => { const pp = pid2(x.pid); if(pp) byPos[pp.spot] = (byPos[pp.spot]||0) + x.p; });
+      Object.entries(byPos).sort((a,b) => b[1]-a[1]).slice(0,4).forEach(([sp, v]) => { const a = Math.round(v*100); pop += '<div class="r"><span class="nn"><b>'+sp+'</b> prospect</span><span class="bb"><u style="width:'+Math.min(100,a*3)+'%"></u></span><b>'+a+'%</b></div>'; });
+      pop += '<div class="why">Hire a pro scout to see names.</div>';
+    } else {
+      pr.slice(0,4).forEach(x => { const pp = pid2(x.pid); if(!pp) return; const a = Math.round(x.p*100);
+        pop += '<div class="r"><span class="nn"><a href="#" onclick="event.preventDefault();openModal(\'prospect\','+pp.id+')"><b>'+esc(init(pp.name))+'</b></a> '+pp.spot+'</span><span class="bb"><u style="width:'+Math.min(100,a*3)+'%"></u></span><b>'+a+'%</b></div>'; });
+      pop += '<div class="why">'+(fc.needs[sl.team]?t.abbr+' needs: '+fc.needs[sl.team]+'. ':'')+fc.N+' sims.</div>';
+    }
+    if(draftLive() && sl.idx >= G.draftPickIdx) pop += '<button class="btn tiny primary" onclick="openTradeUp('+sl.idx+')">📞 Call '+t.abbr+'</button>';
+    pop += '</div>';
+    wall += '<div class="fc2-t'+(fog?' fog':'')+'" onclick="fcPopToggle(this,event)">'+head+'<div class="fc2-nm">'+(p0?esc(init(p0.name)):'')+'</div><div class="fc2-p"><span>'+(p0?p0.spot:'')+'</span><span>'+pct+'%</span></div>'+pop+'</div>';
   });
   wall += '</div>';
-  let side = '<div class="panel"><div class="hd disp" style="font-size:13px;display:flex;justify-content:space-between">Forecast confidence <span class="sub" style="text-transform:none;letter-spacing:0">'+conf+'%</span></div>' +
-    '<div style="height:7px;background:#202A3C;border-radius:4px;overflow:hidden;margin:6px 0"><i style="display:block;height:100%;width:'+conf+'%;background:linear-gradient(90deg,#8C6A1E,var(--gold))"></i></div>' +
-    '<p class="sub" style="font-size:11px">Pro scout '+(ps?esc(ps.name)+' '+ps.rating:'<b style="color:var(--red)">none</b>')+' reads other clubs. College scout '+(cs?esc(cs.name)+' '+cs.rating:'<b style="color:var(--red)">none</b>')+' knows the class.'+(fog?' Hire scouts to see names on other clubs\' slots.':'')+' '+fc.N+' simulated drafts.</p></div>';
+  /* your pick + big board */
+  let A = '<div class="fit-card">';
   if(next){
     const onClk = G.phase === 'draft' && next.idx === G.draftPickIdx;
-    const list = fc.cand.map(p => ({p, a: fcAvail(fc, next.idx, p.id)})).filter(x => x.a > .03).sort((a,b) => a.p._myRank - b.p._myRank).slice(0, 9);
-    side += '<div class="panel"><div class="hd disp" style="font-size:13px">Available at #'+(next.idx+1)+' <span class="sub" style="text-transform:none;letter-spacing:0">Rd '+next.round+'</span></div>' +
-      (list.length ? list.map(x => { const a = Math.round(x.a*100), hide = fog && x.a < .9;
-        return '<div class="fc-av"><span>'+(hide?'<b>'+x.p.spot+' prospect</b>':'<a href="#" onclick="openModal(\'prospect\','+x.p.id+');return false" style="color:var(--chalk);font-weight:700">'+esc(x.p.name)+'</a> <span class="sub">'+x.p.spot+'</span>')+'</span><span class="sub">'+(x.p.scoutLo===x.p.scoutHi?x.p.scoutLo:x.p.scoutLo+'–'+x.p.scoutHi)+'</span><div class="fc-b"><i style="width:'+a+'%;background:'+(a>60?'var(--green)':a>30?'var(--gold)':'var(--red)')+'"></i></div><b style="text-align:right">'+(onClk?'<button class="btn tiny primary" onclick="userDraftPick('+x.p.id+')">Draft</button>':a+'%')+'</b></div>'; }).join('') : '<p class="sub">Nobody on your board projects to last.</p>') + '</div>';
+    const best = fc.cand.filter(p => fcAvail(fc, next.idx, p.id) >= .45).sort((a,b) => a._myRank - b._myRank)[0];
+    A += '<div class="fc2-yp"><span class="sub">YOUR PICK</span><b class="disp">#'+(next.idx+1)+'</b><span class="sub" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(onClk?'<b style="color:var(--gold)">On the clock</b>':best?'Best likely <b style="color:var(--chalk)">'+esc(last(best.name))+' '+best.spot+'</b> · '+Math.round(fcAvail(fc,next.idx,best.id)*100)+'%':'Rd '+next.round)+'</span>' +
+      (G.mode!=='player' && next.idx > 0 ? '<button class="btn tiny primary" onclick="'+(draftLive()?'openTradeUp('+(next.idx-1)+')':'openPage(\'gm\');setGMTab(\'trades\')')+'">Trade up</button>' : '')+'</div>';
+    const board = fc.cand.slice().sort((a,b) => a._myRank - b._myRank);
+    A += '<div class="fit-box"><table class="tbl lt-tbl fc2-bb"><tr><th>#</th><th>Your board</th><th>Pos</th><th>Grade</th><th style="text-align:right">'+(onClk?'':'Lasts')+'</th></tr>' +
+      board.map((p, i) => { const a = Math.round(fcAvail(fc, next.idx, p.id)*100);
+        return '<tr><td class="sub">'+(i+1)+'</td><td><a href="#" onclick="event.preventDefault();openModal(\'prospect\','+p.id+')" style="color:var(--chalk);font-weight:600">'+esc(p.name)+'</a></td><td><b>'+p.spot+'</b></td><td style="color:var(--gold);font-weight:800">'+(p.scoutLo===p.scoutHi?p.scoutLo:p.scoutLo+'-'+p.scoutHi)+'</td><td style="text-align:right;font-weight:800;color:'+pc(a)+'">'+(onClk?'<button class="btn tiny primary" onclick="userDraftPick('+p.id+')">Draft</button>':a+'%')+'</td></tr>'; }).join('') + '</table></div>';
+  } else A += '<div class="cp-h">Your pick</div><div class="sub">No picks left this draft.</div>';
+  A += '</div>';
+  /* available */
+  let B = '<div class="fit-card"><div class="cp-h">Available'+(next?' at #'+(next.idx+1):'')+'<em>odds he lasts</em></div>';
+  if(next){
+    const list = fc.cand.map(p => ({p, a: fcAvail(fc, next.idx, p.id)})).filter(x => x.a > .03).sort((a,b) => a.p._myRank - b.p._myRank).slice(0, 14);
+    B += '<div class="fit-box">' + (list.length ? list.map(x => { const a = Math.round(x.a*100), hide = fog && x.a < .9;
+      return '<div class="fc2-li"><span class="nn">'+(hide?'<b>'+x.p.spot+'</b> prospect':'<a href="#" onclick="event.preventDefault();openModal(\'prospect\','+x.p.id+')" style="color:var(--chalk);font-weight:600">'+esc(init(x.p.name))+'</a> <span class="sub">'+x.p.spot+'</span>')+'</span><span class="sub">'+(x.p.scoutLo===x.p.scoutHi?x.p.scoutLo:x.p.scoutLo+'-'+x.p.scoutHi)+'</span><b style="color:'+pc(a)+'">'+a+'%</b></div>'; }).join('') : '<p class="sub">Nobody on your board projects to last.</p>') + '</div>';
   }
+  B += '</div>';
+  /* targets */
   const watch = (cls.watch||[]);
-  const nextThree = mySlots.slice(0,3);
-  side += '<div class="panel"><div class="hd disp" style="font-size:13px">★ Targets <span class="sub" style="text-transform:none;letter-spacing:0">chance he lasts</span></div>';
-  if(!watch.length) side += '<p class="sub" style="font-size:12px">Star prospects on their card or the Tiers tab to track them here.</p>';
-  else side += '<div class="fc-trk sub"><span></span>'+nextThree.map(s=>'<span>#'+(s.idx+1)+'</span>').join('')+'</div>' + watch.map(id => {
-    const p = pid2(id); const gone = (G.draftLog||[]).find(d => d.pid === id);
+  let C = '<div class="fit-card"><div class="cp-h">★ Targets<em>'+(watch.length?watch.length+' tracked':'')+'</em></div><div class="fit-box">';
+  if(!watch.length) C += '<p class="sub" style="font-size:11px">Star prospects on their card or the Tiers tab to track them here.</p>';
+  else C += watch.map(id => {
+    const p = pid2(id), gone = (G.draftLog||[]).find(d => d.pid === id);
     if(!p && !gone) return '';
     const nm = p ? p.name : gone.name;
-    return '<div class="fc-trk"><span><b>'+esc(nm)+'</b></span>' + (gone ? '<span class="c" style="grid-column:span 3;background:#3A1E1E;color:#FF9B9B">Taken #'+gone.pickNum+' by '+G.teams[gone.team].abbr+'</span>'
-      : nextThree.map(s => { const a = Math.round(fcAvail(fc, s.idx, id)*100); return '<span class="c" style="background:'+(a>60?'#173B26':a>30?'#3A2E14':'#3A1E1E')+';color:'+(a>60?'#7FE0A1':a>30?'var(--gold)':'#FF9B9B')+'">'+a+'%</span>'; }).join('')) + '</div>';
+    if(gone) return '<div class="fc2-li"><span class="nn">★ '+esc(init(nm))+'</span><b style="color:#ff8a8a;font-size:10px">#'+gone.pickNum+' '+G.teams[gone.team].abbr+'</b></div>';
+    const a = next ? Math.round(fcAvail(fc, next.idx, id)*100) : 0;
+    return '<div class="fc2-li"><span class="nn">★ <a href="#" onclick="event.preventDefault();openModal(\'prospect\','+p.id+')" style="color:var(--chalk);font-weight:600">'+esc(init(nm))+'</a> <span class="sub">'+p.spot+'</span></span><b style="color:'+pc(a)+'">'+a+'%</b></div>';
   }).join('');
-  side += '</div>';
-  return '<div class="fc-wrap"><div>'+wall+'</div><div class="fc-side">'+side+'</div></div>';
+  C += '</div></div>';
+  return '<div class="'+(tabsHTML?'fit-page ':'')+'fc2">'+s+wall+'<div class="fit-cols fit-fix fc2-cols">'+A+B+C+'</div></div>';
 }
 /* ---------- tiers + media mock ---------- */
 function setTier(id, t){ const cls = ensureDraftClassFor(); cls.tiers = cls.tiers || {}; if(t) cls.tiers[id] = t; else delete cls.tiers[id]; save(); render(); }
