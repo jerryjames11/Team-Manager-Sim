@@ -1020,6 +1020,15 @@ table.tbl.lt-tbl td,table.tbl.lt-tbl th{padding:3px 4px}
 .fc2-li{display:flex;align-items:center;gap:6px;font-size:10.5px;padding:2px 0;border-bottom:1px solid var(--line)}.fc2-li .nn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fc2:not(.fit-page) .fc2-cols{height:300px}
 @keyframes fcpulse{50%{box-shadow:0 0 0 3px rgba(227,178,27,.45)}}
+.rk-tl{display:flex;gap:4px;margin:6px 0}.rk-tl div{flex:1;border:1px solid var(--line);border-radius:6px;padding:4px 5px;font-size:10px;text-align:center;color:var(--muted)}.rk-tl div b{display:block;color:var(--chalk);font-size:11.5px}.rk-tl .done{opacity:.55}.rk-tl .now{border-color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);color:var(--gold)}.rk-tl .opt{border-style:dashed}
+.dd-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:8px;padding:6px 9px;margin-bottom:8px;border:1px solid var(--gold);border-radius:11px;background:color-mix(in srgb,var(--th-deep) 88%,#000);box-shadow:0 6px 16px rgba(0,0,0,.45)}
+.dd-clk{display:flex;flex-direction:column;line-height:1.15;flex:0 0 auto}.dd-clk b{font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase}.dd-clk span{font-size:10px;color:var(--muted)}
+.dd-btns{display:flex;gap:4px;flex:0 0 auto}.dd-btns .btn.tiny{padding:4px 9px;font-size:11px;white-space:nowrap}
+.dd-tick{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:10.5px;color:var(--muted);border-left:1px solid var(--line);padding-left:8px}.dd-tick b{color:var(--chalk)}
+.dd-gone td{opacity:.45}.dd-gone td.st{text-decoration:line-through}
+.dd-tk{display:inline-block;font:800 9px Inter,sans-serif;border-radius:5px;padding:1px 6px;background:rgba(232,52,63,.25);color:#ff9a9a;white-space:nowrap}.dd-tk.you{background:color-mix(in srgb,var(--gold) 25%,transparent);color:var(--gold)}
+.dd-gone td:last-child{opacity:1}
+#fieldwrap{touch-action:none}
 .dd-pop.wh{padding:0;width:270px;height:200px;max-height:none;overflow:hidden}
 .wh-band{position:absolute;left:5px;right:5px;top:5px;height:32px;border:1.5px solid var(--gold);border-radius:8px;background:rgba(255,212,71,.08);pointer-events:none;z-index:2}
 .wh-band:after{content:'FILTER';position:absolute;right:7px;top:9px;font:800 8px Inter,sans-serif;letter-spacing:.12em;color:var(--gold)}
@@ -1574,6 +1583,95 @@ const DRAFT_TIERS = [
   {label:'Rotational Value', min:66, max:78},
   {label:'Camp Battles', min:58, max:70}
 ];
+/* rookie scale: share of cap by draft slot. Game picks map onto the real 32-team order within each round */
+const RK_ANCH = [[1,.045],[2,.043],[5,.034],[8,.027],[12,.022],[16,.018],[24,.015],[32,.0133],[33,.0107],[48,.008],[64,.0062],[65,.0052],[80,.0047],[96,.0043],[97,.0040],[128,.0039]];
+function rkShare(overall){
+  const rd = Math.floor((overall-1)/16), k = (overall-1) % 16;
+  const real = rd >= 3 ? 97 + rd*8 + k/2 : rd*32 + 1 + k*(31/15);
+  for(let i = 1; i < RK_ANCH.length; i++){ const a = RK_ANCH[i-1], b = RK_ANCH[i];
+    if(real <= b[0]) return a[1] + (b[1]-a[1]) * (real - a[0]) / Math.max(1, b[0]-a[0]); }
+  return .0039;
+}
+function rkSalary(overall){ return Math.max(minSalary(), Math.round(capNow() * rkShare(overall) * 10) / 10); }
+function rkSchedule(overall){ const s0 = rkSalary(overall); return [0,1,2,3].map(i => Math.round(s0 * Math.pow(1.05, i) * 10) / 10); }
+function rkSeasonsDone(p){ return p.rk ? G.year - p.rk.year + (G.phase === 'offseason' ? 1 : 0) : 99; }
+function rkLocked(p){ return !!(p.rk && rkSeasonsDone(p) < 3); }
+function rkLockYear(p){ return p.rk ? p.rk.year + 2 : 0; }
+function rkOptionPending(p){ return !!(p.rk && p.rk.round === 1 && p.rk.opt == null && rkSeasonsDone(p) >= 3 && p.years >= 1); }
+function rkOptionSalary(p){
+  const all = []; G.teams.forEach(t => t.roster.forEach(x => { if(x.spot === p.spot && x !== p) all.push(x.salary); }));
+  all.sort((a,b) => b - a); const top = all.slice(0, 12);
+  const avg = top.length ? top.reduce((a,b) => a+b, 0) / top.length : marketFor(p);
+  const pb = (p.awards||[]).some(a => /Pro Bowl|All-Pro/i.test(a));
+  return Math.round(avg * (pb ? 1.15 : 1) * 10) / 10;
+}
+function rkTag(p){ return p.rk ? '<span class="tag" style="background:rgba(86,204,242,.18);color:#8fdcff;font-size:8.5px" title="Rookie deal · '+p.rk.year+' Rd '+p.rk.round+' #'+p.rk.pick+(rkLocked(p)?' · locked until after the '+rkLockYear(p)+' season':'')+'">RK · R'+p.rk.round+' #'+p.rk.pick+'</span>' : ''; }
+function rkApplyOption(pid, pick){
+  const hit = findPlayer(pid); if(!hit) return; const p = hit.p;
+  if(!rkOptionPending(p)) { closeModal(); return; }
+  if(pick){ const sal = rkOptionSalary(p), c = contractOf(p); p.years++; c.base.push(sal); p.rk.opt = 'picked'; p.rk.optSal = sal; logEv(p, 'ct', '5th-year option picked up · '+money(sal)+' in '+(G.year + p.years - (G.phase==='offseason'?0:1)), 0); }
+  else { p.rk.opt = 'declined'; bumpRel(p, 'coach', -4); logEv(p, 'ct', '5th-year option declined', 0); }
+  save(); closeModal(); rkMaybeAsk();
+}
+function rkMaybeAsk(){
+  if(!G || G.mode === 'player' || modalView) return;
+  const p = meT().roster.find(rkOptionPending);
+  if(p && G.rkAsked !== G.year+':'+p.id){ G.rkAsked = G.year+':'+p.id; openModal('rkoption', p.id); }
+}
+function rkAutoOptions(userToo){
+  G.teams.forEach(t => { if(t.idx === G.userTeam && !userToo) return; t.roster.forEach(p => { if(!rkOptionPending(p)) return;
+    if(t.idx !== G.userTeam && p.rating >= 80){ const sal = rkOptionSalary(p), c = contractOf(p); p.years++; c.base.push(sal); p.rk.opt = 'picked'; p.rk.optSal = sal; }
+    else { p.rk.opt = 'declined'; if(t.idx === G.userTeam){ logEv(p, 'ct', '5th-year option declined (deadline passed)', 0); try{ gmFeed('Deadline passed. '+p.name+' 5th-year option declined.'); }catch(e){} } } }); });
+}
+function rkOptionHTML(pid){
+  const hit = findPlayer(pid); if(!hit) return '<p class="sub">Player not found.</p>';
+  const p = hit.p, sal = rkOptionSalary(p), mk = marketFor(p), lastYr = G.year + p.years - (G.phase === 'offseason' ? 1 : 0);
+  return '<p class="sub" style="margin-bottom:8px"><b style="color:var(--chalk);font-size:14px">'+esc(p.name)+'</b> · '+PL(p)+' · '+p.age+' · <b style="color:var(--gold)">'+p.rating+'</b> OVR · Rd 1 #'+p.rk.pick+' ('+p.rk.year+') · '+rkSeasonsDone(p)+' seasons done · now '+money(p.salary)+'</p>' +
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">' +
+    '<div class="ct2-card" style="border-color:var(--gold)"><b>Pick up option</b><div class="sub" style="font-size:11px">Keeps him through '+(lastYr+1)+'.<br>'+(lastYr+1)+' salary <b style="color:var(--gold)">'+money(sal)+'</b> (avg of top 12 at '+p.spot+'). Guaranteed.</div><button class="btn primary" style="margin-top:auto" onclick="rkApplyOption('+p.id+',true)">Pick up</button></div>' +
+    '<div class="ct2-card"><b>Decline</b><div class="sub" style="font-size:11px">'+lastYr+' is his last year. Free agent after.<br>Saves cap later. He may be unhappy.</div><button class="btn" style="margin-top:auto" onclick="rkApplyOption('+p.id+',false)">Decline</button></div>' +
+    '<div class="ct2-card"><b>Extend now</b><div class="sub" style="font-size:11px">He\'s eligible.<br>Market: <b style="color:var(--chalk)">~'+money(mk)+'/yr</b>.</div><button class="btn" style="margin-top:auto" onclick="closeModal();openContract(\'extend\','+p.id+')">Open builder</button></div></div>' +
+    '<p class="sub" style="margin-top:8px;font-size:11px">Option price = average of the top players at his spot. Pro Bowlers cost 15% more. Undecided by training camp = declined.</p>';
+}
+function rkScaleHTML(){
+  const rows = [[1,'#1'],[5,'#5'],[8,'#8'],[16,'#16 · end Rd 1'],[17,'Rd 2 top'],[32,'Rd 2 end'],[33,'Rd 3 top'],[48,'Rd 3 end'],[49,'Rd 4-6']];
+  return '<p class="sub" style="margin-bottom:6px">Pay is set by draft slot and grows with the cap (now '+money(capNow())+'). 4-year deals, +5% a year. First-rounders carry a 5th-year team option. No extension, renegotiation, demand or holdout until 3 seasons are done.</p>' +
+    '<table class="tbl"><tr><th>Slot</th><th>Year 1</th><th>4-yr total</th><th>% of cap</th></tr>' +
+    rows.map(r => { const sc = rkSchedule(r[0]); return '<tr><td>'+r[1]+'</td><td>'+money(sc[0])+'</td><td>'+money(Math.round(sc.reduce((a,b)=>a+b,0)*10)/10)+'</td><td>'+(rkShare(r[0])*100).toFixed(1)+'%</td></tr>'; }).join('') + '</table>';
+}
+function rkNoticeHTML(){
+  const N = G.rkNotice || {list:[]};
+  return '<p class="sub" style="margin-bottom:6px">Your drafted players now follow the rookie slot scale. 4-year deals. No new deal until 3 seasons are done.</p>' +
+    '<table class="tbl">' + (N.list.length ? N.list.map(x => '<tr><td>'+esc(x.name)+' <span class="sub">'+x.pos+' · R'+x.round+' #'+x.pick+'</span></td><td style="text-align:right"><s class="sub">'+money(x.old)+'</s> → <b>'+money(x.now)+'</b></td></tr>').join('') : '<tr><td class="sub">No drafted players on rookie deals.</td></tr>') +
+    '<tr><td><b>Cap room change</b></td><td style="text-align:right;font-weight:800;color:'+(N.freed>=0?'var(--green)':'var(--red)')+'">'+(N.freed>=0?'+':'')+money(N.freed)+'</td></tr>' +
+    (N.holdouts && N.holdouts.length ? '<tr><td><b>Holdouts ended</b></td><td style="text-align:right">'+N.holdouts.map(esc).join(', ')+(N.holdouts.length===1?' reports':' report')+' · morale −5</td></tr>' : '') + '</table>' +
+    '<button class="btn primary" style="margin-top:10px" onclick="G.rkNoticeSeen=1;save();closeModal()">Got it</button>';
+}
+/* one-time: move every current rookie deal onto the slot scale */
+function rkMigrate(){
+  if(!G || !G.teams || G.rkV2) return;
+  G.rkV2 = 1;
+  const notice = {list:[], freed:0, holdouts:[]};
+  G.teams.forEach(t => t.roster.forEach(p => {
+    if(p.rk) return;
+    const h = p.history || []; let di = -1, m = null;
+    for(let i = h.length - 1; i >= 0; i--){ const mm = /Drafted Rd (\d+) \(pick (\d+)\)/.exec(h[i].t||''); if(mm){ di = i; m = mm; break; } }
+    if(!m) return;
+    if(h.slice(di+1).some(e => e.k === 'ct' && /Extended|Signed|Re-signed|re-sign|extension|tag/i.test(e.t||''))) return;
+    if(p.years < 1) return;
+    const round = +m[1], pick = +m[2], year = h[di].y;
+    p.rk = {year, round, pick, opt:null};
+    const sched = rkSchedule(pick), done = Math.max(0, rkSeasonsDone(p) - (G.phase === 'offseason' ? 1 : 0));
+    const yrsLeft = Math.max(1, 4 - done);
+    const old = p.salary, c = contractOf(p);
+    p.years = yrsLeft; p.contract = { base: sched.slice(4 - yrsLeft), bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0 };
+    p.salary = p.contract.base[0];
+    if(rkLocked(p) && (p.demand || p.holdout)){ if(p.holdout && t.idx === G.userTeam) notice.holdouts.push(p.name); p.demand = null; p.holdout = false; p.holdoutWeeks = 0; bumpRel(p, 'coach', -5); }
+    if(t.idx === G.userTeam){ notice.list.push({name:p.name, pos:p.spot, round, pick, old, now:p.salary}); notice.freed += old - p.salary; }
+  }));
+  notice.freed = Math.round(notice.freed*10)/10;
+  G.rkNotice = notice; G.rkNoticeSeen = notice.list.length ? 0 : 1;
+}
 const ROOKIE_SALARY = [ {min:6,max:8}, {min:3,max:4.5}, {min:1.5,max:2.5}, {min:0.8,max:1.5}, {min:0.7,max:1.1}, {min:0.6,max:0.9} ]; // by round, $M/yr
 function rookieSalaryFor(round){
   const s = ROOKIE_SALARY[round-1] || ROOKIE_SALARY[ROOKIE_SALARY.length-1];
@@ -1701,10 +1799,16 @@ let modalBack = null;  // {view, arg} of a modal opened from within another moda
 /* =====================================================
    PLAYERS, ROSTERS, CONTRACTS, FREE AGENCY
    ===================================================== */
-function salaryFor(rating, pos, age){
-  let base = Math.pow(Math.max(0,(rating-66))/9, 2.4) * POS_MULT[pos];
+/* top-of-market as a share of the cap, from real top deals (2026) */
+const MKT_TOP = {QB:.20, WR:.14, CB:.103, OL:.10, DL:.13, LB:.08, S:.084, RB:.069, TE:.064, K:.018, P:.015, LS:.008};
+const MKT_SPOT = {LE:.155, RE:.155, DT:.11, LT:.10, RT:.088, LG:.07, RG:.07, C:.065, OLB:.10, MLB:.07};
+function minSalary(){ return Math.round(capNow() * .0039 * 10) / 10; }
+function salaryFor(rating, pos, age, spot){
+  const top = (spot && MKT_SPOT[spot]) || MKT_TOP[pos] || .05;
+  const f = Math.pow(clamp((rating - 66) / 33, 0, 1.05), 1.8);
+  let base = capNow() * top * f;
   if(age >= 30) base *= .85;
-  return Math.max(0.7, Math.round(base*10)/10);
+  return Math.max(minSalary(), Math.round(base*10)/10);
 }
 /* ---------- coach generation & effects ---------- */
 /* ---------- weekly coach recommendations ---------- */
@@ -2241,7 +2345,7 @@ function makePlayer(pos, rating, age, years, spot){
     years: years != null ? years : RI(1,3),
     salary: 0, injWeeks: 0, trained: 0, dressed: true
   };
-  p.salary = salaryFor(rating, pos, age);
+  p.salary = salaryFor(rating, pos, age, p.spot);
   ensureBio(p);
   p.history.push({y: G ? G.year : 0, k:'move', t:'Entered the league', d:0});
   return p;
@@ -2258,9 +2362,9 @@ function makeRoster75(tier){
   // every club starts legal: scale salaries to leave 8–20% cap room
   const pr = roster.reduce((s,p) => s + p.salary, 0);
   const target = capNow() * R(.80, .92);
-  if(pr > target){
-    const f = target / pr;
-    roster.forEach(p => p.salary = Math.max(0.7, Math.round(p.salary*f*10)/10));
+  if(pr > target || pr < target * .9){
+    const f = pr > target ? target / pr : Math.min(1.8, target / pr);
+    roster.forEach(p => p.salary = Math.max(minSalary(), Math.round(p.salary*f*10)/10));
   }
   return roster;
 }
@@ -2653,6 +2757,7 @@ function ctAskApy(p, mode){
 let cDraft = null;
 function ctPlayer(pid){ return G.fa.find(x => x.id === pid) || meT().roster.find(x => x.id === pid); }
 function openContract(mode, pid){
+  if(mode === 'extend'){ const h = findPlayer(pid); if(h && rkLocked(h.p)){ alert('Rookie deal. '+h.p.name+' can\'t extend until after the '+rkLockYear(h.p)+' season.'); return; } }
   const p = ctPlayer(pid); if(!p) return;
   if(mode === 'extend' && p.years <= 1) mode = 'resign';
   if(mode === 'extend' && p.contractYear && G.year - p.contractYear < 1 && !p.demand){ alert(p.name+' just signed. His camp wants a year before revisiting terms.'); return; }
@@ -2797,6 +2902,7 @@ function releaseHTML(pid){
 }
 /* ---------- restructures ---------- */
 function rsEligible(p){
+  if(p.rk && rkLocked(p)) return 'Rookie deal. Locked until after the '+rkLockYear(p)+' season.';
   if(p.years < 2) return 'Needs 2+ years left on his deal.';
   if(p.contractYear && G.year - p.contractYear < 1) return 'Just signed. Wait a year.';
   if(p.rsYear === G.year) return 'Already restructured this year.';
@@ -3794,9 +3900,9 @@ function statMult(p){
   if(!bench) return 1;
   const score = (p.lastScore || 0) + statScore(p);
   if(score <= 0) return 1;
-  return clamp(.9 + .3 * (score/bench - 1), .85, 1.3);
+  return clamp(.9 + .3 * (score/bench - 1), .85, 1.2);
 }
-function marketFor(p, ageBump){ return Math.round(salaryFor(p.rating, p.pos, p.age + (ageBump||0)) * statMult(p) * 10) / 10; }
+function marketFor(p, ageBump){ return Math.round(salaryFor(p.rating, p.pos, p.age + (ageBump||0), p.spot) * statMult(p) * 10) / 10; }
 function bumpDev(p, hot){
   if(!hot || Math.random() > .55) return false;
   p.devPts = (p.devPts||0) + 1;
@@ -4512,6 +4618,7 @@ function seasonEndFanEffects(){
   maybeOfferDeals();
 }
 function advanceToTag(){
+  try { rkAutoOptions(false); } catch(e){ console.error('rk options', e); }
   try { if(G.schedule) { aiCoachCarousel(); coordSeasonReview(); } } catch(e){ console.error('carousel', e); }
   // archive the season that just finished — schedule, results, playoffs, and final standings —
   // before anything below resets team records or clears G.schedule/G.results/G.playoffs
@@ -4745,7 +4852,7 @@ function draftProspect(prospectId, teamIdx, pickObj){
   const rook = makePlayer(pr.pos, pr.trueRating, pr.age, 3, pr.spot);
   rook.name = pr.name;
   if(pr.scheme) rook.scheme = pr.scheme;
-  rook.salary = rookieSalaryFor(round);
+  { const ov = G.draftPickIdx + 1, sc = rkSchedule(ov); rook.salary = sc[0]; rook.years = 4; rook.contract = { base: sc, bonusProration: 0, bonusYearsLeft: 0, totalBonus: 0 }; rook.rk = {year: G.year, round, pick: ov, opt: null}; }
   rook.home = pr.home; rook.college = pr.college; rook.hgt = pr.hgt;
   rook.history = [{y:G.year, k:'move', t:'Drafted Rd '+round+' (pick '+(G.draftPickIdx+1)+') by '+t.city, d:0}];
   if(pr.pot != null){
@@ -4758,7 +4865,8 @@ function draftProspect(prospectId, teamIdx, pickObj){
   }
   rook.draftInfo = { year:G.year, round, pick:G.draftPickIdx+1, team:teamIdx, lo:pr.scoutLo, hi:pr.scoutHi, media:pr.mediaMid!=null?Math.round(pr.mediaMid):null, true:pr.trueRating };
   t.roster.push(rook);
-  G.draftLog.push({ pickNum: G.draftPickIdx+1, round, team: teamIdx, name: pr.name, pos: pr.spot, ovr: pr.trueRating, pid: pr.id });
+  let _ex = {}; try { _ex = { ms: mediaScore(pr), lo: pr.scoutLo, hi: pr.scoutHi, col: pr.college && pr.college.name, age: pr.age, potL: potLabel(pr), charL: charLabel(pr), medL: medLabel(pr), yr: G.year }; } catch(e){}
+  G.draftLog.push(Object.assign({ pickNum: G.draftPickIdx+1, round, team: teamIdx, name: pr.name, pos: pr.spot, ovr: pr.trueRating, pid: pr.id }, _ex));
   if(teamIdx === G.userTeam){
     G.draftClass.push({ round, id: rook.id, scoutLo: pr.scoutLo, scoutHi: pr.scoutHi, trueRating: pr.trueRating });
     bumpFan(round === 1 ? 3 : round === 2 ? 1 : 0);
@@ -4974,7 +5082,7 @@ function toggleCampFocus(g){
 }
 function setSnapPlan(g, v){ campState().plan[g] = v; save(); render(); }
 function runCampWeek(){
-  try { if(campState().wk === 1){ gmHandleDemands(); holdoutsAtCamp(); } } catch(e){ console.error('holdouts', e); }
+  try { if(campState().wk === 1){ rkAutoOptions(true); gmHandleDemands(); holdoutsAtCamp(); } } catch(e){ console.error('holdouts', e); }
   const C = campState(), me = meT(), I = CAMP_INT[C.int] || CAMP_INT.normal;
   me.roster.forEach(p => {
     if(p.holdout || p.injWeeks > 0) return;
@@ -6653,12 +6761,13 @@ function pressEdge(teamIdx){ const t = G.trashTalk; if(!t || !GM || t.wk !== G.y
 function contractDemandsOffseason(){
   G.teams.forEach(t => t.roster.forEach(p => {
     if(G.mode === 'player' && p.id === G.playerId) return;
+    if(p.demand && rkLocked(p)){ p.demand = null; p.holdout = false; p.holdoutWeeks = 0; return; }
     if(p.demand){ // carried over: a broken promise makes it worse
       if(p.demand.promised && p.demand.year < G.year){ p.demand = { ask: marketFor(p), year: G.year, stage:'demand', burned:true }; bumpRel(p, 'coach', -12); logEv(p, 'ct', 'Promised a new deal last year · never got it', 0); }
       else p.demand.ask = marketFor(p);
       return;
     }
-    if(p.years < 2 || p.tagged || SPEC[p.pos] || p.rating < 78) return;
+    if(p.years < 2 || p.tagged || SPEC[p.pos] || p.rating < 78 || rkLocked(p)) return;
     if(p.contractYear && G.year - p.contractYear < 1) return;
     const mkt = marketFor(p), under = mkt - p.salary;
     if(under < Math.max(3, mkt * .3)) return;
@@ -8042,12 +8151,13 @@ function drawFormation(){
 function isoRebuildField(){
   const wrap=document.getElementById('fieldwrap'); if(!wrap||!GM) return;
   wrap.querySelector('#field')?.remove(); wrap.insertAdjacentHTML('afterbegin',fieldSVG()); drawFormation();
-  const qa=qbActive(); document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('on',qa?b.dataset.camera==='QB':b.dataset.camera===ISO_CAM));
+  camBtnSync();
 }
 function setGameCamera(mode){
   const presets={TV:{a:Math.PI/6,t:2.5,z:1},Behind:{a:Math.PI/5.4,t:2.45,z:1.02},Sky:{a:Math.PI/4.1,t:2.15,z:.96},Island:{a:Math.PI/6,t:2.9,z:1.08}};
   if(busy) return;
-  if(mode==='QB'){ if(!s3dOn()){ uiAlert('Behind QB view needs the 3D stadium. Turn on 3D first.'); return; } ISO_CAM='QB'; if(G){ G.qbAuto=true; save(); } isoRebuildField(); return; }
+  if(mode==='QB'){ if(!s3dOn()){ uiAlert('Behind QB view needs the 3D stadium. Turn on 3D first.'); return; } ISO_CAM='QB'; if(G){ G.qbAuto=true; G.cam3d='QB'; save(); } isoRebuildField(); return; }
+  if(['Broadcast','Blimp','EndZone','Sideline'].includes(mode)){ if(G){ G.cam3d=mode; if(GM && userOnO()) G.qbAuto=false; save(); } ISO_CAM='TV'; try{ S3D.camGesture('reset'); }catch(e){} isoRebuildField(); return; }
   if(G && GM && userOnO()){ G.qbAuto=false; save(); }
   const v=presets[mode]||presets.TV; ISO_ANGLE=v.a; ISO_TILE=v.t; ISO_ZOOM=v.z; ISO_CX=500; ISO_CY=340; ISO_VZ=1; ISO_CAM=mode;
   isoRebuildField();
@@ -8057,10 +8167,21 @@ let isoDrag=null, isoRaf=0;
 function isoSchedule(){ if(isoRaf) return; isoRaf=requestAnimationFrame(()=>{ isoRaf=0; if(!busy) isoRebuildField(); }); }
 function landscapeForced(){ return !!(window.matchMedia && matchMedia('(orientation:portrait) and (pointer:coarse)').matches); }
 function dragX(e){ return landscapeForced() ? e.clientY : e.clientX; }
-document.addEventListener('pointerdown',e=>{ if(busy||!e.target||!e.target.closest||qbActive()) return; if(!e.target.closest('#fieldwrap')) return; isoDrag={x:dragX(e),a:ISO_ANGLE}; });
-document.addEventListener('pointermove',e=>{ if(!isoDrag||busy) return; ISO_ANGLE=Math.max(.35,Math.min(1.1,isoDrag.a+(dragX(e)-isoDrag.x)*0.004)); ISO_CAM='Custom'; isoSchedule(); });
-document.addEventListener('pointerup',()=>{ isoDrag=null; });
-document.addEventListener('wheel',e=>{ if(!e.target||!e.target.closest||!e.target.closest('#fieldwrap')||busy||qbActive()) return; e.preventDefault(); ISO_VZ=Math.max(.7,Math.min(2.2,ISO_VZ*(e.deltaY<0?1.1:1/1.1))); ISO_CAM=(ISO_CAM==='TV'&&ISO_VZ===1)?'TV':'Custom'; isoSchedule(); },{passive:false});
+/* 3D game camera gestures on the field: drag orbit, pinch/wheel zoom, two-finger pan, double-tap reset */
+const camPtrs=new Map(); let camLast=null, camTap=0;
+function camXY(e){ return landscapeForced() ? {x:e.clientY, y:-e.clientX} : {x:e.clientX, y:e.clientY}; }
+function camOn(e){ return e.target && e.target.closest && e.target.closest('#fieldwrap') && !e.target.closest('button,.qb-ricon,a') && G && GM && qbActive() && camEff() !== 'QB' && window.S3D && S3D.camGesture; }
+document.addEventListener('pointerdown',e=>{ if(!camOn(e)) return; camPtrs.set(e.pointerId, Object.assign(camXY(e),{x0:camXY(e).x,y0:camXY(e).y,b:e.button,sh:e.shiftKey})); camLast=null; });
+document.addEventListener('pointermove',e=>{ const p=camPtrs.get(e.pointerId); if(!p) return; const q=camXY(e), dx=q.x-p.x, dy=q.y-p.y; p.x=q.x; p.y=q.y;
+  if(camPtrs.size===1){ if(Math.hypot(q.x-p.x0,q.y-p.y0)<4) return; e.preventDefault(); S3D.camGesture(p.b===2||p.sh?'pan':'orbit', dx, dy); }
+  else if(camPtrs.size===2){ const a=[...camPtrs.values()], dist=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y), mid={x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2};
+    if(camLast){ S3D.camGesture('zoom', camLast.dist/dist); S3D.camGesture('pan', mid.x-camLast.mid.x, mid.y-camLast.mid.y); } camLast={dist,mid}; } },{passive:false});
+function camUp(e){ const p=camPtrs.get(e.pointerId); if(!p) return; camPtrs.delete(e.pointerId); camLast=null;
+  if(Math.hypot(p.x-p.x0,p.y-p.y0)<6){ const now=performance.now(); if(now-camTap<320){ S3D.camGesture('reset'); camTap=0; } else camTap=now; } }
+document.addEventListener('pointerup',camUp); document.addEventListener('pointercancel',camUp);
+document.addEventListener('dblclick',e=>{ if(camOn(e)){ e.preventDefault(); S3D.camGesture('reset'); } });
+document.addEventListener('contextmenu',e=>{ if(camOn(e)) e.preventDefault(); });
+document.addEventListener('wheel',e=>{ if(!camOn(e)) return; e.preventDefault(); S3D.camGesture('zoom', 1+e.deltaY*.0012); },{passive:false});
 const CONFETTI_COLORS = ['#FFD447','#E25555','#4C8DFF','#3DBE6C','#F2EFE7'];
 function fieldFlash(txt, cls){
   if(simFast || reducedMotion) return; // never spam flashes during fast sims
@@ -8301,14 +8422,21 @@ function animatePlay(res, cb){
 
   /* ---- pursuit: the three nearest defenders converge on the tackle point (trail on a TD) ---- */
   if(res.type==='run' || res.type==='pass' || (res.type==='fumble' && playIsRun)){
-    const ring=[[15,0],[-7,17],[-7,-17]];
-    [...DLs,...LBs,CBT,CBB,S1,S2].filter(d=>d!==picker)
-      .map(d=>({d, dist:Math.hypot(d.x0i-xEnd, d.y0i-yEnd)}))
-      .sort((a,b)=>a.dist-b.dist).slice(0,3)
-      .forEach((x,i)=>{
-        const o=ring[i];
-        to(x.d, 1, xEnd+o[0]+(td?-26:0), yEnd+o[1]);
-      });
+    /* pursuit from where each defender actually is late in the play, at a believable speed.
+       one tackler makes contact, a close second may arrive to help, everyone else just closes ground */
+    const tA = .76, reach = 9 * PXY, tx = xEnd + (td ? -26 : 0), ty = yEnd;
+    const cut = a => { const p = posAt(a, tA); a.wp = a.wp.filter(w => w.t < tA); a.wp.push({t:tA, x:p.x, y:p.y}); return p; };
+    const cands = [...DLs,...LBs,CBT,CBB,S1,S2].filter(d=>d && d!==picker)
+      .map(d=>{ const p = posAt(d, tA); return {d, p, dist:Math.hypot(p.x-tx, p.y-ty)}; })
+      .sort((a,b)=>a.dist-b.dist);
+    cands.forEach((x,i)=>{
+      if(x.dist > reach * 2.4) return;                       // too far: keeps his own path
+      const p = cut(x.d), ux = (p.x-tx)/(x.dist||1), uy = (p.y-ty)/(x.dist||1);
+      if(i === 0 && !td){ x.d.wp.push({t:1, x:tx+ux*13, y:ty+uy*13}); return; }          // the tackler: contact
+      if(i === 1 && !td && x.dist <= reach * 1.3){ x.d.wp.push({t:1, x:tx+ux*26, y:ty+uy*26}); return; } // help arrives
+      const run = Math.min(Math.max(0, x.dist - 30), reach * (td ? 1.2 : .9));           // closing, not arriving
+      x.d.wp.push({t:1, x:p.x-ux*run, y:p.y-uy*run});
+    });
   }
 
   /* ---- render: 22 split-color dots + ball + trail ---- */
@@ -8782,6 +8910,7 @@ function trainBtnHTML(p){
 }
 function extendBtnHTML(p){
   if(!meT().roster.includes(p)) return '';
+  if(rkLocked(p)) return '<button class="btn tiny" disabled title="Rookie deal. Can\'t extend until after the '+rkLockYear(p)+' season.">📝 Extend</button> ';
   return '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">📝 Extend</button> ';
 }
 function tagBtnHTML(p){
@@ -8883,7 +9012,21 @@ function profileHTML(pid){
     const disc = hometownDisc(meT(), p);
     const pc = p.contract;
     const hasBonus = pc && pc.bonusYearsLeft > 0;
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">Current Deal</div>' +
+    let rkBox = '';
+    if(p.rk){
+      const c0 = contractOf(p), done = rkSeasonsDone(p), y0 = p.rk.year, base = c0.base, startIdx = 4 - p.years + (p.rk.opt==='picked'?1:0);
+      const yrs = [0,1,2,3].concat(p.rk.round === 1 ? [4] : []);
+      rkBox = '<div class="rk-tl">' + yrs.map(i => { const yr = y0 + i, k = i - (G.year - y0) + (G.phase==='offseason'?0:0), isOpt = i === 4;
+        const sal = (yr >= G.year && base[yr - G.year + (G.phase==='offseason'?0:0)] != null) ? base[yr - G.year] : (isOpt ? (p.rk.opt==='picked' ? p.rk.optSal : null) : null);
+        const cls = yr < G.year || (yr === G.year && G.phase === 'offseason') ? 'done' : yr === G.year ? 'now' : '';
+        return '<div class="'+cls+(isOpt?' opt':'')+'">'+yr+'<b>'+(sal!=null?money(sal):isOpt?(p.rk.opt==='declined'?'Declined':'Option'):'-')+'</b>'+(isOpt?'5th yr':'Yr '+(i+1))+(yr===G.year&&cls==='now'?' · now':'')+'</div>'; }).join('') + '</div>' +
+        '<div class="ct2-kv"><span>Drafted</span><b>'+p.rk.year+' · Rd '+p.rk.round+' · #'+p.rk.pick+' overall</b></div>' +
+        '<div class="ct2-kv"><span>Extend / renegotiate</span><b>'+(rkLocked(p)?'After '+rkLockYear(p)+' season':'<span style="color:var(--green)">Eligible now</span>')+'</b></div>' +
+        (p.rk.round === 1 ? '<div class="ct2-kv"><span>5th-year option</span><b>'+(p.rk.opt==='picked'?'Picked up · '+money(p.rk.optSal):p.rk.opt==='declined'?'Declined':rkOptionPending(p)?'<a href="#" onclick="event.preventDefault();openModal(\'rkoption\','+p.id+')" style="color:var(--gold)">Decide now ›</a>':'Decide before '+(p.rk.year+3)+' season')+'</b></div>' : '') +
+        '<div class="ct2-kv"><span>Hold out</span><b style="color:'+(rkLocked(p)?'#ff8a8a':'var(--chalk)')+'">'+(rkLocked(p)?'Not allowed on rookie deal':'Allowed')+'</b></div>' +
+        '<a href="#" class="sub" style="font-size:11px" onclick="event.preventDefault();openModal(\'rkscale\')">📋 How rookie deals work</a>';
+    }
+    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:14px">'+(p.rk?'Rookie Deal <span class="tag" style="font-size:9px;background:rgba(86,204,242,.18);color:#8fdcff;vertical-align:middle">SLOT SCALE</span>':'Current Deal')+'</div>' + rkBox +
       '<p class="sub" style="margin-top:4px"><b style="color:var(--chalk)">'+money(p.salary)+'</b>/yr · '+Math.max(p.years,0)+' yr'+(p.years!==1?'s':'')+' left'+(p.tagged?' · <span class="tag w">TAGGED</span>':'')+
       '<br>Market value today: <b style="color:var(--gold)">'+money(marketFor(p))+'</b>/yr'+(disc<1?' → <b style="color:var(--green)">'+money(Math.round(marketFor(p)*disc*10)/10)+'</b> with the hometown discount':'')+
       (hasBonus ? '<br>Bonus proration: <b style="color:var(--gold)">'+money(pc.bonusProration)+'</b>/yr for '+pc.bonusYearsLeft+' more yr'+(pc.bonusYearsLeft!==1?'s':'')+' · dead cap if he leaves early: <b style="color:var(--red)">'+money(deadCapCharge(p))+'</b>' : '')+
@@ -9477,7 +9620,7 @@ function poachCoach(ti, role){
   save(); render();
 }
 
-function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', contract:'Contract', tvguide:'Trade Values', release:'Release', restructure:'Restructure', rspick:'Restructure a Contract', effwhy:'Why This Rating', campbattles:'Position Battles', pacts:'Player Actions', scoutinfo:'Scouting Desk', campreport:'Camp Report Card', camproster:'Camp Roster', finledger:'Finance Ledger', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
+function modalTitle(v){ if(v === 'office') return officeModalTitle(modalArg); if(v === 'postgame') return 'Postgame Report'; if(v === 'confchamp') return 'Conference Champions'; if(v === 'coachInfo') return staffLabel(modalArg.role, modalArg.pos); return {poachAll:'Poach a Coordinator', gamereport:'Game Report', player:'Player Profile', extend:'Contract', faoffer:'Free Agent Offer', contract:'Contract', tvguide:'Trade Values', release:'Release', restructure:'Restructure', rspick:'Restructure a Contract', effwhy:'Why This Rating', campbattles:'Position Battles', rkoption:'5th-Year Option', rkscale:'Rookie Scale', rknotice:'Rookie Deals Updated', pacts:'Player Actions', scoutinfo:'Scouting Desk', campreport:'Camp Report Card', camproster:'Camp Roster', finledger:'Finance Ledger', fzcall:'📞 Agent Call', reposition:'Change Position', assign:'Set Starter', hireCoach:'Hire Coach', staffprompt:'Your Staff', jobs:'Job Market', jobnote:'Front Office', coach:'Coach Bio', press:'Press Conference', demands:'Contract Demands', awards:'Season Awards', hof:'Hall of Fame', gmhire:'GM Hire', dutysetup:'Front Office Setup', bringstaff:'New Job', prospect:'Draft Prospect', tradeup:'📞 Call a Team · Trade Up', rosterPopup:'Your Roster', team:'Team Roster'}[v] || ''; }
 function modalBodyHTML(v){
   if(v === 'gamereport') return gameReportHTML();
   if(v === 'postgame') return postgameHTML();
@@ -9493,6 +9636,9 @@ function modalBodyHTML(v){
   if(v === 'rspick') return rsPickHTML();
   if(v === 'effwhy') return effWhyHTML(modalArg);
   if(v === 'campbattles') return campBattlesHTML();
+  if(v === 'rkoption') return rkOptionHTML(modalArg);
+  if(v === 'rkscale') return rkScaleHTML();
+  if(v === 'rknotice') return rkNoticeHTML();
   if(v === 'pacts') return playerActsHTML(modalArg);
   if(v === 'scoutinfo') return scoutInfoHTML();
   if(v === 'campreport') return campReportCardHTML();
@@ -9541,7 +9687,7 @@ function modalHTML(){
   if(!modalView) return '';
   const closeLabel = modalBack ? '← Back' : '✕ Close';
   return '<div class="modal-wrap" onclick="if(event.target===this)closeModal()">' +
-    '<div class="modal-panel'+(['prospect','postgame','contract','restructure','release','rspick','tvguide','campreport','camproster','finledger','scoutinfo'].includes(modalView)?' wide':'')+'">' +
+    '<div class="modal-panel'+(['prospect','postgame','contract','restructure','release','rspick','tvguide','campreport','camproster','finledger','scoutinfo','rkoption'].includes(modalView)?' wide':'')+'">' +
     '<div class="modal-hd"><span class="disp">'+modalTitle(modalView)+'</span><span><button class="btn tiny" onclick="closeModal()">'+closeLabel+'</button></span></div>' +
     '<div class="modal-body">'+modalBodyHTML(modalView)+'</div>' +
     '</div></div>';
@@ -10530,7 +10676,9 @@ function ovrInts(){
     const dc = G.draftClass; if(Array.isArray(dc)) dc.forEach(fix); else if(dc && Array.isArray(dc.players)) dc.players.forEach(fix);
   } catch(e){}
 }
-function render(){ renderCore(); try { whRestore(); } catch(e){ console.error(e); } }
+function render(){
+  try { if(G && G.teams && !G.rkV2){ rkMigrate(); save(); } if(G && G.rkNotice && !G.rkNoticeSeen && !modalView && G.userTeam != null){ modalView = 'rknotice'; } else if(G && G.phase === 'offseason' && !G.activePage) rkMaybeAsk(); } catch(e){ console.error('rookie', e); }
+  renderCore(); try { whRestore(); } catch(e){ console.error(e); } }
 function renderCore(){
   migrateSpots();
   ovrInts();
@@ -10792,7 +10940,7 @@ function playerRow(p, actions, isOpponent){
     : (G.phase==='hub' && p.dressed === false ? ' <span class="tag l">SCRATCH</span>' : '');
   const sch = (p.pos==='DL' || p.pos==='LB') ? ' <span class="tag '+(p.scheme==='any'?'up':'w')+'" style="font-size:8.5px">'+SCHEME_TAG[p.scheme]+'</span>' : '';
   const ratingCell = isOpponent ? scoutRangeHTML(p, 10) + (p.proScoutLo===p.proScoutHi ? '' : ' <button class="btn tiny" onclick="scoutPlayer('+p.id+')" title="Costs '+proScoutCost(p)+' scouting pts">🔍</button>') : '<span style="color:var(--gold);font-weight:700">'+p.rating+'</span>';
-  return '<tr'+(p.dressed===false && G.phase==='hub' ? ' class="dim"':'')+'><td>'+pn(p)+(p.trained?' <span class="tag up">+'+p.trained+'</span>':'')+status+'</td>' +
+  return '<tr'+(p.dressed===false && G.phase==='hub' ? ' class="dim"':'')+'><td>'+pn(p)+(p.trained?' <span class="tag up">+'+p.trained+'</span>':'')+(p.rk && rkLocked(p) ? ' '+rkTag(p) : '')+status+'</td>' +
     '<td><b>'+p.spot+'</b>'+sch+'</td>' +
     '<td>'+p.age+'</td><td>'+ratingCell+'</td>' +
     '<td>'+money(p.salary)+'</td><td>'+p.years+'yr</td><td><div class="ra-acts">'+actions+'</div></td></tr>';
@@ -11838,7 +11986,7 @@ function forecastHTML(cls, tabsHTML){
     const side = (k % 8) >= 5 ? ' r' : '';
     if(sl.made){
       const projTop = G.draftProj && G.draftProj[sl.idx], hit = projTop != null && projTop === sl.made.pid;
-      wall += '<div class="fc2-t done'+(mine?' you':'')+'">'+head+'<div class="fc2-nm">'+esc(init(sl.made.name))+'</div><div class="fc2-p"><span>'+sl.made.spot+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJ':'SURPRISE')+'</b>':'')+'</div></div>';
+      wall += '<div class="fc2-t done'+(mine?' you':'')+'">'+head+'<div class="fc2-nm">'+esc(init(sl.made.name))+'</div><div class="fc2-p"><span>'+(sl.made.spot||sl.made.pos||'')+'</span>'+(G.draftProj?'<b class="'+(hit?'hit':'miss')+'">'+(hit?'AS PROJ':'SURPRISE')+'</b>':'')+'</div></div>';
       return;
     }
     if(!t){ wall += '<div class="fc2-t void">'+head+'<div class="fc2-nm sub">Forfeited</div></div>'; return; }
@@ -12502,26 +12650,17 @@ function draftBoardHTML(){
       '<button class="btn" onclick="openPage(\'gm\');setGMTab(\'trades\')">🔁 Trade Picks</button>' +
       '<button class="btn" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button>'
     : '<button class="btn primary" onclick="simulateRestOfDraft()">Simulate Rest of Draft →</button>';
-  let s = '<div class="panel" style="margin-bottom:12px"><div class="hd disp">NGL Draft — '+fmtDate(draftDate(G.year))+'</div>' +
-    '<p class="sub" style="margin-top:6px">Overall pick <b style="color:var(--gold)">'+pickNum+'</b> of '+(DRAFT_ROUNDS*16)+' · Round '+round+' · '+
-    (onClock ? (isMe ? '<b style="color:var(--gold)">You\'re on the clock.</b>' : esc(onClock.city+' '+onClock.name)+' is on the clock.') : 'Draft complete.') +
-    '</p>' +
-    (actionBtns ? '<div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:10px">'+actionBtns+'</div>' : '') +
-    '</div>';
-  if(userRunsDraft()){ s += warRoomHTML() + draftCallHTML(); setTimeout(() => WAR.mount(), 0); }
-  if(G.draftLog && G.draftLog.length){
-    const recent = G.draftLog.slice(-8).reverse();
-    s += '<div class="panel" style="margin-bottom:12px"><div class="hd disp" style="font-size:13px">Recent Picks</div>';
-    recent.forEach(d => {
-      const t = G.teams[d.team];
-      s += '<p class="sub" style="margin:2px 0">Pick '+d.pickNum+' — <b style="color:'+(d.team===G.userTeam?'var(--gold)':'var(--chalk)')+'">'+esc(t.abbr)+'</b> select '+esc(d.name)+' ('+PL(d)+')'+(d.team===G.userTeam?' <b style="color:var(--gold)">'+d.ovr+' OVR</b>':'')+'</p>';
-    });
-    s += '</div>';
-  }
+  const tick = (G.draftLog||[]).slice(-3).reverse().map(d => '<span><b>#'+d.pickNum+'</b> '+esc(G.teams[d.team].abbr)+' '+esc(d.name.split(' ').pop())+' '+d.pos+'</span>').join(' · ');
+  let s = '<div class="dd-bar"><div class="dd-clk"><b class="disp">'+(onClock ? (isMe ? 'You\'re on the clock' : esc(onClock.abbr)+' on the clock') : 'Draft complete')+'</b><span>Rd '+round+' · pick '+pickNum+' of '+(DRAFT_ROUNDS*16)+' · '+fmtDate(draftDate(G.year)).replace(/^\w+, /,'')+'</span></div>' +
+    '<div class="dd-btns">'+actionBtns.replace(/class="btn( primary)?"/g, (m, pr) => 'class="btn tiny'+(pr||'')+'"').replace('Simulate Rest of Draft →','Sim rest').replace('Pass This Pick →','Pass pick').replace('🔁 Trade Picks','🔁 Trades')+'</div>' +
+    (tick ? '<div class="dd-tick">'+tick+'</div>' : '') + '</div>';
+  if(userRunsDraft()) s += draftCallHTML();
   const dcls = G.nextClass && G.nextClass.year === G.year && G.nextClass.pool === G.draftPool ? G.nextClass : null;
   if(dcls && G.mode !== 'player'){
-    s += boardTabsHTML(dcls).replace('🎓 Prospects','📄 Table');
-    if(boardTab === 'forecast'){ s += forecastHTML(dcls); return s; }
+    const tabsH = boardTabsHTML(dcls);
+    if(boardTab === 'list'){ s += draftProspectsHTML(dcls, tabsH, isMe); return s; }
+    if(boardTab === 'forecast'){ s += forecastHTML(dcls, tabsH).replace('<div class="fit-page fc2">','<div class="fc2">'); return s; }
+    s += tabsH;
     if(boardTab === 'tiers'){ s += tiersHTML(dcls); return s; }
     if(boardTab === 'map'){ s += scoutMapHTML(dcls); return s; }
   }
@@ -12557,6 +12696,33 @@ function draftBoardHTML(){
   });
   s += '</table></div></div>';
   return s;
+}
+let ddSort = 'media', ddShow = 'all';
+function draftProspectsHTML(cls, tabsH, myPick){
+  const me = meT();
+  const taken = (G.draftLog||[]).filter(d => d.yr === G.year || d.yr == null);
+  let rows = cls.pool.map(p => ({p, ms: mediaScore(p)})).concat(taken.filter(d => d.ms != null || true).map(d => ({d, ms: d.ms != null ? d.ms : -1e9})));
+  const rankOrder = rows.slice().sort((a,b) => b.ms - a.ms); const rk = new Map(); rankOrder.forEach((r,i) => rk.set(r, i+1));
+  const f = G.draftBoardFilter;
+  if(f) rows = rows.filter(r => { const sp = r.p ? r.p.spot : r.d.pos, ps = r.p ? r.p.pos : SPOT_GROUP[r.d.pos] || r.d.pos; return sp === f || ps === f; });
+  if(ddShow === 'avail') rows = rows.filter(r => r.p);
+  const key = r => ddSort === 'grade' ? -((r.p ? r.p.scoutLo + r.p.scoutHi : (r.d.lo||0) + (r.d.hi||0))) : ddSort === 'age' ? (r.p ? r.p.age : r.d.age||99) : ddSort === 'pos' ? spotSortVal({pos: r.p ? r.p.pos : SPOT_GROUP[r.d.pos]||r.d.pos, spot: r.p ? r.p.spot : r.d.pos}) : rk.get(r);
+  rows.sort((a,b) => (key(a) - key(b)) || (rk.get(a) - rk.get(b)));
+  const wheel = posDDHTML(G.draftBoardFilter||'ALL', 'setDraftBoardWheel', (pos, sp) => { const l = cls.pool.filter(pr => pr.pos===pos && (sp===pos || pr.spot===sp)); return {txt: l.length+' left'}; }, cls.pool.length+' left', true);
+  let s = '<div class="lt-bar">'+tabsH.replace('<div class="filterbar" style="margin:0 0 10px">','<div class="lt-tabs">')+'<div class="lt-filt">'+wheel +
+    '<select class="fselect" onchange="ddShow=this.value;render()"><option value="all"'+(ddShow==='all'?' selected':'')+'>Everyone</option><option value="avail"'+(ddShow==='avail'?' selected':'')+'>Available only</option></select>' +
+    '<select class="fselect" onchange="ddSort=this.value;render()">'+[['media','Media rank'],['grade','Your grade'],['pos','Position'],['age','Age']].map(o => '<option value="'+o[0]+'"'+(ddSort===o[0]?' selected':'')+'>'+o[1]+'</option>').join('')+'</select></div></div>';
+  s += '<div style="margin-bottom:5px">'+minStripHTML(me).replace('>MINIMUMS<','>NEEDS<')+'</div>';
+  s += '<div class="lt-card"><div style="overflow-x:auto"><table class="tbl lt-tbl dd-tbl"><tr><th>Media</th><th>Prospect</th><th>Pos</th><th>College</th><th>Age</th><th>Your grade</th><th>Pot</th><th>Char</th><th>Med</th><th></th></tr>';
+  rows.slice(0, 140).forEach(r => {
+    if(r.p){ const pr = r.p;
+      s += '<tr><td><b>'+rk.get(r)+'</b></td><td><a href="#" onclick="openModal(\'prospect\','+pr.id+');return false" style="color:var(--chalk);font-weight:700">'+esc(pr.name)+'</a></td><td><b>'+pr.spot+'</b></td><td>'+esc(pr.college.name)+'</td><td>'+pr.age+'</td><td>'+rangeBarHTML(pr)+'</td><td>'+potLabel(pr)+'</td><td>'+charLabel(pr)+'</td><td>'+medLabel(pr)+'</td><td>'+(myPick ? '<button class="btn tiny primary" onclick="userDraftPick('+pr.id+')">Draft</button>' : '')+'</td></tr>';
+    } else { const d = r.d, t = G.teams[d.team];
+      s += '<tr class="dd-gone"><td>'+(d.ms!=null?rk.get(r):'')+'</td><td class="st">'+esc(d.name)+'</td><td><b>'+d.pos+'</b></td><td>'+esc(d.col||'')+'</td><td>'+(d.age||'')+'</td><td>'+(d.lo!=null?(d.lo===d.hi?d.lo:d.lo+'-'+d.hi):'')+'</td><td>'+(d.potL||'')+'</td><td>'+(d.charL||'')+'</td><td>'+(d.medL||'')+'</td><td><span class="dd-tk'+(d.team===G.userTeam?' you':'')+'">'+(d.team===G.userTeam?'YOUR PICK #':'TAKEN #')+d.pickNum+' '+esc(t.abbr)+'</span></td></tr>';
+    }
+  });
+  if(!rows.length) s += '<tr><td colspan="10" class="sub">Nobody matches.</td></tr>';
+  return s + '</table></div></div>';
 }
 function draftReviewHTML(){
   const me = meT();
@@ -14449,10 +14615,10 @@ function rosterHTML(){
       let a = trainBtnHTML(p);
       if(G.phase==='hub' && p.injWeeks === 0) a += '<button class="btn tiny" onclick="toggleDress('+p.id+')">'+(p.dressed!==false?'Sit':'Dress')+'</button>';
       if(G.phase==='hub' && p.injWeeks > 0 && !p.ir) a += '<button class="btn tiny" onclick="placeOnIR('+p.id+')" title="Season-ending IR. Frees his roster spot">IR</button>';
-      a += '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">Extend</button>';
+      a += rkLocked(p) ? '<button class="btn tiny" disabled title="Rookie deal. Can\'t extend until after the '+rkLockYear(p)+' season.">Extend</button>' : '<button class="btn tiny" onclick="openContract(\'extend\','+p.id+')">Extend</button>';
       a += '<button class="btn tiny" onclick="openModal(\'reposition\','+p.id+')">Position</button>';
-      const rsOk = typeof rsEligible === 'function' && rsEligible(p);
-      a += '<button class="btn tiny" '+(rsOk?'':'disabled title="Not eligible to restructure"')+' onclick="openRestructure('+p.id+')">Restructure</button>';
+      const rsWhy = typeof rsEligible === 'function' ? rsEligible(p) : 'n/a';
+      a += '<button class="btn tiny" '+(rsWhy?'disabled title="'+esc(rsWhy)+'"':'')+' onclick="openRestructure('+p.id+')">Restructure</button>';
       a += '<button class="btn tiny danger" onclick="cutPlayer('+p.id+')">Cut</button>';
       return a;
     }, true).replace('<table class="tbl">','<table class="tbl lt-tbl">') + '</div></div></div>';
@@ -15695,8 +15861,8 @@ function proposeTrade(){
   if(trPatience(them.idx) <= 0){ uiAlert(trGMName(them.idx)+' isn\'t taking your calls this week.'); return; }
   cartClauses(cart);
   const capAfter = tradeCapAfter(me, them, giveP, getP, cart);
-  if(capAfter.mine > capNow()){ alert('That swap puts you over the cap'+(giveP.some(p=>tradeDeadCharge(p)>0 && !cart.xfer.includes(p.id))?' (dead money included). Try sending a bonus with the player.':'.')); return; }
-  if(capAfter.theirs > capNow()){ alert(esc(them.city)+' can\'t fit that under their cap'+(cart.xfer.length?'. Try leaving the bonus behind.':'.')); return; }
+  if(capAfter.mine > capNow() && capAfter.mine > capNow() - capRoom(me) + .05){ alert('That swap puts you over the cap'+(giveP.some(p=>tradeDeadCharge(p)>0 && !cart.xfer.includes(p.id))?' (dead money included). Try sending a bonus with the player.':'.')); return; }
+  if(capAfter.theirs > capNow() && capAfter.theirs > capNow() - capRoom(them) + .05){ alert(esc(them.city)+' can\'t fit that under their cap'+(cart.xfer.length?'. Try leaving the bonus behind.':'.')); return; }
   const sv = tradeSideValue(giveP, givePk, getP, getPk);
   const giveVal = sv.giveVal + clauseAdj(cart, giveP, getP).pts, getVal = sv.getVal;
   const need = teamNeed(them);
@@ -16358,7 +16524,10 @@ function gameConditionsHTML(){
   const lines = wxSummaryLines(wx);
   return '<div class="game-conditions"><span>'+wxIcon(wx.cond,wx.tod)+' <b>'+esc(wxCondLabel(wx))+'</b></span><span>🏟 <b>'+esc(wx.stadium||'')+'</b></span><span>🌱 <b>'+(wx.surface==='turf'?'Turf':'Grass')+'</b></span><span>🕒 <b>'+esc((wx.slotLabel||'')+' · '+(wx.tod||''))+'</b></span><span>🌡 <b>'+wx.temp+'°F</b></span>' +
     (lines.length ? '<span class="wxfx-note" title="'+esc(lines.join(' · '))+'">ⓘ '+lines.length+' factor'+(lines.length>1?'s':'')+'</span>' : '') + (GM.refs ? '<span title="Ref crew flag rate">🦓 <b>'+esc(GM.refs.name)+' crew · '+GM.refs.style+'</b></span>' : '') + '</div>' +
-    '<div class="camera-row"><span>CAMERA</span>'+['TV','Behind','Sky','Island'].map((v)=>'<button class="btn '+(v===ISO_CAM&&!qbActive()?'on':'')+'" data-camera="'+v+'" onclick="setGameCamera(\''+v+'\')">'+v+'</button>').join('')+'<button class="btn '+(qbActive()?'on':'')+'" data-camera="QB" onclick="setGameCamera(\'QB\')">🏈 Behind QB</button>'+'<button class="btn '+(s3dOn()?'on':'')+'" data-s3d="1" onclick="toggle3D()">3D</button><span style="margin-left:6px">drag to turn · wheel to zoom</span></div>';
+    '<div class="camera-row"><span>CAMERA</span>'+(s3dOn()
+      ? [['Broadcast','Broadcast'],['Blimp','Blimp'],['EndZone','End Zone'],['Sideline','Sideline'],['QB','🏈 Behind QB']].map(v=>'<button class="btn" data-camera="'+v[0]+'" onclick="setGameCamera(\''+v[0]+'\')">'+v[1]+'</button>').join('')+'<button class="btn" title="Reset view" onclick="S3D.camGesture(\'reset\')">⟲</button>'
+      : ['TV','Behind','Sky','Island'].map(v=>'<button class="btn" data-camera="'+v+'" onclick="setGameCamera(\''+v+'\')">'+v+'</button>').join(''))+
+    '<button class="btn '+(s3dOn()?'on':'')+'" data-s3d="1" onclick="toggle3D()">3D</button>'+(s3dOn()?'<span class="cam-hint" style="margin-left:6px">drag to orbit · pinch to zoom · double-tap reset</span>':'')+'</div>';
 }
 function gameHTML(){
   const H = G.teams[GM.home], A = G.teams[GM.away];
@@ -17781,7 +17950,43 @@ function qbPlace(i,x,z,dt,face,fall,fhd){
   f.ph+=d*2.6; const sw=d>.01&&!fall?Math.sin(f.ph)*.7:0;
   f.legs[0].rotation.z=sw; f.legs[1].rotation.z=-sw; f.arms[0].rotation.z=-sw*.8; f.arms[1].rotation.z=sw*.8;
 }
+/* game cameras: presets are camera offset (p) and look offset (l) from the ball, in yards */
+const GCAM={ Broadcast:{p:[7,24,40],l:[7,0,-1],fz:.3}, Blimp:{p:[6,95,.1],l:[6,0,0],fz:0}, EndZone:{p:[-34,16,0],l:[16,0,0],fz:.5}, Sideline:{p:[6,4,31],l:[6,1,0],fz:.3} };
+const qU={th:0,ph:0,z:1,px:0,pz:0}; let qMode='QB', qLastFocus=null, qIdleRaf=0, qWrap=null;
+function camMode(){ try { return (typeof camEff==='function') ? camEff() : 'QB'; } catch(e){ return 'QB'; } }
+function camGoal(focus){
+  const m=qMode=GCAM[camMode()]?camMode():'QB';
+  if(m==='QB') return null;
+  const c=GCAM[m], ox=c.p[0]-c.l[0], oy=c.p[1]-c.l[1], oz=c.p[2]-c.l[2];
+  let r=Math.hypot(ox,oy,oz), th=Math.atan2(ox,oz), ph=Math.acos(oy/r);
+  r=Math.max(6,Math.min(r*2.6,r*qU.z)); th+=qU.th; ph=Math.max(.05,Math.min(1.5,ph+qU.ph));
+  const lx=focus.x+c.l[0]+qU.px, ly=c.l[1], lz=focus.z*c.fz+c.l[2]+qU.pz;
+  return { p:new THREE.Vector3(lx+r*Math.sin(ph)*Math.sin(th), ly+r*Math.cos(ph), lz+r*Math.sin(ph)*Math.cos(th)), t:new THREE.Vector3(lx,ly,lz) };
+}
+function camKick(){ if(qIdleRaf||!Q3||!qWrap||canvas.__mode!=='qb') return; qIdleRaf=requestAnimationFrame(camIdle); }
+function camIdle(){
+  qIdleRaf=0;
+  if(!Q3||!qWrap||canvas.__mode!=='qb'||canvas.parentNode!==qWrap||!qLastFocus) return;
+  if(performance.now()-qLast<40){ camKick(); return; }
+  const before=qCP?qCP.clone():null; qbCamTo(qLastFocus,false); qbRender();
+  if(before && (before.distanceTo(qCP)>.02 || camDrag)) camKick();
+}
+let camDrag=false;
+function camGesture(kind,a,b){
+  if(kind==='orbit'){ qU.th-=a*.006; qU.ph=Math.max(-1.2,Math.min(1.2,qU.ph-b*.005)); }
+  else if(kind==='zoom'){ qU.z=Math.max(.25,Math.min(2.6,qU.z*a)); }
+  else if(kind==='pan'){ const k=.06*qU.z, c=Math.cos(qU.th), sn=Math.sin(qU.th); qU.px-=(a*c+b*sn)*k*.5; qU.pz-=(-a*sn+b*c)*k*.5; }
+  else if(kind==='reset'){ qU.th=0; qU.ph=0; qU.z=1; qU.px=0; qU.pz=0; }
+  camKick();
+}
 function qbCamTo(focus, snap, follow){
+  qLastFocus={x:focus.x,z:focus.z};
+  const g=camGoal(focus);
+  if(g){
+    if(!qCP||snap){ qCP=g.p.clone(); qCT=g.t.clone(); }
+    else { const now=performance.now(), dt=Math.min(.1,(now-qLast)/1000||.016), k=camDrag?1:1-Math.pow(.03,dt); qCP.lerp(g.p,k); qCT.lerp(g.t,k); }
+    qLast=performance.now(); qCam.position.copy(qCP); qCam.lookAt(qCT); return;
+  }
   const tp=follow?new THREE.Vector3(focus.x-19,14,focus.z*.8):new THREE.Vector3(focus.x-16,12,focus.z*.8), tt=new THREE.Vector3(focus.x+18,0,focus.z*.6);
   if(!qCP||snap){ qCP=tp.clone(); qCT=tt.clone(); }
   else { const now=performance.now(), dt=Math.min(.1,(now-qLast)/1000||.016); const k=1-Math.pow(.02,dt); qCP.lerp(tp,k); qCT.lerp(tt,k); }
@@ -17789,7 +17994,7 @@ function qbCamTo(focus, snap, follow){
   qCam.position.copy(qCP); qCam.lookAt(qCT);
 }
 function qbRender(){ renderer.render(Q3.scene,qCam); }
-let qArt=null, qArtKey='';
+let qArt=null, qArtKey='', qFMode='';
 function ribbon(pts, w, mat){
   const pos=[]; const n=pts.length; if(n<2) return null;
   const side=i=>{ const a=pts[Math.max(0,i-1)], b=pts[Math.min(n-1,i+1)], dx=b[0]-a[0], dz=b[1]-a[1], L=Math.hypot(dx,dz)||1; return [-dz/L*w/2, dx/L*w/2]; };
@@ -17820,12 +18025,13 @@ function qbFormation(wrap, cfg, d){
   d.pts.forEach((q,i)=>{ const w=L2W(q[0],q[1]); const f=qFig[i]; f.x=w[0]; f.z=w[1]; qbPlace(i,w[0],w[1],0,i<11?0:Math.PI); });
   const qb=qFig[5]; qBall.position.set(qFig[2].x+.9,.25,qFig[2].z); qBall.visible=true;
   qLines.los.position.x=d.los; qLines.fd.position.x=d.fd; qLines.fd.visible=d.fd!=null&&d.fd<60.5; qLines.los.visible=true;
-  qbArtSet('',null);
-  qbCamTo({x:qb.x,z:qb.z},true); qbRender();
+  qbArtSet('',null); qWrap=wrap;
+  const m=camMode(), snap=!qCP||m!==qFMode||m==='QB'; qFMode=m;
+  qbCamTo({x:qb.x,z:qb.z},snap); qbRender(); if(!snap) camKick();
 }
 // live animation frame from animatePlay
 function qbFrame(wrap, d){
-  if(!Q3||!qFig) return; qbAttach(wrap); if(!qbSize(wrap)) return;
+  if(!Q3||!qFig) return; qbAttach(wrap); qWrap=wrap; if(!qbSize(wrap)) return;
   d.pos.forEach((p,i)=>{ const w=L2W(p.x,p.y); qbPlace(i,w[0],w[1],0,null,d.fall?d.fall[i]:0,d.fallHd); });
   if(d.art){ qbArtSet(d.artKey,d.art); const end=d.isPass?d.tThrow+.06:.42; qbArtFade(d.t<end-.08?1:Math.max(0,(end-d.t)/.08)); }
   const b=L2W(d.ball.x,d.ball.y); let by=1.45;
@@ -17883,7 +18089,7 @@ function qbLiveStart(wrap, getTargets, onPick){
 function qbLiveStop(){ if(!qLive) return; cancelAnimationFrame(qLive.raf); qLive.icons.forEach(d=>d.remove()); qLive=null; }
 function qbHide(){ if(Q3) qbArtSet('',null); qbLiveStop(); if(canvas&&canvas.__mode==='qb'){ canvas.__mode=''; lastSig=''; } }
 function invalidateGame(){ lastSig=''; }
-return { qbFormation, qbFrame, qbLiveStart, qbLiveStop, qbHide, buildScene, ok, gameMount, gameDetach, previewMount, goCam, orb, invalidateGame, get canvas(){return canvas;}, layout };
+return { camGesture, qbFormation, qbFrame, qbLiveStart, qbLiveStop, qbHide, buildScene, ok, gameMount, gameDetach, previewMount, goCam, orb, invalidateGame, get canvas(){return canvas;}, layout };
 })();
 }catch(e){ console.error('S3D module failed',e); window.S3D={ok:()=>false}; }
 /* ===== Stadium parts (owner builds) + 3D hookup ===== */
@@ -18138,10 +18344,15 @@ function gdDepthSwap(i, pid){
   gdDepthSlot = null; gdDepthRender();
 }
 /* ----- Behind-the-QB view ----- */
+function camEff(){
+  if(livePlayState) return 'QB';
+  if(G.cam3d === 'QB' || ISO_CAM === 'QB') return 'QB';
+  if(G.qbAuto !== false && typeof userOnO === 'function' && userOnO() && G.phase === 'game') return 'QB';
+  return G.cam3d || 'Broadcast';
+}
 function qbActive(){
   if(!(typeof s3dOn === 'function' && s3dOn()) || !GM || GM.over || GM.stPending || GM.stAnim || !window.S3D || !S3D.qbFormation) return false;
-  if(ISO_CAM === 'QB') return true;
-  return G.qbAuto !== false && typeof userOnO === 'function' && userOnO() && G.phase === 'game';
+  return true;
 }
 function qbFormationPts(){
   const x0=xAt(GM.spot), mid=250, pts=[];
@@ -18161,6 +18372,10 @@ function qbShowFormation(force, pts, nums){
   S3D.qbFormation(wrap, gameCfg3d(), { pts: pts || qbFormationPts(), nums, off, def, score: score3d(), ez: ez3d(), los: GM.spot - 50, fd: fd >= 100 ? null : fd - 50 });
 }
 /* ----- gameday 3D ----- */
+function camBtnSync(){
+  const qa = G && GM && qbActive(), cur = qa ? camEff() : ISO_CAM;
+  document.querySelectorAll('[data-camera]').forEach(b => b.classList.toggle('on', b.dataset.camera === cur));
+}
 function s3dOn(){ return !!(window.S3D && S3D.ok() && G && G.opt3d !== false); }
 function toggle3D(){ G.opt3d = !s3dOn(); if(G.opt3d && !(window.S3D && S3D.ok())){ G.opt3d = false; uiAlert('3D needs WebGL. Not available on this device.'); } save(); isoRebuildField(); document.querySelectorAll('[data-s3d]').forEach(b => b.classList.toggle('on', s3dOn())); }
 function gameCfg3d(){
@@ -18182,7 +18397,7 @@ function s3dSync(){
   const svg = document.getElementById('field');
   const qa = svg && G && qbActive();
   if(svg) svg.style.visibility = qa ? 'hidden' : '';
-  document.querySelectorAll('[data-camera]').forEach(b => b.classList.toggle('on', qa ? b.dataset.camera==='QB' : b.dataset.camera===ISO_CAM));
+  camBtnSync();
   if(qa){ if(!busy && !livePlayState){ try { qbShowFormation(false); } catch(e){ console.error('qb view failed', e); ISO_CAM='TV'; G.qbAuto=false; } } }
   else if(window.S3D && S3D.qbHide) S3D.qbHide();
   if(qa){}
